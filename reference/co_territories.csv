@@ -1,0 +1,1123 @@
+region_code,region_name,municipality_code,municipality_name,type,lon,lat
+05,Antioquia,05001,Medellín,Municipio,-75.581775,6.246631
+05,Antioquia,05002,Abejorral,Municipio,-75.428739,5.789315
+05,Antioquia,05004,Abriaquí,Municipio,-76.064304,6.632282
+05,Antioquia,05021,Alejandría,Municipio,-75.141346,6.376061
+05,Antioquia,05030,Amagá,Municipio,-75.702188,6.038708
+05,Antioquia,05031,Amalfi,Municipio,-75.077501,6.909655
+05,Antioquia,05034,Andes,Municipio,-75.878828,5.657194
+05,Antioquia,05036,Angelópolis,Municipio,-75.711389,6.109719
+05,Antioquia,05038,Angostura,Municipio,-75.335116,6.885175
+05,Antioquia,05040,Anorí,Municipio,-75.148355,7.074703
+05,Antioquia,05042,Santa Fé de Antioquia,Municipio,-75.826648,6.556484
+05,Antioquia,05044,Anzá,Municipio,-75.854442,6.302641
+05,Antioquia,05045,Apartadó,Municipio,-76.625279,7.882968
+05,Antioquia,05051,Arboletes,Municipio,-76.426708,8.849317
+05,Antioquia,05055,Argelia,Municipio,-75.14107,5.731474
+05,Antioquia,05059,Armenia,Municipio,-75.786647,6.155667
+05,Antioquia,05079,Barbosa,Municipio,-75.331627,6.439195
+05,Antioquia,05086,Belmira,Municipio,-75.667779,6.606319
+05,Antioquia,05088,Bello,Municipio,-75.555245,6.333587
+05,Antioquia,05091,Betania,Municipio,-75.97679,5.74615
+05,Antioquia,05093,Betulia,Municipio,-75.984452,6.115208
+05,Antioquia,05101,Ciudad Bolívar,Municipio,-76.021509,5.850273
+05,Antioquia,05107,Briceño,Municipio,-75.55036,7.112803
+05,Antioquia,05113,Buriticá,Municipio,-75.907,6.720759
+05,Antioquia,05120,Cáceres,Municipio,-75.35205,7.578366
+05,Antioquia,05125,Caicedo,Municipio,-75.98293,6.405607
+05,Antioquia,05129,Caldas,Municipio,-75.633673,6.091077
+05,Antioquia,05134,Campamento,Municipio,-75.298091,6.979771
+05,Antioquia,05138,Cañasgordas,Municipio,-76.028228,6.753859
+05,Antioquia,05142,Caracolí,Municipio,-74.757421,6.409829
+05,Antioquia,05145,Caramanta,Municipio,-75.643868,5.54853
+05,Antioquia,05147,Carepa,Municipio,-76.652652,7.755148
+05,Antioquia,05148,El Carmen de Viboral,Municipio,-75.333901,6.082885
+05,Antioquia,05150,Carolina,Municipio,-75.283192,6.725995
+05,Antioquia,05154,Caucasia,Municipio,-75.197996,7.977278
+05,Antioquia,05172,Chigorodó,Municipio,-76.681531,7.666147
+05,Antioquia,05190,Cisneros,Municipio,-75.087047,6.537829
+05,Antioquia,05197,Cocorná,Municipio,-75.185483,6.058295
+05,Antioquia,05206,Concepción,Municipio,-75.257587,6.394348
+05,Antioquia,05209,Concordia,Municipio,-75.908448,6.045738
+05,Antioquia,05212,Copacabana,Municipio,-75.509384,6.348557
+05,Antioquia,05234,Dabeiba,Municipio,-76.261614,6.998112
+05,Antioquia,05237,Donmatías,Municipio,-75.39263,6.485603
+05,Antioquia,05240,Ebéjico,Municipio,-75.766413,6.325615
+05,Antioquia,05250,El Bagre,Municipio,-74.799097,7.5975
+05,Antioquia,05264,Entrerríos,Municipio,-75.517685,6.566273
+05,Antioquia,05266,Envigado,Municipio,-75.582192,6.166695
+05,Antioquia,05282,Fredonia,Municipio,-75.675072,5.928039
+05,Antioquia,05284,Frontino,Municipio,-76.130765,6.776066
+05,Antioquia,05306,Giraldo,Municipio,-75.952158,6.680808
+05,Antioquia,05308,Girardota,Municipio,-75.444238,6.379472
+05,Antioquia,05310,Gómez Plata,Municipio,-75.220018,6.683269
+05,Antioquia,05313,Granada,Municipio,-75.184446,6.142892
+05,Antioquia,05315,Guadalupe,Municipio,-75.239862,6.815069
+05,Antioquia,05318,Guarne,Municipio,-75.441612,6.27787
+05,Antioquia,05321,Guatapé,Municipio,-75.160041,6.232461
+05,Antioquia,05347,Heliconia,Municipio,-75.734322,6.206757
+05,Antioquia,05353,Hispania,Municipio,-75.906587,5.799461
+05,Antioquia,05360,Itagüí,Municipio,-75.612056,6.175079
+05,Antioquia,05361,Ituango,Municipio,-75.764673,7.171629
+05,Antioquia,05364,Jardín,Municipio,-75.818982,5.597542
+05,Antioquia,05368,Jericó,Municipio,-75.785499,5.789748
+05,Antioquia,05376,La Ceja,Municipio,-75.429433,6.028062
+05,Antioquia,05380,La Estrella,Municipio,-75.637708,6.145238
+05,Antioquia,05390,La Pintada,Municipio,-75.60781,5.743808
+05,Antioquia,05400,La Unión,Municipio,-75.360874,5.973845
+05,Antioquia,05411,Liborina,Municipio,-75.812838,6.677316
+05,Antioquia,05425,Maceo,Municipio,-74.78716,6.552116
+05,Antioquia,05440,Marinilla,Municipio,-75.339345,6.173995
+05,Antioquia,05467,Montebello,Municipio,-75.523455,5.946313
+05,Antioquia,05475,Murindó,Municipio,-76.817485,6.97771
+05,Antioquia,05480,Mutatá,Municipio,-76.435875,7.242875
+05,Antioquia,05483,Nariño,Municipio,-75.176262,5.610777
+05,Antioquia,05490,Necoclí,Municipio,-76.787271,8.434526
+05,Antioquia,05495,Nechí,Municipio,-74.77647,8.094129
+05,Antioquia,05501,Olaya,Municipio,-75.811773,6.626492
+05,Antioquia,05541,Peñol,Municipio,-75.242693,6.219349
+05,Antioquia,05543,Peque,Municipio,-75.910357,7.021029
+05,Antioquia,05576,Pueblorrico,Municipio,-75.839903,5.79158
+05,Antioquia,05579,Puerto Berrío,Municipio,-74.410016,6.487028
+05,Antioquia,05585,Puerto Nare,Municipio,-74.583012,6.186025
+05,Antioquia,05591,Puerto Triunfo,Municipio,-74.64119,5.871318
+05,Antioquia,05604,Remedios,Municipio,-74.698135,7.029424
+05,Antioquia,05607,Retiro,Municipio,-75.501301,6.062454
+05,Antioquia,05615,Rionegro,Municipio,-75.377316,6.147148
+05,Antioquia,05628,Sabanalarga,Municipio,-75.816645,6.850028
+05,Antioquia,05631,Sabaneta,Municipio,-75.615479,6.149903
+05,Antioquia,05642,Salgar,Municipio,-75.976807,5.964198
+05,Antioquia,05647,San Andrés de Cuerquía,Municipio,-75.674564,6.916676
+05,Antioquia,05649,San Carlos,Municipio,-74.988097,6.187746
+05,Antioquia,05652,San Francisco,Municipio,-75.101562,5.963476
+05,Antioquia,05656,San Jerónimo,Municipio,-75.726975,6.44809
+05,Antioquia,05658,San José de la Montaña,Municipio,-75.683352,6.85009
+05,Antioquia,05659,San Juan de Urabá,Municipio,-76.52857,8.758964
+05,Antioquia,05660,San Luis,Municipio,-74.993619,6.043017
+05,Antioquia,05664,San Pedro de los Milagros,Municipio,-75.556743,6.46012
+05,Antioquia,05665,San Pedro de Urabá,Municipio,-76.380567,8.276884
+05,Antioquia,05667,San Rafael,Municipio,-75.02849,6.293759
+05,Antioquia,05670,San Roque,Municipio,-75.019109,6.485939
+05,Antioquia,05674,San Vicente Ferrer,Municipio,-75.332616,6.282164
+05,Antioquia,05679,Santa Bárbara,Municipio,-75.567351,5.875527
+05,Antioquia,05686,Santa Rosa de Osos,Municipio,-75.460723,6.643366
+05,Antioquia,05690,Santo Domingo,Municipio,-75.164903,6.473032
+05,Antioquia,05697,El Santuario,Municipio,-75.265465,6.136871
+05,Antioquia,05736,Segovia,Municipio,-74.701596,7.079648
+05,Antioquia,05756,Sonsón,Municipio,-75.309596,5.714851
+05,Antioquia,05761,Sopetrán,Municipio,-75.747378,6.500745
+05,Antioquia,05789,Támesis,Municipio,-75.714429,5.664645
+05,Antioquia,05790,Tarazá,Municipio,-75.401407,7.580127
+05,Antioquia,05792,Tarso,Municipio,-75.822956,5.864542
+05,Antioquia,05809,Titiribí,Municipio,-75.791887,6.062391
+05,Antioquia,05819,Toledo,Municipio,-75.692281,7.010328
+05,Antioquia,05837,Turbo,Municipio,-76.728858,8.089929
+05,Antioquia,05842,Uramita,Municipio,-76.173284,6.898393
+05,Antioquia,05847,Urrao,Municipio,-76.133951,6.317343
+05,Antioquia,05854,Valdivia,Municipio,-75.439274,7.1652
+05,Antioquia,05856,Valparaíso,Municipio,-75.624452,5.614555
+05,Antioquia,05858,Vegachí,Municipio,-74.798714,6.773525
+05,Antioquia,05861,Venecia,Municipio,-75.735544,5.964693
+05,Antioquia,05873,Vigía del Fuerte,Municipio,-76.896004,6.588164
+05,Antioquia,05885,Yalí,Municipio,-74.840059,6.676554
+05,Antioquia,05887,Yarumal,Municipio,-75.418828,6.963832
+05,Antioquia,05890,Yolombó,Municipio,-75.013385,6.594511
+05,Antioquia,05893,Yondó,Municipio,-73.912445,7.00396
+05,Antioquia,05895,Zaragoza,Municipio,-74.867075,7.488583
+08,Atlántico,08001,Barranquilla,Municipio,-74.815546,10.977961
+08,Atlántico,08078,Baranoa,Municipio,-74.916077,10.79445
+08,Atlántico,08137,Campo de la Cruz,Municipio,-74.880847,10.378291
+08,Atlántico,08141,Candelaria,Municipio,-74.879717,10.461903
+08,Atlántico,08296,Galapa,Municipio,-74.870385,10.919033
+08,Atlántico,08372,Juan de Acosta,Municipio,-75.041032,10.83254
+08,Atlántico,08421,Luruaco,Municipio,-75.14199,10.610491
+08,Atlántico,08433,Malambo,Municipio,-74.776923,10.857086
+08,Atlántico,08436,Manatí,Municipio,-74.956867,10.449089
+08,Atlántico,08520,Palmar de Varela,Municipio,-74.754765,10.738591
+08,Atlántico,08549,Piojó,Municipio,-75.107592,10.749216
+08,Atlántico,08558,Polonuevo,Municipio,-74.852981,10.777363
+08,Atlántico,08560,Ponedera,Municipio,-74.753885,10.641779
+08,Atlántico,08573,Puerto Colombia,Municipio,-74.888627,11.015322
+08,Atlántico,08606,Repelón,Municipio,-75.125534,10.493357
+08,Atlántico,08634,Sabanagrande,Municipio,-74.759496,10.792453
+08,Atlántico,08638,Sabanalarga,Municipio,-74.921256,10.632091
+08,Atlántico,08675,Santa Lucía,Municipio,-74.959204,10.324303
+08,Atlántico,08685,Santo Tomás,Municipio,-74.757859,10.758735
+08,Atlántico,08758,Soledad,Municipio,-74.786054,10.909921
+08,Atlántico,08770,Suan,Municipio,-74.881687,10.335432
+08,Atlántico,08832,Tubará,Municipio,-74.978704,10.873586
+08,Atlántico,08849,Usiacurí,Municipio,-74.976985,10.74298
+11,"Bogotá, D.C.",11001,"Bogotá, D.C.",Municipio,-74.106992,4.649251
+13,Bolívar,13001,Cartagena de Indias,Municipio,-75.496269,10.385126
+13,Bolívar,13006,Achí,Municipio,-74.557676,8.570107
+13,Bolívar,13030,Altos del Rosario,Municipio,-74.164905,8.791865
+13,Bolívar,13042,Arenal,Municipio,-73.941099,8.458865
+13,Bolívar,13052,Arjona,Municipio,-75.344332,10.25666
+13,Bolívar,13062,Arroyohondo,Municipio,-75.019215,10.250075
+13,Bolívar,13074,Barranco de Loba,Municipio,-74.104391,8.947787
+13,Bolívar,13140,Calamar,Municipio,-74.916144,10.250431
+13,Bolívar,13160,Cantagallo,Municipio,-73.914605,7.378678
+13,Bolívar,13188,Cicuco,Municipio,-74.645981,9.274281
+13,Bolívar,13212,Córdoba,Municipio,-74.827399,9.586942
+13,Bolívar,13222,Clemencia,Municipio,-75.328469,10.567452
+13,Bolívar,13244,El Carmen de Bolívar,Municipio,-75.121178,9.718653
+13,Bolívar,13248,El Guamo,Municipio,-74.976084,10.030958
+13,Bolívar,13268,El Peñón,Municipio,-73.949274,8.988271
+13,Bolívar,13300,Hatillo de Loba,Municipio,-74.077912,8.956014
+13,Bolívar,13430,Magangué,Municipio,-74.766742,9.263799
+13,Bolívar,13433,Mahates,Municipio,-75.191643,10.233285
+13,Bolívar,13440,Margarita,Municipio,-74.285137,9.15784
+13,Bolívar,13442,María la Baja,Municipio,-75.300516,9.982402
+13,Bolívar,13458,Montecristo,Municipio,-74.471176,8.297234
+13,Bolívar,13468,Santa Cruz de Mompox,Municipio,-74.42818,9.244241
+13,Bolívar,13473,Morales,Municipio,-73.868172,8.276558
+13,Bolívar,13490,Norosí,Municipio,-74.038003,8.526259
+13,Bolívar,13549,Pinillos,Municipio,-74.462279,8.914947
+13,Bolívar,13580,Regidor,Municipio,-73.821638,8.666258
+13,Bolívar,13600,Río Viejo,Municipio,-73.840466,8.58795
+13,Bolívar,13620,San Cristóbal,Municipio,-75.065076,10.392836
+13,Bolívar,13647,San Estanislao,Municipio,-75.153101,10.398602
+13,Bolívar,13650,San Fernando,Municipio,-74.323811,9.214183
+13,Bolívar,13654,San Jacinto,Municipio,-75.12105,9.830275
+13,Bolívar,13655,San Jacinto del Cauca,Municipio,-74.721156,8.25158
+13,Bolívar,13657,San Juan Nepomuceno,Municipio,-75.081761,9.953751
+13,Bolívar,13667,San Martín de Loba,Municipio,-74.039134,8.937485
+13,Bolívar,13670,San Pablo,Municipio,-73.924602,7.476747
+13,Bolívar,13673,Santa Catalina,Municipio,-75.287855,10.605294
+13,Bolívar,13683,Santa Rosa,Municipio,-75.369824,10.444396
+13,Bolívar,13688,Santa Rosa del Sur,Municipio,-74.052243,7.963938
+13,Bolívar,13744,Simití,Municipio,-73.947264,7.953916
+13,Bolívar,13760,Soplaviento,Municipio,-75.136404,10.38839
+13,Bolívar,13780,Talaigua Nuevo,Municipio,-74.567479,9.30403
+13,Bolívar,13810,Tiquisio,Municipio,-74.262922,8.558666
+13,Bolívar,13836,Turbaco,Municipio,-75.427249,10.348316
+13,Bolívar,13838,Turbaná,Municipio,-75.44265,10.274585
+13,Bolívar,13873,Villanueva,Municipio,-75.275613,10.444089
+13,Bolívar,13894,Zambrano,Municipio,-74.817879,9.746306
+15,Boyacá,15001,Tunja,Municipio,-73.355539,5.53988
+15,Boyacá,15022,Almeida,Municipio,-73.378933,4.970857
+15,Boyacá,15047,Aquitania,Municipio,-72.88399,5.518602
+15,Boyacá,15051,Arcabuco,Municipio,-73.437503,5.755673
+15,Boyacá,15087,Belén,Municipio,-72.911641,5.98923
+15,Boyacá,15090,Berbeo,Municipio,-73.12721,5.227451
+15,Boyacá,15092,Betéitiva,Municipio,-72.809014,5.909978
+15,Boyacá,15097,Boavita,Municipio,-72.584905,6.330703
+15,Boyacá,15104,Boyacá,Municipio,-73.361945,5.454578
+15,Boyacá,15106,Briceño,Municipio,-73.92326,5.690879
+15,Boyacá,15109,Buenavista,Municipio,-73.94217,5.512594
+15,Boyacá,15114,Busbanzá,Municipio,-72.884158,5.831393
+15,Boyacá,15131,Caldas,Municipio,-73.865553,5.55458
+15,Boyacá,15135,Campohermoso,Municipio,-73.104173,5.031676
+15,Boyacá,15162,Cerinza,Municipio,-72.947918,5.955939
+15,Boyacá,15172,Chinavita,Municipio,-73.368476,5.167486
+15,Boyacá,15176,Chiquinquirá,Municipio,-73.818745,5.61379
+15,Boyacá,15180,Chiscas,Municipio,-72.500957,6.553136
+15,Boyacá,15183,Chita,Municipio,-72.471892,6.187083
+15,Boyacá,15185,Chitaraque,Municipio,-73.4471,6.027425
+15,Boyacá,15187,Chivatá,Municipio,-73.282529,5.558949
+15,Boyacá,15189,Ciénega,Municipio,-73.296049,5.408694
+15,Boyacá,15204,Cómbita,Municipio,-73.323957,5.634545
+15,Boyacá,15212,Coper,Municipio,-74.045636,5.475074
+15,Boyacá,15215,Corrales,Municipio,-72.844795,5.828064
+15,Boyacá,15218,Covarachía,Municipio,-72.738978,6.500177
+15,Boyacá,15223,Cubará,Municipio,-72.107939,6.997275
+15,Boyacá,15224,Cucaita,Municipio,-73.454338,5.544452
+15,Boyacá,15226,Cuítiva,Municipio,-72.965923,5.580367
+15,Boyacá,15232,Chíquiza,Municipio,-73.449463,5.639834
+15,Boyacá,15236,Chivor,Municipio,-73.368398,4.888173
+15,Boyacá,15238,Duitama,Municipio,-73.03063,5.822964
+15,Boyacá,15244,El Cocuy,Municipio,-72.444537,6.407738
+15,Boyacá,15248,El Espino,Municipio,-72.497007,6.483027
+15,Boyacá,15272,Firavitoba,Municipio,-72.993392,5.668885
+15,Boyacá,15276,Floresta,Municipio,-72.918111,5.859519
+15,Boyacá,15293,Gachantivá,Municipio,-73.549092,5.751891
+15,Boyacá,15296,Gámeza,Municipio,-72.80553,5.802333
+15,Boyacá,15299,Garagoa,Municipio,-73.364413,5.083234
+15,Boyacá,15317,Guacamayas,Municipio,-72.500812,6.459667
+15,Boyacá,15322,Guateque,Municipio,-73.471207,5.007321
+15,Boyacá,15325,Guayatá,Municipio,-73.489698,4.967122
+15,Boyacá,15332,Güicán de la Sierra,Municipio,-72.411763,6.462864
+15,Boyacá,15362,Iza,Municipio,-72.979559,5.611577
+15,Boyacá,15367,Jenesano,Municipio,-73.363738,5.385813
+15,Boyacá,15368,Jericó,Municipio,-72.571122,6.145735
+15,Boyacá,15377,Labranzagrande,Municipio,-72.57777,5.562687
+15,Boyacá,15380,La Capilla,Municipio,-73.444347,5.095687
+15,Boyacá,15401,La Victoria,Municipio,-74.234393,5.523792
+15,Boyacá,15403,La Uvita,Municipio,-72.559982,6.31616
+15,Boyacá,15407,Villa de Leyva,Municipio,-73.524948,5.632455
+15,Boyacá,15425,Macanal,Municipio,-73.319593,4.972464
+15,Boyacá,15442,Maripí,Municipio,-74.00405,5.550091
+15,Boyacá,15455,Miraflores,Municipio,-73.14563,5.196515
+15,Boyacá,15464,Mongua,Municipio,-72.79809,5.754242
+15,Boyacá,15466,Monguí,Municipio,-72.849292,5.723486
+15,Boyacá,15469,Moniquirá,Municipio,-73.573374,5.876331
+15,Boyacá,15476,Motavita,Municipio,-73.367841,5.5777
+15,Boyacá,15480,Muzo,Municipio,-74.10269,5.532758
+15,Boyacá,15491,Nobsa,Municipio,-72.937042,5.768046
+15,Boyacá,15494,Nuevo Colón,Municipio,-73.456759,5.355317
+15,Boyacá,15500,Oicatá,Municipio,-73.308399,5.595235
+15,Boyacá,15507,Otanche,Municipio,-74.180965,5.657536
+15,Boyacá,15511,Pachavita,Municipio,-73.396953,5.140065
+15,Boyacá,15514,Páez,Municipio,-73.052737,5.097319
+15,Boyacá,15516,Paipa,Municipio,-73.11782,5.779894
+15,Boyacá,15518,Pajarito,Municipio,-72.703231,5.293783
+15,Boyacá,15522,Panqueba,Municipio,-72.459424,6.443416
+15,Boyacá,15531,Pauna,Municipio,-73.978449,5.656323
+15,Boyacá,15533,Paya,Municipio,-72.423775,5.625699
+15,Boyacá,15537,Paz de Río,Municipio,-72.749137,5.987645
+15,Boyacá,15542,Pesca,Municipio,-73.050872,5.558808
+15,Boyacá,15550,Pisba,Municipio,-72.486023,5.72141
+15,Boyacá,15572,Puerto Boyacá,Municipio,-74.587782,5.976646
+15,Boyacá,15580,Quípama,Municipio,-74.180033,5.52055
+15,Boyacá,15599,Ramiriquí,Municipio,-73.334839,5.400303
+15,Boyacá,15600,Ráquira,Municipio,-73.632543,5.539136
+15,Boyacá,15621,Rondón,Municipio,-73.208474,5.357378
+15,Boyacá,15632,Saboyá,Municipio,-73.764456,5.697756
+15,Boyacá,15638,Sáchica,Municipio,-73.542539,5.584305
+15,Boyacá,15646,Samacá,Municipio,-73.485589,5.492161
+15,Boyacá,15660,San Eduardo,Municipio,-73.077747,5.22401
+15,Boyacá,15664,San José de Pare,Municipio,-73.545397,6.018924
+15,Boyacá,15667,San Luis de Gaceno,Municipio,-73.168076,4.81976
+15,Boyacá,15673,San Mateo,Municipio,-72.555264,6.401683
+15,Boyacá,15676,San Miguel de Sema,Municipio,-73.722009,5.518083
+15,Boyacá,15681,San Pablo de Borbur,Municipio,-74.069963,5.650743
+15,Boyacá,15686,Santana,Municipio,-73.481639,6.056866
+15,Boyacá,15690,Santa María,Municipio,-73.263518,4.857193
+15,Boyacá,15693,Santa Rosa de Viterbo,Municipio,-72.982461,5.874547
+15,Boyacá,15696,Santa Sofía,Municipio,-73.602707,5.713269
+15,Boyacá,15720,Sativanorte,Municipio,-72.708458,6.131132
+15,Boyacá,15723,Sativasur,Municipio,-72.712435,6.093183
+15,Boyacá,15740,Siachoque,Municipio,-73.24466,5.511811
+15,Boyacá,15753,Soatá,Municipio,-72.684051,6.331945
+15,Boyacá,15755,Socotá,Municipio,-72.636653,6.041162
+15,Boyacá,15757,Socha,Municipio,-72.691963,5.996717
+15,Boyacá,15759,Sogamoso,Municipio,-72.924355,5.723976
+15,Boyacá,15761,Somondoco,Municipio,-73.433393,4.985726
+15,Boyacá,15762,Sora,Municipio,-73.450153,5.56684
+15,Boyacá,15763,Sotaquirá,Municipio,-73.246585,5.764986
+15,Boyacá,15764,Soracá,Municipio,-73.332804,5.500898
+15,Boyacá,15774,Susacón,Municipio,-72.690289,6.230332
+15,Boyacá,15776,Sutamarchán,Municipio,-73.620536,5.619781
+15,Boyacá,15778,Sutatenza,Municipio,-73.452317,5.022989
+15,Boyacá,15790,Tasco,Municipio,-72.781011,5.909821
+15,Boyacá,15798,Tenza,Municipio,-73.421176,5.076781
+15,Boyacá,15804,Tibaná,Municipio,-73.396457,5.317251
+15,Boyacá,15806,Tibasosa,Municipio,-72.999449,5.74723
+15,Boyacá,15808,Tinjacá,Municipio,-73.646847,5.579713
+15,Boyacá,15810,Tipacoque,Municipio,-72.691729,6.419203
+15,Boyacá,15814,Toca,Municipio,-73.184794,5.566464
+15,Boyacá,15816,Togüí,Municipio,-73.513655,5.937438
+15,Boyacá,15820,Tópaga,Municipio,-72.832245,5.768201
+15,Boyacá,15822,Tota,Municipio,-72.985898,5.560497
+15,Boyacá,15832,Tununguá,Municipio,-73.933155,5.730582
+15,Boyacá,15835,Turmequé,Municipio,-73.491825,5.323261
+15,Boyacá,15837,Tuta,Municipio,-73.230285,5.689082
+15,Boyacá,15839,Tutazá,Municipio,-72.856035,6.032608
+15,Boyacá,15842,Úmbita,Municipio,-73.456917,5.221176
+15,Boyacá,15861,Ventaquemada,Municipio,-73.522368,5.368739
+15,Boyacá,15879,Viracachá,Municipio,-73.296894,5.436833
+15,Boyacá,15897,Zetaquira,Municipio,-73.17098,5.283443
+17,Caldas,17001,Manizales,Municipio,-75.491025,5.057657
+17,Caldas,17013,Aguadas,Municipio,-75.45487,5.610244
+17,Caldas,17042,Anserma,Municipio,-75.784343,5.236471
+17,Caldas,17050,Aranzazu,Municipio,-75.49129,5.271195
+17,Caldas,17088,Belalcázar,Municipio,-75.811918,4.993785
+17,Caldas,17174,Chinchiná,Municipio,-75.607529,4.985227
+17,Caldas,17272,Filadelfia,Municipio,-75.562474,5.297091
+17,Caldas,17380,La Dorada,Municipio,-74.668819,5.460834
+17,Caldas,17388,La Merced,Municipio,-75.546486,5.39647
+17,Caldas,17433,Manzanares,Municipio,-75.152829,5.255699
+17,Caldas,17442,Marmato,Municipio,-75.600049,5.47422
+17,Caldas,17444,Marquetalia,Municipio,-75.053097,5.297525
+17,Caldas,17446,Marulanda,Municipio,-75.259721,5.284304
+17,Caldas,17486,Neira,Municipio,-75.520006,5.166895
+17,Caldas,17495,Norcasia,Municipio,-74.889543,5.574796
+17,Caldas,17513,Pácora,Municipio,-75.459621,5.527172
+17,Caldas,17524,Palestina,Municipio,-75.624577,5.017879
+17,Caldas,17541,Pensilvania,Municipio,-75.160299,5.383281
+17,Caldas,17614,Riosucio,Municipio,-75.702104,5.423673
+17,Caldas,17616,Risaralda,Municipio,-75.76722,5.164509
+17,Caldas,17653,Salamina,Municipio,-75.487223,5.403025
+17,Caldas,17662,Samaná,Municipio,-74.992263,5.41308
+17,Caldas,17665,San José,Municipio,-75.792063,5.08231
+17,Caldas,17777,Supía,Municipio,-75.64966,5.446843
+17,Caldas,17867,Victoria,Municipio,-74.911239,5.317437
+17,Caldas,17873,Villamaría,Municipio,-75.502487,5.038925
+17,Caldas,17877,Viterbo,Municipio,-75.87061,5.062664
+18,Caquetá,18001,Florencia,Municipio,-75.609831,1.618196
+18,Caquetá,18029,Albania,Municipio,-75.878375,1.328526
+18,Caquetá,18094,Belén de los Andaquíes,Municipio,-75.872405,1.415812
+18,Caquetá,18150,Cartagena del Chairá,Municipio,-74.847867,1.332371
+18,Caquetá,18205,Curillo,Municipio,-75.919205,1.033473
+18,Caquetá,18247,El Doncello,Municipio,-75.283631,1.679951
+18,Caquetá,18256,El Paujíl,Municipio,-75.326093,1.570226
+18,Caquetá,18410,La Montañita,Municipio,-75.436408,1.479173
+18,Caquetá,18460,Milán,Municipio,-75.506926000000007,1.29021
+18,Caquetá,18479,Morelia,Municipio,-75.724146,1.486611
+18,Caquetá,18592,Puerto Rico,Municipio,-75.157604,1.909063
+18,Caquetá,18610,San José del Fragua,Municipio,-75.973796,1.330266
+18,Caquetá,18753,San Vicente del Caguán,Municipio,-74.767894,2.119413
+18,Caquetá,18756,Solano,Municipio,-75.253702,0.699077
+18,Caquetá,18785,Solita,Municipio,-75.619902,0.87654
+18,Caquetá,18860,Valparaíso,Municipio,-75.70671,1.194619
+19,Cauca,19001,Popayán,Municipio,-76.599377,2.459641
+19,Cauca,19022,Almaguer,Municipio,-76.85607,1.913429
+19,Cauca,19050,Argelia,Municipio,-77.24905,2.257427
+19,Cauca,19075,Balboa,Municipio,-77.215773,2.040998
+19,Cauca,19100,Bolívar,Municipio,-76.966215,1.837538
+19,Cauca,19110,Buenos Aires,Municipio,-76.642238,3.015382
+19,Cauca,19130,Cajibío,Municipio,-76.570682,2.623371
+19,Cauca,19137,Caldono,Municipio,-76.484319,2.798059
+19,Cauca,19142,Caloto,Municipio,-76.408941,3.034531
+19,Cauca,19212,Corinto,Municipio,-76.261866,3.173854
+19,Cauca,19256,El Tambo,Municipio,-76.810911,2.451409
+19,Cauca,19290,Florencia,Municipio,-77.072547,1.682535
+19,Cauca,19300,Guachené,Municipio,-76.392189,3.134153
+19,Cauca,19318,Guapi,Municipio,-77.88797,2.571337
+19,Cauca,19355,Inzá,Municipio,-76.063503,2.549183
+19,Cauca,19364,Jambaló,Municipio,-76.323877,2.777834
+19,Cauca,19392,La Sierra,Municipio,-76.763278,2.179383
+19,Cauca,19397,La Vega,Municipio,-76.778771,2.0018030000000002
+19,Cauca,19418,López de Micay,Municipio,-77.247803,2.846788
+19,Cauca,19450,Mercaderes,Municipio,-77.164319,1.789193
+19,Cauca,19455,Miranda,Municipio,-76.228722,3.254651
+19,Cauca,19473,Morales,Municipio,-76.629106,2.754684
+19,Cauca,19513,Padilla,Municipio,-76.313265,3.220984
+19,Cauca,19517,Páez,Municipio,-75.970685,2.645724
+19,Cauca,19532,Patía,Municipio,-76.981075,2.115875
+19,Cauca,19533,Piamonte,Municipio,-76.327588,1.11754
+19,Cauca,19548,Piendamó - Tunía,Municipio,-76.528615,2.64228
+19,Cauca,19573,Puerto Tejada,Municipio,-76.417673,3.233254
+19,Cauca,19585,Puracé,Municipio,-76.496698,2.341507
+19,Cauca,19622,Rosas,Municipio,-76.740336,2.260941
+19,Cauca,19693,San Sebastián,Municipio,-76.769467,1.838451
+19,Cauca,19698,Santander de Quilichao,Municipio,-76.485141,3.015008
+19,Cauca,19701,Santa Rosa,Municipio,-76.573252,1.700916
+19,Cauca,19743,Silvia,Municipio,-76.379753,2.611927
+19,Cauca,19760,Sotará - Paispamba,Municipio,-76.613365,2.253156
+19,Cauca,19780,Suárez,Municipio,-76.69357,2.959785
+19,Cauca,19785,Sucre,Municipio,-76.926279,2.038237
+19,Cauca,19807,Timbío,Municipio,-76.684476,2.349686
+19,Cauca,19809,Timbiquí,Municipio,-77.667541,2.777312
+19,Cauca,19821,Toribío,Municipio,-76.270284,2.953017
+19,Cauca,19824,Totoró,Municipio,-76.403628,2.510252
+19,Cauca,19845,Villa Rica,Municipio,-76.458025,3.17762
+20,Cesar,20001,Valledupar,Municipio,-73.259398,10.460472
+20,Cesar,20011,Aguachica,Municipio,-73.614027,8.306811
+20,Cesar,20013,Agustín Codazzi,Municipio,-73.238389,10.040454
+20,Cesar,20032,Astrea,Municipio,-73.975842,9.498062
+20,Cesar,20045,Becerril,Municipio,-73.278707,9.704404
+20,Cesar,20060,Bosconia,Municipio,-73.888761,9.975098
+20,Cesar,20175,Chimichagua,Municipio,-73.813278,9.25875
+20,Cesar,20178,Chiriguaná,Municipio,-73.599913,9.361058
+20,Cesar,20228,Curumaní,Municipio,-73.540843,9.201716
+20,Cesar,20238,El Copey,Municipio,-73.962703,10.149883
+20,Cesar,20250,El Paso,Municipio,-73.742012,9.668461
+20,Cesar,20295,Gamarra,Municipio,-73.737558,8.324793
+20,Cesar,20310,González,Municipio,-73.38004,8.389604
+20,Cesar,20383,La Gloria,Municipio,-73.803210000000007,8.619298
+20,Cesar,20400,La Jagua de Ibirico,Municipio,-73.334143,9.563752
+20,Cesar,20443,Manaure Balcón del Cesar,Municipio,-73.029472,10.390776
+20,Cesar,20517,Pailitas,Municipio,-73.625825,8.959399
+20,Cesar,20550,Pelaya,Municipio,-73.666735,8.689451
+20,Cesar,20570,Pueblo Bello,Municipio,-73.586211,10.417321
+20,Cesar,20614,Río de Oro,Municipio,-73.386393,8.292292
+20,Cesar,20621,La Paz,Municipio,-73.171365,10.387552
+20,Cesar,20710,San Alberto,Municipio,-73.393889,7.76111
+20,Cesar,20750,San Diego,Municipio,-73.181208,10.333039
+20,Cesar,20770,San Martín,Municipio,-73.510914,7.999855
+20,Cesar,20787,Tamalameque,Municipio,-73.812172,8.861725
+23,Córdoba,23001,Montería,Municipio,-75.873096,8.759789
+23,Córdoba,23068,Ayapel,Municipio,-75.146048,8.313838
+23,Córdoba,23079,Buenavista,Municipio,-75.480897,8.221187
+23,Córdoba,23090,Canalete,Municipio,-76.241476,8.786939
+23,Córdoba,23162,Cereté,Municipio,-75.796093,8.888532
+23,Córdoba,23168,Chimá,Municipio,-75.626886,9.149698
+23,Córdoba,23182,Chinú,Municipio,-75.399633,9.105473
+23,Córdoba,23189,Ciénaga de Oro,Municipio,-75.620807,8.875794
+23,Córdoba,23300,Cotorra,Municipio,-75.799216,9.037163
+23,Córdoba,23350,La Apartada,Municipio,-75.336031,8.050125
+23,Córdoba,23417,Lorica,Municipio,-75.816084,9.240789
+23,Córdoba,23419,Los Córdobas,Municipio,-76.35518,8.892098
+23,Córdoba,23464,Momil,Municipio,-75.67796,9.240707
+23,Córdoba,23466,Montelíbano,Municipio,-75.416818,7.973777
+23,Córdoba,23500,Moñitos,Municipio,-76.1291,9.245223
+23,Córdoba,23555,Planeta Rica,Municipio,-75.583241,8.4082
+23,Córdoba,23570,Pueblo Nuevo,Municipio,-75.508035,8.504099
+23,Córdoba,23574,Puerto Escondido,Municipio,-76.260411,9.005372
+23,Córdoba,23580,Puerto Libertador,Municipio,-75.671761,7.888859
+23,Córdoba,23586,Purísima de la Concepción,Municipio,-75.724987,9.239295
+23,Córdoba,23660,Sahagún,Municipio,-75.445834,8.943048
+23,Córdoba,23670,San Andrés de Sotavento,Municipio,-75.50879,9.145448
+23,Córdoba,23672,San Antero,Municipio,-75.76112,9.376434
+23,Córdoba,23675,San Bernardo del Viento,Municipio,-75.955107,9.35247
+23,Córdoba,23678,San Carlos,Municipio,-75.698799,8.799282
+23,Córdoba,23682,San José de Uré,Municipio,-75.533476,7.787303
+23,Córdoba,23686,San Pelayo,Municipio,-75.835615,8.958436
+23,Córdoba,23807,Tierralta,Municipio,-76.059797,8.170612
+23,Córdoba,23815,Tuchín,Municipio,-75.553962,9.186625
+23,Córdoba,23855,Valencia,Municipio,-76.150756,8.255016
+25,Cundinamarca,25001,Agua de Dios,Municipio,-74.669221,4.375309
+25,Cundinamarca,25019,Albán,Municipio,-74.438261,4.878022
+25,Cundinamarca,25035,Anapoima,Municipio,-74.528676,4.562737
+25,Cundinamarca,25040,Anolaima,Municipio,-74.46384,4.7617
+25,Cundinamarca,25053,Arbeláez,Municipio,-74.414901,4.272534
+25,Cundinamarca,25086,Beltrán,Municipio,-74.741666,4.802832
+25,Cundinamarca,25095,Bituima,Municipio,-74.539609,4.872171
+25,Cundinamarca,25099,Bojacá,Municipio,-74.344594,4.737205
+25,Cundinamarca,25120,Cabrera,Municipio,-74.484549,3.985164
+25,Cundinamarca,25123,Cachipay,Municipio,-74.435711,4.730957
+25,Cundinamarca,25126,Cajicá,Municipio,-74.02298,4.920009
+25,Cundinamarca,25148,Caparrapí,Municipio,-74.491045,5.34758
+25,Cundinamarca,25151,Cáqueza,Municipio,-73.946473,4.404112
+25,Cundinamarca,25154,Carmen de Carupa,Municipio,-73.901357,5.349119
+25,Cundinamarca,25168,Chaguaní,Municipio,-74.593455,4.948916
+25,Cundinamarca,25175,Chía,Municipio,-74.05,4.866508
+25,Cundinamarca,25178,Chipaque,Municipio,-74.044876,4.442671
+25,Cundinamarca,25181,Choachí,Municipio,-73.922894,4.527048
+25,Cundinamarca,25183,Chocontá,Municipio,-73.683533,5.145224
+25,Cundinamarca,25200,Cogua,Municipio,-73.978497,5.061842
+25,Cundinamarca,25214,Cota,Municipio,-74.102569,4.812564
+25,Cundinamarca,25224,Cucunubá,Municipio,-73.766113,5.249795
+25,Cundinamarca,25245,El Colegio,Municipio,-74.442261,4.577951
+25,Cundinamarca,25258,El Peñón,Municipio,-74.290207,5.248747
+25,Cundinamarca,25260,El Rosal,Municipio,-74.263103,4.850589
+25,Cundinamarca,25269,Facatativá,Municipio,-74.350085000000007,4.813353
+25,Cundinamarca,25279,Fómeque,Municipio,-73.892523,4.485474
+25,Cundinamarca,25281,Fosca,Municipio,-73.93902,4.339093
+25,Cundinamarca,25286,Funza,Municipio,-74.201528,4.710412
+25,Cundinamarca,25288,Fúquene,Municipio,-73.795855,5.403997
+25,Cundinamarca,25290,Fusagasugá,Municipio,-74.37543,4.336723
+25,Cundinamarca,25293,Gachalá,Municipio,-73.520161,4.693579
+25,Cundinamarca,25295,Gachancipá,Municipio,-73.873464,4.990947
+25,Cundinamarca,25297,Gachetá,Municipio,-73.636377,4.816411
+25,Cundinamarca,25299,Gama,Municipio,-73.611037,4.763325
+25,Cundinamarca,25307,Girardot,Municipio,-74.798201,4.313069
+25,Cundinamarca,25312,Granada,Municipio,-74.350766,4.519763
+25,Cundinamarca,25317,Guachetá,Municipio,-73.686972,5.383378
+25,Cundinamarca,25320,Guaduas,Municipio,-74.603402,5.072076
+25,Cundinamarca,25322,Guasca,Municipio,-73.877143,4.866719
+25,Cundinamarca,25324,Guataquí,Municipio,-74.790058,4.517517
+25,Cundinamarca,25326,Guatavita,Municipio,-73.83293,4.935211
+25,Cundinamarca,25328,Guayabal de Síquima,Municipio,-74.467437,4.877968
+25,Cundinamarca,25335,Guayabetal,Municipio,-73.815107,4.215306
+25,Cundinamarca,25339,Gutiérrez,Municipio,-74.003042,4.254679
+25,Cundinamarca,25368,Jerusalén,Municipio,-74.695474,4.562273
+25,Cundinamarca,25372,Junín,Municipio,-73.662961,4.79057
+25,Cundinamarca,25377,La Calera,Municipio,-73.968161,4.721104
+25,Cundinamarca,25386,La Mesa,Municipio,-74.461588,4.631028
+25,Cundinamarca,25394,La Palma,Municipio,-74.391022,5.358816
+25,Cundinamarca,25398,La Peña,Municipio,-74.394105,5.198945
+25,Cundinamarca,25402,La Vega,Municipio,-74.336885,4.997768
+25,Cundinamarca,25407,Lenguazaque,Municipio,-73.711512,5.306131
+25,Cundinamarca,25426,Machetá,Municipio,-73.608226,5.08007
+25,Cundinamarca,25430,Madrid,Municipio,-74.265854,4.732791
+25,Cundinamarca,25436,Manta,Municipio,-73.540444,5.009008
+25,Cundinamarca,25438,Medina,Municipio,-73.348449,4.506298
+25,Cundinamarca,25473,Mosquera,Municipio,-74.221154,4.70653
+25,Cundinamarca,25483,Nariño,Municipio,-74.824732,4.399837
+25,Cundinamarca,25486,Nemocón,Municipio,-73.877888,5.068705
+25,Cundinamarca,25488,Nilo,Municipio,-74.620009,4.305838
+25,Cundinamarca,25489,Nimaima,Municipio,-74.38604,5.125992
+25,Cundinamarca,25491,Nocaima,Municipio,-74.379093,5.069466
+25,Cundinamarca,25506,Venecia,Municipio,-74.478301,4.089056
+25,Cundinamarca,25513,Pacho,Municipio,-74.156132,5.136907
+25,Cundinamarca,25518,Paime,Municipio,-74.152213,5.370487
+25,Cundinamarca,25524,Pandi,Municipio,-74.486641,4.190393
+25,Cundinamarca,25530,Paratebueno,Municipio,-73.212825,4.374832
+25,Cundinamarca,25535,Pasca,Municipio,-74.302276,4.308979
+25,Cundinamarca,25572,Puerto Salgar,Municipio,-74.653695,5.465413
+25,Cundinamarca,25580,Pulí,Municipio,-74.71438,4.682022
+25,Cundinamarca,25592,Quebradanegra,Municipio,-74.48014,5.118076
+25,Cundinamarca,25594,Quetame,Municipio,-73.863214,4.329884
+25,Cundinamarca,25596,Quipile,Municipio,-74.533705,4.74481
+25,Cundinamarca,25599,Apulo,Municipio,-74.593926,4.520304
+25,Cundinamarca,25612,Ricaurte,Municipio,-74.772861,4.282113
+25,Cundinamarca,25645,San Antonio del Tequendama,Municipio,-74.351443,4.616138
+25,Cundinamarca,25649,San Bernardo,Municipio,-74.42296,4.179433
+25,Cundinamarca,25653,San Cayetano,Municipio,-74.024754,5.332938
+25,Cundinamarca,25658,San Francisco,Municipio,-74.289672,4.972917
+25,Cundinamarca,25662,San Juan de Rioseco,Municipio,-74.621919,4.847575
+25,Cundinamarca,25718,Sasaima,Municipio,-74.432628,4.962167
+25,Cundinamarca,25736,Sesquilé,Municipio,-73.796099,5.04476
+25,Cundinamarca,25740,Sibaté,Municipio,-74.257874,4.492625
+25,Cundinamarca,25743,Silvania,Municipio,-74.405534,4.381981
+25,Cundinamarca,25745,Simijaca,Municipio,-73.850703,5.505231
+25,Cundinamarca,25754,Soacha,Municipio,-74.215463,4.579268
+25,Cundinamarca,25758,Sopó,Municipio,-73.943328,4.915395
+25,Cundinamarca,25769,Subachoque,Municipio,-74.172773,4.929118
+25,Cundinamarca,25772,Suesca,Municipio,-73.798227,5.103495
+25,Cundinamarca,25777,Supatá,Municipio,-74.235403,5.06162
+25,Cundinamarca,25779,Susa,Municipio,-73.813938,5.455291
+25,Cundinamarca,25781,Sutatausa,Municipio,-73.853159,5.247482
+25,Cundinamarca,25785,Tabio,Municipio,-74.096461,4.916832
+25,Cundinamarca,25793,Tausa,Municipio,-73.887813,5.196333
+25,Cundinamarca,25797,Tena,Municipio,-74.389193,4.655286
+25,Cundinamarca,25799,Tenjo,Municipio,-74.143724,4.872014
+25,Cundinamarca,25805,Tibacuy,Municipio,-74.452662,4.348605
+25,Cundinamarca,25807,Tibirita,Municipio,-73.504514,5.052278
+25,Cundinamarca,25815,Tocaima,Municipio,-74.636296,4.459279
+25,Cundinamarca,25817,Tocancipá,Municipio,-73.91207,4.964641
+25,Cundinamarca,25823,Topaipí,Municipio,-74.300626,5.336224
+25,Cundinamarca,25839,Ubalá,Municipio,-73.531489,4.74762
+25,Cundinamarca,25841,Ubaque,Municipio,-73.933477,4.483788
+25,Cundinamarca,25843,Villa de San Diego de Ubaté,Municipio,-73.814367,5.307463
+25,Cundinamarca,25845,Une,Municipio,-74.025183,4.40245
+25,Cundinamarca,25851,Útica,Municipio,-74.483154,5.19055
+25,Cundinamarca,25862,Vergara,Municipio,-74.346163,5.117258
+25,Cundinamarca,25867,Vianí,Municipio,-74.56132,4.875208
+25,Cundinamarca,25871,Villagómez,Municipio,-74.195145,5.273024
+25,Cundinamarca,25873,Villapinzón,Municipio,-73.595704,5.216393
+25,Cundinamarca,25875,Villeta,Municipio,-74.469686,5.012754
+25,Cundinamarca,25878,Viotá,Municipio,-74.523131,4.43935
+25,Cundinamarca,25885,Yacopí,Municipio,-74.33806,5.459272
+25,Cundinamarca,25898,Zipacón,Municipio,-74.379566,4.759932
+25,Cundinamarca,25899,Zipaquirá,Municipio,-73.994444,5.025477
+27,Chocó,27001,Quibdó,Municipio,-76.638144,5.682166
+27,Chocó,27006,Acandí,Municipio,-77.279951,8.512178
+27,Chocó,27025,Alto Baudó,Municipio,-76.974373,5.516221
+27,Chocó,27050,Atrato,Municipio,-76.635674,5.531419
+27,Chocó,27073,Bagadó,Municipio,-76.416063,5.409681
+27,Chocó,27075,Bahía Solano,Municipio,-77.401359,6.222807
+27,Chocó,27077,Bajo Baudó,Municipio,-77.365717,4.954576
+27,Chocó,27099,Bojayá,Municipio,-76.886773,6.559708
+27,Chocó,27135,El Cantón del San Pablo,Municipio,-76.726844,5.335321
+27,Chocó,27150,Carmen del Darién,Municipio,-76.970798,7.158294
+27,Chocó,27160,Cértegui,Municipio,-76.607619,5.371373
+27,Chocó,27205,Condoto,Municipio,-76.650683,5.091003
+27,Chocó,27245,El Carmen de Atrato,Municipio,-76.142112,5.899789
+27,Chocó,27250,El Litoral del San Juan,Municipio,-77.363702,4.259564
+27,Chocó,27361,Istmina,Municipio,-76.68518,5.153946
+27,Chocó,27372,Juradó,Municipio,-77.762751,7.103619
+27,Chocó,27413,Lloró,Municipio,-76.545147,5.49789
+27,Chocó,27425,Medio Atrato,Municipio,-76.783042,5.994935
+27,Chocó,27430,Medio Baudó,Municipio,-76.950891,5.192471
+27,Chocó,27450,Medio San Juan,Municipio,-76.694409,5.098291
+27,Chocó,27491,Nóvita,Municipio,-76.609467,4.956063
+27,Chocó,27493,Nuevo Belén de Bajirá,Municipio,-76.71727,7.3719
+27,Chocó,27495,Nuquí,Municipio,-77.265507,5.709812
+27,Chocó,27580,Río Iró,Municipio,-76.472925,5.1863
+27,Chocó,27600,Río Quito,Municipio,-76.740684,5.483667
+27,Chocó,27615,Riosucio,Municipio,-77.113156,7.436704
+27,Chocó,27660,San José del Palmar,Municipio,-76.234227,4.896954
+27,Chocó,27745,Sipí,Municipio,-76.643453,4.65262
+27,Chocó,27787,Tadó,Municipio,-76.558571,5.264873
+27,Chocó,27800,Unguía,Municipio,-77.092538,8.04406
+27,Chocó,27810,Unión Panamericana,Municipio,-76.630143,5.281108
+41,Huila,41001,Neiva,Municipio,-75.277327,2.935432
+41,Huila,41006,Acevedo,Municipio,-75.888706,1.805173
+41,Huila,41013,Agrado,Municipio,-75.772022,2.25987
+41,Huila,41016,Aipe,Municipio,-75.239017,3.223996
+41,Huila,41020,Algeciras,Municipio,-75.315389,2.521674
+41,Huila,41026,Altamira,Municipio,-75.788471,2.063841
+41,Huila,41078,Baraya,Municipio,-75.054843,3.152204
+41,Huila,41132,Campoalegre,Municipio,-75.325748,2.686767
+41,Huila,41206,Colombia,Municipio,-74.802815,3.376745
+41,Huila,41244,Elías,Municipio,-75.938301,2.012854
+41,Huila,41298,Garzón,Municipio,-75.627057,2.196493
+41,Huila,41306,Gigante,Municipio,-75.547681,2.384031
+41,Huila,41319,Guadalupe,Municipio,-75.757185,2.02426
+41,Huila,41349,Hobo,Municipio,-75.447697,2.580812
+41,Huila,41357,Íquira,Municipio,-75.634497,2.649359
+41,Huila,41359,Isnos,Municipio,-76.217637,1.929467
+41,Huila,41378,La Argentina,Municipio,-75.979763,2.198496
+41,Huila,41396,La Plata,Municipio,-75.891254,2.389263
+41,Huila,41483,Nátaga,Municipio,-75.808756,2.5451
+41,Huila,41503,Oporapa,Municipio,-75.995165,2.0250880000000002
+41,Huila,41518,Paicol,Municipio,-75.773158,2.449651
+41,Huila,41524,Palermo,Municipio,-75.435296,2.889649
+41,Huila,41530,Palestina,Municipio,-76.133251,1.723725
+41,Huila,41548,Pital,Municipio,-75.804544,2.266618
+41,Huila,41551,Pitalito,Municipio,-76.049441,1.852631
+41,Huila,41615,Rivera,Municipio,-75.258753,2.777586
+41,Huila,41660,Saladoblanco,Municipio,-76.044747,1.9934
+41,Huila,41668,San Agustín,Municipio,-76.27036,1.881081
+41,Huila,41676,Santa María,Municipio,-75.586223,2.939603
+41,Huila,41770,Suaza,Municipio,-75.79525,1.976051
+41,Huila,41791,Tarqui,Municipio,-75.823976,2.111325
+41,Huila,41797,Tesalia,Municipio,-75.730271,2.486364
+41,Huila,41799,Tello,Municipio,-75.138773,3.067538
+41,Huila,41801,Teruel,Municipio,-75.567034,2.740968
+41,Huila,41807,Timaná,Municipio,-75.932167,1.974539
+41,Huila,41872,Villavieja,Municipio,-75.217174,3.218822
+41,Huila,41885,Yaguará,Municipio,-75.518023,2.664694
+44,La Guajira,44001,Riohacha,Municipio,-72.911795,11.528588
+44,La Guajira,44035,Albania,Municipio,-72.61232,11.151628
+44,La Guajira,44078,Barrancas,Municipio,-72.793639,10.958669
+44,La Guajira,44090,Dibulla,Municipio,-73.307598,11.27155
+44,La Guajira,44098,Distracción,Municipio,-72.887405,10.898414
+44,La Guajira,44110,El Molino,Municipio,-72.92673,10.653505
+44,La Guajira,44279,Fonseca,Municipio,-72.846319,10.886734
+44,La Guajira,44378,Hatonuevo,Municipio,-72.75904,11.068864
+44,La Guajira,44420,La Jagua del Pilar,Municipio,-73.072638,10.511862
+44,La Guajira,44430,Maicao,Municipio,-72.242738,11.378535
+44,La Guajira,44560,Manaure,Municipio,-72.438739,11.773767
+44,La Guajira,44650,San Juan del Cesar,Municipio,-73.000629,10.769546
+44,La Guajira,44847,Uribia,Municipio,-72.265906,11.711904
+44,La Guajira,44855,Urumita,Municipio,-73.012507,10.560169
+44,La Guajira,44874,Villanueva,Municipio,-72.977583,10.608774
+47,Magdalena,47001,Santa Marta,Municipio,-74.199829,11.204679
+47,Magdalena,47030,Algarrobo,Municipio,-74.061132,10.188059
+47,Magdalena,47053,Aracataca,Municipio,-74.186702,10.589791
+47,Magdalena,47058,Ariguaní,Municipio,-74.236515,9.847047
+47,Magdalena,47161,Cerro de San Antonio,Municipio,-74.868474,10.325531
+47,Magdalena,47170,Chivolo,Municipio,-74.622242,10.026631
+47,Magdalena,47189,Ciénaga,Municipio,-74.241286,11.006654
+47,Magdalena,47205,Concordia,Municipio,-74.83303,10.257314
+47,Magdalena,47245,El Banco,Municipio,-73.97437,9.008503
+47,Magdalena,47258,El Piñón,Municipio,-74.823094,10.402781
+47,Magdalena,47268,El Retén,Municipio,-74.268444,10.610488
+47,Magdalena,47288,Fundación,Municipio,-74.191453,10.514146
+47,Magdalena,47318,Guamal,Municipio,-74.223689,9.144354
+47,Magdalena,47460,Nueva Granada,Municipio,-74.391841,9.80186
+47,Magdalena,47541,Pedraza,Municipio,-74.9154,10.18825
+47,Magdalena,47545,Pijiño del Carmen,Municipio,-74.459034,9.331922
+47,Magdalena,47551,Pivijay,Municipio,-74.613312,10.460707
+47,Magdalena,47555,Plato,Municipio,-74.784549,9.796713
+47,Magdalena,47570,Puebloviejo,Municipio,-74.28253,10.994766
+47,Magdalena,47605,Remolino,Municipio,-74.716172,10.701952
+47,Magdalena,47660,Sabanas de San Ángel,Municipio,-74.213946000000007,10.032536
+47,Magdalena,47675,Salamina,Municipio,-74.794189,10.491229
+47,Magdalena,47692,San Sebastián de Buenavista,Municipio,-74.351498,9.241656
+47,Magdalena,47703,San Zenón,Municipio,-74.498992,9.245061
+47,Magdalena,47707,Santa Ana,Municipio,-74.566845,9.324294
+47,Magdalena,47720,Santa Bárbara de Pinto,Municipio,-74.704667,9.432263
+47,Magdalena,47745,Sitionuevo,Municipio,-74.720021,10.775285
+47,Magdalena,47798,Tenerife,Municipio,-74.859783,9.898273
+47,Magdalena,47960,Zapayán,Municipio,-74.716878,10.168297
+47,Magdalena,47980,Zona Bananera,Municipio,-74.140091,10.763024
+50,Meta,50001,Villavicencio,Municipio,-73.622601,4.126369
+50,Meta,50006,Acacías,Municipio,-73.766034,3.990413
+50,Meta,50110,Barranca de Upía,Municipio,-72.961083,4.566225
+50,Meta,50124,Cabuyaro,Municipio,-72.791768,4.286705
+50,Meta,50150,Castilla la Nueva,Municipio,-73.687302,3.830005
+50,Meta,50223,Cubarral,Municipio,-73.837999,3.793653
+50,Meta,50226,Cumaral,Municipio,-73.487052,4.270042
+50,Meta,50245,El Calvario,Municipio,-73.713325,4.352665
+50,Meta,50251,El Castillo,Municipio,-73.794225,3.563907
+50,Meta,50270,El Dorado,Municipio,-73.835264,3.739984
+50,Meta,50287,Fuente de Oro,Municipio,-73.618121,3.462875
+50,Meta,50313,Granada,Municipio,-73.705815,3.547147
+50,Meta,50318,Guamal,Municipio,-73.768815,3.879657
+50,Meta,50325,Mapiripán,Municipio,-72.135509,2.896617
+50,Meta,50330,Mesetas,Municipio,-74.044328,3.382732
+50,Meta,50350,La Macarena,Municipio,-73.78661,2.177143
+50,Meta,50370,Uribe,Municipio,-74.351508,3.239634
+50,Meta,50400,Lejanías,Municipio,-74.023514,3.525115
+50,Meta,50450,Puerto Concordia,Municipio,-72.760209,2.624006
+50,Meta,50568,Puerto Gaitán,Municipio,-72.087649,4.314905
+50,Meta,50573,Puerto López,Municipio,-72.957324,4.09349
+50,Meta,50577,Puerto Lleras,Municipio,-73.37385,3.272117
+50,Meta,50590,Puerto Rico,Municipio,-73.206314,2.939621
+50,Meta,50606,Restrepo,Municipio,-73.565408,4.259556
+50,Meta,50680,San Carlos de Guaroa,Municipio,-73.242253,3.71065
+50,Meta,50683,San Juan de Arama,Municipio,-73.875832,3.373728
+50,Meta,50686,San Juanito,Municipio,-73.676699,4.458181
+50,Meta,50689,San Martín,Municipio,-73.695812,3.701899
+50,Meta,50711,Vistahermosa,Municipio,-73.750966,3.125579
+52,Nariño,52001,Pasto,Municipio,-77.278795,1.212352
+52,Nariño,52019,Albán,Municipio,-77.080712,1.474978
+52,Nariño,52022,Aldana,Municipio,-77.700564,0.882381
+52,Nariño,52036,Ancuya,Municipio,-77.514512,1.263276
+52,Nariño,52051,Arboleda,Municipio,-77.135467,1.503418
+52,Nariño,52079,Barbacoas,Municipio,-78.13765,1.671733
+52,Nariño,52083,Belén,Municipio,-77.015619,1.595681
+52,Nariño,52110,Buesaco,Municipio,-77.156463,1.381453
+52,Nariño,52203,Colón,Municipio,-77.019777,1.643878
+52,Nariño,52207,Consacá,Municipio,-77.466136,1.207854
+52,Nariño,52210,Contadero,Municipio,-77.549409,0.910458
+52,Nariño,52215,Córdoba,Municipio,-77.517897,0.854564
+52,Nariño,52224,Cuaspud Carlosama,Municipio,-77.728947,0.862978
+52,Nariño,52227,Cumbal,Municipio,-77.792505,0.906367
+52,Nariño,52233,Cumbitara,Municipio,-77.578616,1.647163
+52,Nariño,52240,Chachagüí,Municipio,-77.281869,1.360545
+52,Nariño,52250,El Charco,Municipio,-78.110217,2.479688
+52,Nariño,52254,El Peñol,Municipio,-77.438522,1.453567
+52,Nariño,52256,El Rosario,Municipio,-77.33417,1.745309
+52,Nariño,52258,El Tablón de Gómez,Municipio,-77.097101,1.427277
+52,Nariño,52260,El Tambo,Municipio,-77.390772,1.407913
+52,Nariño,52287,Funes,Municipio,-77.448913,1.001159
+52,Nariño,52317,Guachucal,Municipio,-77.731589,0.959744
+52,Nariño,52320,Guaitarilla,Municipio,-77.549824,1.129574
+52,Nariño,52323,Gualmatán,Municipio,-77.568701,0.919652
+52,Nariño,52352,Iles,Municipio,-77.521227,0.96952
+52,Nariño,52354,Imués,Municipio,-77.496339,1.05506
+52,Nariño,52356,Ipiales,Municipio,-77.646367,0.827732
+52,Nariño,52378,La Cruz,Municipio,-76.970504,1.601318
+52,Nariño,52381,La Florida,Municipio,-77.402882,1.29753
+52,Nariño,52385,La Llanada,Municipio,-77.58091,1.472892
+52,Nariño,52390,La Tola,Municipio,-78.189725,2.398999
+52,Nariño,52399,La Unión,Municipio,-77.131316,1.600219
+52,Nariño,52405,Leiva,Municipio,-77.306135,1.934453
+52,Nariño,52411,Linares,Municipio,-77.523953,1.350814
+52,Nariño,52418,Los Andes,Municipio,-77.521303,1.494587
+52,Nariño,52427,Magüí,Municipio,-78.182924,1.765633
+52,Nariño,52435,Mallama,Municipio,-77.864549,1.141037
+52,Nariño,52473,Mosquera,Municipio,-78.452992,2.507139
+52,Nariño,52480,Nariño,Municipio,-77.357972,1.288979
+52,Nariño,52490,Olaya Herrera,Municipio,-78.325814,2.347457
+52,Nariño,52506,Ospina,Municipio,-77.566082,1.058433
+52,Nariño,52520,Francisco Pizarro,Municipio,-78.658361,2.040629
+52,Nariño,52540,Policarpa,Municipio,-77.458686,1.627196
+52,Nariño,52560,Potosí,Municipio,-77.573003,0.806639
+52,Nariño,52565,Providencia,Municipio,-77.596794,1.237814
+52,Nariño,52573,Puerres,Municipio,-77.504211,0.885125
+52,Nariño,52585,Pupiales,Municipio,-77.636042,0.870442
+52,Nariño,52612,Ricaurte,Municipio,-77.995153,1.212492
+52,Nariño,52621,Roberto Payán,Municipio,-78.245716,1.697492
+52,Nariño,52678,Samaniego,Municipio,-77.594341,1.335438
+52,Nariño,52683,Sandoná,Municipio,-77.47313,1.283438
+52,Nariño,52685,San Bernardo,Municipio,-77.0475,1.513762
+52,Nariño,52687,San Lorenzo,Municipio,-77.21542,1.503362
+52,Nariño,52693,San Pablo,Municipio,-77.013984,1.669429
+52,Nariño,52694,San Pedro de Cartago,Municipio,-77.11941,1.551572
+52,Nariño,52696,Santa Bárbara,Municipio,-77.979916,2.449653
+52,Nariño,52699,Santacruz,Municipio,-77.677035,1.222589
+52,Nariño,52720,Sapuyes,Municipio,-77.62028,1.037536
+52,Nariño,52786,Taminango,Municipio,-77.2808,1.570358
+52,Nariño,52788,Tangua,Municipio,-77.393735,1.09482
+52,Nariño,52835,San Andrés de Tumaco,Municipio,-78.764073,1.807399
+52,Nariño,52838,Túquerres,Municipio,-77.61672,1.085044
+52,Nariño,52885,Yacuanquer,Municipio,-77.400169,1.115937
+54,Norte de Santander,54001,San José de Cúcuta,Municipio,-72.508178,7.905725
+54,Norte de Santander,54003,Ábrego,Municipio,-73.221722,8.081616
+54,Norte de Santander,54051,Arboledas,Municipio,-72.798952,7.642985
+54,Norte de Santander,54099,Bochalema,Municipio,-72.64701,7.612192
+54,Norte de Santander,54109,Bucarasica,Municipio,-72.868231,8.041299
+54,Norte de Santander,54125,Cácota,Municipio,-72.642059,7.268705
+54,Norte de Santander,54128,Cáchira,Municipio,-73.048983,7.741248
+54,Norte de Santander,54172,Chinácota,Municipio,-72.601162,7.603112
+54,Norte de Santander,54174,Chitagá,Municipio,-72.665468,7.138187
+54,Norte de Santander,54206,Convención,Municipio,-73.3372,8.470374
+54,Norte de Santander,54223,Cucutilla,Municipio,-72.772816,7.539633
+54,Norte de Santander,54239,Durania,Municipio,-72.658491,7.714804
+54,Norte de Santander,54245,El Carmen,Municipio,-73.446687,8.510579
+54,Norte de Santander,54250,El Tarra,Municipio,-73.09614,8.574281
+54,Norte de Santander,54261,El Zulia,Municipio,-72.604717,7.938572
+54,Norte de Santander,54313,Gramalote,Municipio,-72.787233,7.916946
+54,Norte de Santander,54344,Hacarí,Municipio,-73.145997,8.321506
+54,Norte de Santander,54347,Herrán,Municipio,-72.483519,7.506541
+54,Norte de Santander,54377,Labateca,Municipio,-72.495983,7.298414
+54,Norte de Santander,54385,La Esperanza,Municipio,-73.328126,7.639839
+54,Norte de Santander,54398,La Playa,Municipio,-73.239986,8.21124
+54,Norte de Santander,54405,Los Patios,Municipio,-72.505612,7.833186
+54,Norte de Santander,54418,Lourdes,Municipio,-72.832376,7.945631
+54,Norte de Santander,54480,Mutiscua,Municipio,-72.747169,7.300469
+54,Norte de Santander,54498,Ocaña,Municipio,-73.35607,8.248574
+54,Norte de Santander,54518,Pamplona,Municipio,-72.647714,7.372802
+54,Norte de Santander,54520,Pamplonita,Municipio,-72.639111,7.436745
+54,Norte de Santander,54553,Puerto Santander,Municipio,-72.411363,8.359993
+54,Norte de Santander,54599,Ragonvalia,Municipio,-72.476708,7.577861
+54,Norte de Santander,54660,Salazar,Municipio,-72.813064,7.773683
+54,Norte de Santander,54670,San Calixto,Municipio,-73.208622,8.40214
+54,Norte de Santander,54673,San Cayetano,Municipio,-72.625459,7.875695
+54,Norte de Santander,54680,Santiago,Municipio,-72.716203,7.865856
+54,Norte de Santander,54720,Sardinata,Municipio,-72.800577,8.082105
+54,Norte de Santander,54743,Silos,Municipio,-72.757128,7.204736
+54,Norte de Santander,54800,Teorama,Municipio,-73.28707,8.438134
+54,Norte de Santander,54810,Tibú,Municipio,-72.734496,8.639891
+54,Norte de Santander,54820,Toledo,Municipio,-72.481915,7.307692
+54,Norte de Santander,54871,Villa Caro,Municipio,-72.973601,7.914244
+54,Norte de Santander,54874,Villa del Rosario,Municipio,-72.469758,7.847672
+63,Quindío,63001,Armenia,Municipio,-75.680786,4.53598
+63,Quindío,63111,Buenavista,Municipio,-75.739572,4.360029
+63,Quindío,63130,Calarcá,Municipio,-75.646085,4.520982
+63,Quindío,63190,Circasia,Municipio,-75.636533,4.617759
+63,Quindío,63212,Córdoba,Municipio,-75.687866,4.392485
+63,Quindío,63272,Filandia,Municipio,-75.658387,4.674338
+63,Quindío,63302,Génova,Municipio,-75.790402,4.206641
+63,Quindío,63401,La Tebaida,Municipio,-75.786887,4.453755
+63,Quindío,63470,Montenegro,Municipio,-75.749827,4.565057
+63,Quindío,63548,Pijao,Municipio,-75.703329,4.335036
+63,Quindío,63594,Quimbaya,Municipio,-75.765074,4.624387
+63,Quindío,63690,Salento,Municipio,-75.570844,4.637157
+66,Risaralda,66001,Pereira,Municipio,-75.719711,4.804985
+66,Risaralda,66045,Apía,Municipio,-75.942356,5.106526
+66,Risaralda,66075,Balboa,Municipio,-75.958663,4.949096
+66,Risaralda,66088,Belén de Umbría,Municipio,-75.868334,5.200793
+66,Risaralda,66170,Dosquebradas,Municipio,-75.675371,4.833131
+66,Risaralda,66318,Guática,Municipio,-75.799005,5.315367
+66,Risaralda,66383,La Celia,Municipio,-76.0032,5.002787
+66,Risaralda,66400,La Virginia,Municipio,-75.880394,4.896624
+66,Risaralda,66440,Marsella,Municipio,-75.73879,4.935771
+66,Risaralda,66456,Mistrató,Municipio,-75.882886,5.297039
+66,Risaralda,66572,Pueblo Rico,Municipio,-76.030801,5.222043
+66,Risaralda,66594,Quinchía,Municipio,-75.730431,5.340456
+66,Risaralda,66682,Santa Rosa de Cabal,Municipio,-75.623268,4.876271
+66,Risaralda,66687,Santuario,Municipio,-75.964628,5.074911
+68,Santander,68001,Bucaramanga,Municipio,-73.132562,7.11647
+68,Santander,68013,Aguada,Municipio,-73.523132,6.162355
+68,Santander,68020,Albania,Municipio,-73.91336,5.759166
+68,Santander,68051,Aratoca,Municipio,-73.01786,6.694418
+68,Santander,68077,Barbosa,Municipio,-73.615965,5.932531
+68,Santander,68079,Barichara,Municipio,-73.223047,6.634111
+68,Santander,68081,Barrancabermeja,Municipio,-73.849243,7.064857
+68,Santander,68092,Betulia,Municipio,-73.283669,6.899525
+68,Santander,68101,Bolívar,Municipio,-73.771346,5.988953
+68,Santander,68121,Cabrera,Municipio,-73.246475,6.592118
+68,Santander,68132,California,Municipio,-72.946491,7.347989
+68,Santander,68147,Capitanejo,Municipio,-72.695427,6.527394
+68,Santander,68152,Carcasí,Municipio,-72.627099,6.629016
+68,Santander,68160,Cepitá,Municipio,-72.973536,6.753518
+68,Santander,68162,Cerrito,Municipio,-72.694851,6.840405
+68,Santander,68167,Charalá,Municipio,-73.146873,6.284339
+68,Santander,68169,Charta,Municipio,-72.968798,7.28082
+68,Santander,68176,Chima,Municipio,-73.373656,6.344348
+68,Santander,68179,Chipatá,Municipio,-73.637111,6.062521
+68,Santander,68190,Cimitarra,Municipio,-73.953011,6.320886
+68,Santander,68207,Concepción,Municipio,-72.694567,6.768908
+68,Santander,68209,Confines,Municipio,-73.240554,6.357327
+68,Santander,68211,Contratación,Municipio,-73.474426,6.290561
+68,Santander,68217,Coromoro,Municipio,-73.040816,6.294999
+68,Santander,68229,Curití,Municipio,-73.069383,6.605099
+68,Santander,68235,El Carmen de Chucurí,Municipio,-73.51066,6.700038
+68,Santander,68245,El Guacamayo,Municipio,-73.496908,6.245111
+68,Santander,68250,El Peñón,Municipio,-73.815532,6.05537
+68,Santander,68255,El Playón,Municipio,-73.20287,7.470715
+68,Santander,68264,Encino,Municipio,-73.098749,6.137429
+68,Santander,68266,Enciso,Municipio,-72.699647,6.668034
+68,Santander,68271,Florián,Municipio,-73.97143,5.804659
+68,Santander,68276,Floridablanca,Municipio,-73.099104,7.072329
+68,Santander,68296,Galán,Municipio,-73.287769,6.638423
+68,Santander,68298,Gámbita,Municipio,-73.344185,5.945998
+68,Santander,68307,Girón,Municipio,-73.166832,7.070432
+68,Santander,68318,Guaca,Municipio,-72.856322,6.876563
+68,Santander,68320,Guadalupe,Municipio,-73.419292,6.245847
+68,Santander,68322,Guapotá,Municipio,-73.320732,6.308635
+68,Santander,68324,Guavatá,Municipio,-73.700906,5.954348
+68,Santander,68327,Güepsa,Municipio,-73.575146,6.025013
+68,Santander,68344,Hato,Municipio,-73.308399,6.543957
+68,Santander,68368,Jesús María,Municipio,-73.783396,5.876497
+68,Santander,68370,Jordán,Municipio,-73.096053,6.732727
+68,Santander,68377,La Belleza,Municipio,-73.965494,5.85925
+68,Santander,68385,Landázuri,Municipio,-73.811359,6.218812
+68,Santander,68397,La Paz,Municipio,-73.58959,6.178509
+68,Santander,68406,Lebrija,Municipio,-73.219524,7.113351
+68,Santander,68418,Los Santos,Municipio,-73.102739,6.755203
+68,Santander,68425,Macaravita,Municipio,-72.593105,6.50658
+68,Santander,68432,Málaga,Municipio,-72.732089,6.703081
+68,Santander,68444,Matanza,Municipio,-73.015566,7.323175
+68,Santander,68464,Mogotes,Municipio,-72.969807,6.475246
+68,Santander,68468,Molagavita,Municipio,-72.809175,6.67432
+68,Santander,68498,Ocamonte,Municipio,-73.122563,6.339988
+68,Santander,68500,Oiba,Municipio,-73.299791,6.26521
+68,Santander,68502,Onzaga,Municipio,-72.816766,6.344104
+68,Santander,68522,Palmar,Municipio,-73.29109,6.537789
+68,Santander,68524,Palmas del Socorro,Municipio,-73.287764,6.406139
+68,Santander,68533,Páramo,Municipio,-73.17022,6.416811
+68,Santander,68547,Piedecuesta,Municipio,-73.054795,6.997245
+68,Santander,68549,Pinchote,Municipio,-73.174209,6.531552
+68,Santander,68572,Puente Nacional,Municipio,-73.677567,5.878381
+68,Santander,68573,Puerto Parra,Municipio,-74.056129,6.650785
+68,Santander,68575,Puerto Wilches,Municipio,-73.899909,7.344057
+68,Santander,68615,Rionegro,Municipio,-73.150177,7.265014
+68,Santander,68655,Sabana de Torres,Municipio,-73.49906,7.391919
+68,Santander,68669,San Andrés,Municipio,-72.848864,6.811511
+68,Santander,68673,San Benito,Municipio,-73.50907,6.126656
+68,Santander,68679,San Gil,Municipio,-73.134776,6.551952
+68,Santander,68682,San Joaquín,Municipio,-72.867638,6.427548
+68,Santander,68684,San José de Miranda,Municipio,-72.733616,6.658995
+68,Santander,68686,San Miguel,Municipio,-72.644123,6.575315
+68,Santander,68689,San Vicente de Chucurí,Municipio,-73.411024,6.880383
+68,Santander,68705,Santa Bárbara,Municipio,-72.907445,6.990996
+68,Santander,68720,Santa Helena del Opón,Municipio,-73.616716,6.339565
+68,Santander,68745,Simacota,Municipio,-73.337368,6.443469
+68,Santander,68755,Socorro,Municipio,-73.261198,6.46387
+68,Santander,68770,Suaita,Municipio,-73.44165,6.101329
+68,Santander,68773,Sucre,Municipio,-73.790975,5.918743
+68,Santander,68780,Suratá,Municipio,-72.984232,7.36658
+68,Santander,68820,Tona,Municipio,-72.967023,7.201417
+68,Santander,68855,Valle de San José,Municipio,-73.143507,6.448028
+68,Santander,68861,Vélez,Municipio,-73.672447,6.009275
+68,Santander,68867,Vetas,Municipio,-72.871041,7.30981
+68,Santander,68872,Villanueva,Municipio,-73.174307,6.670078
+68,Santander,68895,Zapatoca,Municipio,-73.268034,6.814387
+70,Sucre,70001,Sincelejo,Municipio,-75.395445,9.302322
+70,Sucre,70110,Buenavista,Municipio,-74.972827,9.319794
+70,Sucre,70124,Caimito,Municipio,-75.117141,8.789324
+70,Sucre,70204,Colosó,Municipio,-75.353256,9.494192
+70,Sucre,70215,Corozal,Municipio,-75.293048,9.318749
+70,Sucre,70221,Coveñas,Municipio,-75.680158,9.402779
+70,Sucre,70230,Chalán,Municipio,-75.312697,9.545352
+70,Sucre,70233,El Roble,Municipio,-75.198378,9.100647
+70,Sucre,70235,Galeras,Municipio,-75.04959,9.160379
+70,Sucre,70265,Guaranda,Municipio,-74.537749,8.468556
+70,Sucre,70400,La Unión,Municipio,-75.276056,8.853975
+70,Sucre,70418,Los Palmitos,Municipio,-75.268716,9.380269
+70,Sucre,70429,Majagual,Municipio,-74.628077,8.541163
+70,Sucre,70473,Morroa,Municipio,-75.305949,9.331395
+70,Sucre,70508,Ovejas,Municipio,-75.229037,9.527176
+70,Sucre,70523,Palmito,Municipio,-75.541264,9.333157
+70,Sucre,70670,Sampués,Municipio,-75.380222,9.183193
+70,Sucre,70678,San Benito Abad,Municipio,-75.031089,8.930108
+70,Sucre,70702,San Juan de Betulia,Municipio,-75.243565,9.273066
+70,Sucre,70708,San Marcos,Municipio,-75.133831,8.661774
+70,Sucre,70713,San Onofre,Municipio,-75.522398,9.736955
+70,Sucre,70717,San Pedro,Municipio,-75.063647,9.39625
+70,Sucre,70742,San Luis de Sincé,Municipio,-75.145999,9.244308
+70,Sucre,70771,Sucre,Municipio,-74.723175,8.811737
+70,Sucre,70820,Santiago de Tolú,Municipio,-75.581112,9.525387
+70,Sucre,70823,San José de Toluviejo,Municipio,-75.44085,9.451819
+73,Tolima,73001,Ibagué,Municipio,-75.19425,4.432248
+73,Tolima,73024,Alpujarra,Municipio,-74.9329,3.391548
+73,Tolima,73026,Alvarado,Municipio,-74.953418,4.567356
+73,Tolima,73030,Ambalema,Municipio,-74.764429,4.782682
+73,Tolima,73043,Anzoátegui,Municipio,-75.093772,4.631756
+73,Tolima,73055,Armero,Municipio,-74.884438,5.030744
+73,Tolima,73067,Ataco,Municipio,-75.382545,3.590591
+73,Tolima,73124,Cajamarca,Municipio,-75.431971,4.438812
+73,Tolima,73148,Carmen de Apicalá,Municipio,-74.717633,4.152334
+73,Tolima,73152,Casabianca,Municipio,-75.120966,5.078465
+73,Tolima,73168,Chaparral,Municipio,-75.480765,3.722918
+73,Tolima,73200,Coello,Municipio,-74.898464,4.287276
+73,Tolima,73217,Coyaima,Municipio,-75.193862,3.798036
+73,Tolima,73226,Cunday,Municipio,-74.692227,4.059259
+73,Tolima,73236,Dolores,Municipio,-74.896761,3.539072
+73,Tolima,73268,Espinal,Municipio,-74.885446,4.151314
+73,Tolima,73270,Falan,Municipio,-74.953007,5.123104
+73,Tolima,73275,Flandes,Municipio,-74.818763,4.276373
+73,Tolima,73283,Fresno,Municipio,-75.035722,5.153576
+73,Tolima,73319,Guamo,Municipio,-74.968135,4.030992
+73,Tolima,73347,Herveo,Municipio,-75.177151,5.080228
+73,Tolima,73349,Honda,Municipio,-74.75699,5.211816
+73,Tolima,73352,Icononzo,Municipio,-74.531969,4.176487
+73,Tolima,73408,Lérida,Municipio,-74.910716,4.862046
+73,Tolima,73411,Líbano,Municipio,-75.061959,4.92042
+73,Tolima,73443,San Sebastián de Mariquita,Municipio,-74.889276,5.199708
+73,Tolima,73449,Melgar,Municipio,-74.641317,4.203655
+73,Tolima,73461,Murillo,Municipio,-75.171022,4.874341
+73,Tolima,73483,Natagaima,Municipio,-75.093182,3.624324
+73,Tolima,73504,Ortega,Municipio,-75.222601,3.934916
+73,Tolima,73520,Palocabildo,Municipio,-75.022167,5.120918
+73,Tolima,73547,Piedras,Municipio,-74.878106,4.543951
+73,Tolima,73555,Planadas,Municipio,-75.644163,3.197911
+73,Tolima,73563,Prado,Municipio,-74.927447,3.750939
+73,Tolima,73585,Purificación,Municipio,-74.935555,3.857246
+73,Tolima,73616,Rioblanco,Municipio,-75.644069,3.529932
+73,Tolima,73622,Roncesvalles,Municipio,-75.605959,4.011567
+73,Tolima,73624,Rovira,Municipio,-75.240648,4.239019
+73,Tolima,73671,Saldaña,Municipio,-75.016852,3.929815
+73,Tolima,73675,San Antonio,Municipio,-75.480074,3.914146
+73,Tolima,73678,San Luis,Municipio,-75.095804,4.133721
+73,Tolima,73686,Santa Isabel,Municipio,-75.097934,4.713606
+73,Tolima,73770,Suárez,Municipio,-74.831885,4.048891
+73,Tolima,73854,Valle de San Juan,Municipio,-75.115669,4.197494
+73,Tolima,73861,Venadillo,Municipio,-74.929333,4.717878
+73,Tolima,73870,Villahermosa,Municipio,-75.117729,5.030452
+73,Tolima,73873,Villarrica,Municipio,-74.600285,3.936902
+76,Valle del Cauca,76001,Santiago de Cali,Municipio,-76.52133,3.413686
+76,Valle del Cauca,76020,Alcalá,Municipio,-75.779792,4.674994
+76,Valle del Cauca,76036,Andalucía,Municipio,-76.167925,4.171713
+76,Valle del Cauca,76041,Ansermanuevo,Municipio,-75.992003,4.794984
+76,Valle del Cauca,76054,Argelia,Municipio,-76.119905,4.726945
+76,Valle del Cauca,76100,Bolívar,Municipio,-76.183583,4.337846
+76,Valle del Cauca,76109,Buenaventura,Municipio,-77.01074,3.875708
+76,Valle del Cauca,76111,Guadalajara de Buga,Municipio,-76.298979,3.900736
+76,Valle del Cauca,76113,Bugalagrande,Municipio,-76.15682,4.208358
+76,Valle del Cauca,76122,Caicedonia,Municipio,-75.830594,4.334808
+76,Valle del Cauca,76126,Calima,Municipio,-76.484132,3.933664
+76,Valle del Cauca,76130,Candelaria,Municipio,-76.346519,3.408354
+76,Valle del Cauca,76147,Cartago,Municipio,-75.924374,4.742192
+76,Valle del Cauca,76233,Dagua,Municipio,-76.68886,3.657318
+76,Valle del Cauca,76243,El Águila,Municipio,-76.042779,4.906062
+76,Valle del Cauca,76246,El Cairo,Municipio,-76.221611,4.760874
+76,Valle del Cauca,76248,El Cerrito,Municipio,-76.311972,3.684229
+76,Valle del Cauca,76250,El Dovio,Municipio,-76.237084,4.510452
+76,Valle del Cauca,76275,Florida,Municipio,-76.234199,3.324118
+76,Valle del Cauca,76306,Ginebra,Municipio,-76.268068,3.724181
+76,Valle del Cauca,76318,Guacarí,Municipio,-76.330911,3.761815
+76,Valle del Cauca,76364,Jamundí,Municipio,-76.538472,3.258751
+76,Valle del Cauca,76377,La Cumbre,Municipio,-76.56805,3.649268
+76,Valle del Cauca,76400,La Unión,Municipio,-76.099661,4.533869
+76,Valle del Cauca,76403,La Victoria,Municipio,-76.036529,4.523603
+76,Valle del Cauca,76497,Obando,Municipio,-75.974709,4.575712
+76,Valle del Cauca,76520,Palmira,Municipio,-76.298846,3.531544
+76,Valle del Cauca,76563,Pradera,Municipio,-76.241799,3.419793
+76,Valle del Cauca,76606,Restrepo,Municipio,-76.523329,3.821351
+76,Valle del Cauca,76616,Riofrío,Municipio,-76.288313,4.156908
+76,Valle del Cauca,76622,Roldanillo,Municipio,-76.152277,4.413601
+76,Valle del Cauca,76670,San Pedro,Municipio,-76.228692,3.995073
+76,Valle del Cauca,76736,Sevilla,Municipio,-75.931629,4.270714
+76,Valle del Cauca,76823,Toro,Municipio,-76.076859,4.608085
+76,Valle del Cauca,76828,Trujillo,Municipio,-76.318818,4.212037
+76,Valle del Cauca,76834,Tuluá,Municipio,-76.197731,4.085399
+76,Valle del Cauca,76845,Ulloa,Municipio,-75.737808,4.703623
+76,Valle del Cauca,76863,Versalles,Municipio,-76.199203,4.575019
+76,Valle del Cauca,76869,Vijes,Municipio,-76.441804,3.698686
+76,Valle del Cauca,76890,Yotoco,Municipio,-76.382698,3.861241
+76,Valle del Cauca,76892,Yumbo,Municipio,-76.499893,3.540097
+76,Valle del Cauca,76895,Zarzal,Municipio,-76.070795,4.392658
+81,Arauca,81001,Arauca,Municipio,-70.747408,7.072726
+81,Arauca,81065,Arauquita,Municipio,-71.426733,7.02702
+81,Arauca,81220,Cravo Norte,Municipio,-70.204286,6.303913
+81,Arauca,81300,Fortul,Municipio,-71.76877,6.796695
+81,Arauca,81591,Puerto Rondón,Municipio,-71.10339,6.281461
+81,Arauca,81736,Saravena,Municipio,-71.872812,6.953926
+81,Arauca,81794,Tame,Municipio,-71.754427,6.453324
+85,Casanare,85001,Yopal,Municipio,-72.396132,5.327102
+85,Casanare,85010,Aguazul,Municipio,-72.546838,5.172641
+85,Casanare,85015,Chámeza,Municipio,-72.87016,5.214527
+85,Casanare,85125,Hato Corozal,Municipio,-71.764213,6.154099
+85,Casanare,85136,La Salina,Municipio,-72.334978,6.127762
+85,Casanare,85139,Maní,Municipio,-72.281384,4.81681
+85,Casanare,85162,Monterrey,Municipio,-72.894065,4.877017
+85,Casanare,85225,Nunchía,Municipio,-72.195323,5.636474
+85,Casanare,85230,Orocué,Municipio,-71.338533,4.790258
+85,Casanare,85250,Paz de Ariporo,Municipio,-71.890348,5.879827
+85,Casanare,85263,Pore,Municipio,-71.99286,5.72773
+85,Casanare,85279,Recetor,Municipio,-72.760991,5.229181
+85,Casanare,85300,Sabanalarga,Municipio,-73.038696,4.854787
+85,Casanare,85315,Sácama,Municipio,-72.250157,6.096738
+85,Casanare,85325,San Luis de Palenque,Municipio,-71.732198,5.422397
+85,Casanare,85400,Támara,Municipio,-72.16165,5.829543
+85,Casanare,85410,Tauramena,Municipio,-72.74662,5.018977
+85,Casanare,85430,Trinidad,Municipio,-71.662812,5.412178
+85,Casanare,85440,Villanueva,Municipio,-72.927797,4.61035
+86,Putumayo,86001,Mocoa,Municipio,-76.654238,1.151172
+86,Putumayo,86219,Colón,Municipio,-76.972566,1.190133
+86,Putumayo,86320,Orito,Municipio,-76.873276,0.663593
+86,Putumayo,86568,Puerto Asís,Municipio,-76.496887,0.505627
+86,Putumayo,86569,Puerto Caicedo,Municipio,-76.606118,0.687784
+86,Putumayo,86571,Puerto Guzmán,Municipio,-76.407663,0.962854
+86,Putumayo,86573,Puerto Leguízamo,Municipio,-74.781842,-0.192318
+86,Putumayo,86749,Sibundoy,Municipio,-76.917814,1.20026
+86,Putumayo,86755,San Francisco,Municipio,-76.879283,1.174194
+86,Putumayo,86757,San Miguel,Municipio,-76.91217,0.34346
+86,Putumayo,86760,Santiago,Municipio,-77.002641,1.147076
+86,Putumayo,86865,Valle del Guamuez,Municipio,-76.906751,0.423506
+86,Putumayo,86885,Villagarzón,Municipio,-76.61721,1.028821
+88,"Archipiélago de San Andrés, Providencia y Santa Catalina",88001,San Andrés,Isla,-81.707181,12.578108
+88,"Archipiélago de San Andrés, Providencia y Santa Catalina",88564,Providencia,Municipio,-81.368386,13.373185
+91,Amazonas,91001,Leticia,Municipio,-69.941721,-4.19895
+91,Amazonas,91263,El Encanto,Área no municipalizada,-73.207114,-1.74806
+91,Amazonas,91405,La Chorrera,Área no municipalizada,-72.791889,-1.442617
+91,Amazonas,91407,La Pedrera,Área no municipalizada,-69.585499,-1.320301
+91,Amazonas,91430,La Victoria,Área no municipalizada,-71.223208,0.054936
+91,Amazonas,91460,Mirití - Paraná,Área no municipalizada,-70.98893,-0.888833
+91,Amazonas,91530,Puerto Alegría,Área no municipalizada,-74.014461,-1.005674
+91,Amazonas,91536,Puerto Arica,Área no municipalizada,-71.752186,-2.147039
+91,Amazonas,91540,Puerto Nariño,Municipio,-70.364937,-3.779934
+91,Amazonas,91669,Puerto Santander,Área no municipalizada,-72.384213,-0.621184
+91,Amazonas,91798,Tarapacá,Área no municipalizada,-69.741745,-2.890126
+94,Guainía,94001,Inírida,Municipio,-67.918613,3.866764
+94,Guainía,94343,Barrancominas,Municipio,-69.814066,3.494178
+94,Guainía,94883,San Felipe,Área no municipalizada,-67.067848,1.912495
+94,Guainía,94884,Puerto Colombia,Área no municipalizada,-67.566774,2.726438
+94,Guainía,94885,La Guadalupe,Área no municipalizada,-66.963692,1.632464
+94,Guainía,94886,Cacahual,Área no municipalizada,-67.413312,3.52617
+94,Guainía,94887,Pana Pana,Área no municipalizada,-69.0099,1.865668
+94,Guainía,94888,Morichal,Área no municipalizada,-69.919404,2.265132
+95,Guaviare,95001,San José del Guaviare,Municipio,-72.639254,2.565932
+95,Guaviare,95015,Calamar,Municipio,-72.655197,1.960982
+95,Guaviare,95025,El Retorno,Municipio,-72.627304,2.330164
+95,Guaviare,95200,Miraflores,Municipio,-71.950416,1.337539
+97,Vaupés,97001,Mitú,Municipio,-70.232641,1.253151
+97,Vaupés,97161,Carurú,Municipio,-71.30221,1.016116
+97,Vaupés,97511,Pacoa,Área no municipalizada,-71.004339,0.020698
+97,Vaupés,97666,Taraira,Municipio,-69.635497,-0.564984
+97,Vaupés,97777,Papunahua,Área no municipalizada,-70.76091,1.908124
+97,Vaupés,97889,Yavaraté,Área no municipalizada,-69.203337,0.609142
+99,Vichada,99001,Puerto Carreño,Municipio,-67.487095,6.186636
+99,Vichada,99524,La Primavera,Municipio,-70.410515,5.486309
+99,Vichada,99624,Santa Rosalía,Municipio,-70.859499,5.136393
+99,Vichada,99773,Cumaribo,Municipio,-69.795533,4.446352

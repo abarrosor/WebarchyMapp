@@ -1,0 +1,13 @@
+province_code,province_name,province_name_en,landsdeel_code
+PV20,Groningen,Groningen,LD01
+PV21,Fryslân,Friesland,LD01
+PV22,Drenthe,Drenthe,LD01
+PV23,Overijssel,Overijssel,LD02
+PV24,Flevoland,Flevoland,LD02
+PV25,Gelderland,Gelderland,LD02
+PV26,Utrecht,Utrecht,LD03
+PV27,Noord-Holland,North Holland,LD03
+PV28,Zuid-Holland,South Holland,LD03
+PV29,Zeeland,Zeeland,LD03
+PV30,Noord-Brabant,North Brabant,LD04
+PV31,Limburg,Limburg,LD04

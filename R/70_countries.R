@@ -1,0 +1,327 @@
+# Other countries: shared framework ----------------------------------------------------
+# Every country is a module (R/7x_<iso2>_*.R) that registers itself with
+# `register_country()` and fills three shared tables with its own data:
+#
+#   stg_country_crime        country, territory_id, level, offence_code, year, quarter, cumulative, file
+#                            `cumulative` is the figure from 1 January to the end of `quarter`
+#                            (yearly sources: quarter = 4; monthly sources: complete quarters only)
+#   ref_country_population   country, territory_id, level, year, population
+#   dim_territory            rows of the country (country, region, province, municipality)
+#   data/territory_<cc>.gpkg layers region / province / municipality (WGS84) with the columns
+#                            territory_id, name, region_id, province_id
+#
+# `level_labels`: for each level c(English plural, local plural[, English singular, local singular]).
+# Offence codes are mapped to the project's offence types in
+# reference/<cc>_offence_types.csv (source_code, offence_type_id, name_local, name_en,
+# included_in, sensitive). The marts built here (mart_country_*) are what the app reads;
+# Spain is added to them from its own tables so that the app treats every country alike.
+#
+# Rules (the same as for Spain): raw files are never modified or deleted; sensitive types
+# only count inside totals; figures of different countries are never added or compared;
+# the threshold is applied in the app after summing types and periods.
+
+COUNTRY_MODULES <- list()
+
+# Identifier scheme: <ISO2>[-<region code>[-<province code>[-<municipality code>]]]
+# Official codes as published (hyphens inside a code become underscores).
+territory_id <- function(cc, ...) {
+  parts <- lapply(list(...), function(x) { x <- gsub("-", "_", as.character(x)); x[is.na(x)] <- ""; x })
+  out <- rep(cc, max(1, lengths(parts)))
+  for (p in parts) out <- ifelse(nzchar(p), paste(out, p, sep = "-"), out)
+  out
+}
+
+register_country <- function(m) {
+  needed <- c("code", "iso3", "name_en", "name_local", "lang", "levels", "level_labels", "source", "download", "ingest", "territory", "population")
+  missing <- setdiff(needed, names(m))
+  if (length(missing) > 0) stop("Country module ", m$code %||% "?", " lacks: ", toString(missing))
+  m$dir_raw <- m$dir_raw %||% file.path(CONFIG$dir_raw, paste0("country_", tolower(m$code)))
+  m$gpkg <- m$gpkg %||% file.path("data", paste0("territory_", tolower(m$code), ".gpkg"))
+  COUNTRY_MODULES[[m$code]] <<- m
+  invisible(m)
+}
+
+country_init <- function(con) {
+  DBI::dbExecute(con, "
+    CREATE TABLE IF NOT EXISTS stg_country_crime (
+      country VARCHAR, territory_id VARCHAR, level VARCHAR, offence_code VARCHAR,
+      year INTEGER, quarter INTEGER, cumulative DOUBLE, file VARCHAR)")
+  DBI::dbExecute(con, "
+    CREATE TABLE IF NOT EXISTS ref_country_population (
+      country VARCHAR, territory_id VARCHAR, level VARCHAR, year INTEGER, population DOUBLE)")
+  DBI::dbExecute(con, "
+    CREATE TABLE IF NOT EXISTS ref_country_offence_types (
+      country VARCHAR, source_code VARCHAR, offence_type_id VARCHAR, name_local VARCHAR, name_en VARCHAR,
+      included_in VARCHAR, sensitive BOOLEAN)")
+  invisible(TRUE)
+}
+
+# --- Helpers shared by the modules ---------------------------------------------------------
+
+# Replace the rows of one country in a shared table
+replace_country_rows <- function(con, table, cc, df) {
+  DBI::dbWithTransaction(con, {
+    DBI::dbExecute(con, paste0("DELETE FROM ", table, " WHERE country = ", DBI::dbQuoteString(con, cc)))
+    if (nrow(df) > 0) DBI::dbAppendTable(con, table, as.data.frame(df))
+  })
+  invisible(nrow(df))
+}
+
+# Load reference/<cc>_offence_types.csv into ref_country_offence_types
+load_country_types <- function(con, cc) {
+  f <- paste0(tolower(cc), "_offence_types.csv")
+  if (!file.exists(file.path(CONFIG$dir_ref, f))) stop("Missing ", f, " in ", CONFIG$dir_ref)
+  t <- read_reference(f, bool_cols = "sensitive")
+  needed <- c("source_code", "offence_type_id", "name_local", "name_en", "included_in")
+  if (!all(needed %in% names(t))) stop(f, ": columns needed: ", toString(needed))
+  t$sensitive <- t$sensitive %||% FALSE
+  t$included_in[is.na(t$included_in) | t$included_in == ""] <- NA
+  replace_country_rows(con, "ref_country_offence_types", cc,
+                       data.frame(country = cc, t[, c("source_code", "offence_type_id", "name_local", "name_en", "included_in", "sensitive")]))
+  invisible(t)
+}
+
+# Yearly figures -> the shared shape (quarter 4 = the whole year)
+yearly_to_cumulative <- function(df) {
+  df$quarter <- 4L; df$cumulative <- as.numeric(df$n); df$n <- NULL
+  df
+}
+
+# Monthly figures (columns year, month, n) -> cumulative at the end of each COMPLETE quarter.
+# The months of an unfinished quarter are left out (the app shows complete quarters only).
+monthly_to_cumulative <- function(df, keys = c("country", "territory_id", "level", "offence_code")) {
+  df$quarter <- ceiling(df$month / 3)
+  complete <- df |> dplyr::group_by(dplyr::across(dplyr::all_of(c(keys, "year", "quarter")))) |>
+    dplyr::summarise(months = dplyr::n_distinct(month[!is.na(n)]), n = sum(n, na.rm = TRUE), .groups = "drop")
+  # A quarter is complete when its three months are present for the country as a whole
+  present <- complete |> dplyr::group_by(year, quarter) |> dplyr::summarise(m = max(months), .groups = "drop")
+  present <- present[present$m == 3, c("year", "quarter")]
+  complete <- dplyr::inner_join(complete, present, by = c("year", "quarter"))
+  complete |> dplyr::group_by(dplyr::across(dplyr::all_of(c(keys, "year")))) |> dplyr::arrange(quarter, .by_group = TRUE) |>
+    dplyr::mutate(cumulative = cumsum(n)) |> dplyr::ungroup() |>
+    dplyr::select(dplyr::all_of(c(keys, "year", "quarter", "cumulative"))) |> as.data.frame()
+}
+
+# Rows of dim_territory for a country from a data frame (territory_id, level, parent_id, official_code, name)
+save_country_territory <- function(con, cc, tbl, scheme = "official") {
+  tbl <- as.data.frame(tbl)
+  tbl$country <- cc; tbl$code_scheme <- scheme; tbl$name_norm <- normalize_text(tbl$name)
+  for (col in c("area_m2", "valid_from", "valid_to", "file")) if (!col %in% names(tbl)) tbl[[col]] <- NA
+  tbl$loaded_at <- Sys.time()
+  if (!cc %in% tbl$territory_id) tbl <- rbind(tbl[0, ], data.frame(territory_id = cc, level = "country", parent_id = NA, official_code = cc, name = COUNTRY_MODULES[[cc]]$name_en,
+                                                                     country = cc, code_scheme = "ISO 3166-1", name_norm = normalize_text(COUNTRY_MODULES[[cc]]$name_en),
+                                                                     area_m2 = NA, valid_from = NA, valid_to = NA, file = NA, loaded_at = Sys.time()), tbl)
+  tbl <- tbl[!duplicated(tbl$territory_id), ]
+  DBI::dbWithTransaction(con, {
+    DBI::dbExecute(con, paste0("DELETE FROM dim_territory WHERE country = ", DBI::dbQuoteString(con, cc)))
+    DBI::dbAppendTable(con, "dim_territory", tbl[, c("territory_id", "level", "parent_id", "country", "official_code", "code_scheme", "name",
+                                                     "name_norm", "area_m2", "valid_from", "valid_to", "file", "loaded_at")])
+  })
+  message(sprintf("%s: %d territories (%s)", cc, nrow(tbl), paste(names(table(tbl$level)), table(tbl$level), sep = " ", collapse = ", ")))
+  invisible(tbl)
+}
+
+# Add to dim_territory the territories of a country that the data mention but the territory
+# step did not create (e.g. communes when no boundary file could be downloaded): name = code
+ensure_territories <- function(con, cc, ids, level, parent_id = NA, names = NULL) {
+  have <- DBI::dbGetQuery(con, paste0("SELECT territory_id FROM dim_territory WHERE country = ", DBI::dbQuoteString(con, cc)))$territory_id
+  new <- !duplicated(ids) & !ids %in% have & !is.na(ids)
+  if (!any(new)) return(invisible(0))
+  tbl <- data.frame(territory_id = ids[new], level = level, parent_id = if (length(parent_id) == length(ids)) parent_id[new] else parent_id,
+                    country = cc, official_code = sub("^.*-", "", ids[new]), code_scheme = "official",
+                    name = if (!is.null(names)) ifelse(is.na(names[new]) | names[new] == "", sub("^.*-", "", ids[new]), names[new]) else sub("^.*-", "", ids[new]),
+                    stringsAsFactors = FALSE)
+  tbl$name_norm <- normalize_text(tbl$name); tbl$area_m2 <- NA; tbl$valid_from <- as.Date(NA); tbl$valid_to <- as.Date(NA); tbl$file <- NA; tbl$loaded_at <- Sys.time()
+  DBI::dbAppendTable(con, "dim_territory", tbl[, c("territory_id", "level", "parent_id", "country", "official_code", "code_scheme", "name", "name_norm", "area_m2", "valid_from", "valid_to", "file", "loaded_at")])
+  message(sprintf("  %s: %d %s territories added without boundaries", cc, sum(new), level))
+  invisible(sum(new))
+}
+
+# Save the boundary layers of a country (sf objects in any CRS) as data/territory_<cc>.gpkg.
+# Each layer needs territory_id and name; region_id / province_id are added from dim_territory.
+save_country_gpkg <- function(con, cc, layers, tolerance_m = 150) {
+  gpkg <- COUNTRY_MODULES[[cc]]$gpkg
+  terr <- DBI::dbGetQuery(con, paste0("SELECT territory_id, level, parent_id FROM dim_territory WHERE country = ", DBI::dbQuoteString(con, cc)))
+  parent_of <- setNames(terr$parent_id, terr$territory_id); level_of <- setNames(terr$level, terr$territory_id)
+  up_to <- function(ids, lvl) {
+    r <- ids
+    for (i in 1:5) { lv <- unname(level_of[r]); done <- is.na(r) | is.na(lv) | lv == lvl; if (all(done)) break; r[!done] <- unname(parent_of[r[!done]]) }
+    lv <- unname(level_of[r]); ifelse(!is.na(lv) & lv == lvl, r, NA_character_)
+  }
+  if (file.exists(gpkg)) file.remove(gpkg)
+  for (lv in names(layers)) {
+    g <- layers[[lv]]; if (is.null(g) || nrow(g) == 0) next
+    g <- sf::st_make_valid(g)
+    if (tolerance_m > 0) { crs <- sf::st_crs(g); g <- sf::st_transform(g, 3857); g <- sf::st_simplify(g, dTolerance = tolerance_m, preserveTopology = TRUE); g <- sf::st_transform(g, 4326) }
+    else g <- sf::st_transform(g, 4326)
+    g$region_id <- up_to(g$territory_id, "region"); g$province_id <- up_to(g$territory_id, "province")
+    g <- g[!sf::st_is_empty(g), c("territory_id", "name", "region_id", "province_id", attr(g, "sf_column"))]
+    sf::st_write(g, gpkg, layer = lv, quiet = TRUE, append = FALSE)
+    message(sprintf("  %s layer: %d polygons", lv, nrow(g)))
+  }
+  invisible(gpkg)
+}
+
+# --- Boundaries from open sources ------------------------------------------------------------
+
+# Eurostat GISCO: NUTS regions (levels 1-3) and LAU (municipalities) of EU/EFTA/candidates.
+# Licence: free reuse with the source statement "© EuroGeographics for the administrative boundaries".
+gisco_nuts <- function(level, year = CONFIG$gisco$nuts_year, scale = "03M") {
+  url <- sprintf("%s/nuts/geojson/NUTS_RG_%s_%d_4326_LEVL_%d.geojson", CONFIG$gisco$base, scale, year, level)
+  dir <- file.path(CONFIG$dir_raw, "gisco")
+  f <- newest_first(list.files(dir, basename(url), full.names = TRUE))
+  if (length(f) == 0 || difftime(Sys.time(), file.mtime(f[1]), units = "days") > 365) f <- download_versioned(url, dir)
+  sf::st_read(f[1], quiet = TRUE)
+}
+gisco_lau <- function(cc, year = CONFIG$gisco$lau_year) {
+  url <- sprintf("%s/lau/gpkg/LAU_RG_01M_%d_4326.gpkg", CONFIG$gisco$base, year)
+  dir <- file.path(CONFIG$dir_raw, "gisco")
+  f <- newest_first(list.files(dir, basename(url), full.names = TRUE))
+  if (length(f) == 0) f <- download_versioned(url, dir)
+  g <- sf::st_read(f[1], quiet = TRUE, query = sprintf("SELECT * FROM \"%s\" WHERE CNTR_CODE = '%s'", sf::st_layers(f[1])$name[1], cc))
+  g
+}
+
+# geoBoundaries (CC BY 4.0): ADM0-ADM3 of every country, through its API
+geoboundaries <- function(iso3, adm) {
+  dir <- file.path(CONFIG$dir_raw, "geoboundaries")
+  name <- sprintf("geoBoundaries-%s-ADM%d.geojson", iso3, adm)
+  f <- newest_first(list.files(dir, name, full.names = TRUE))
+  if (length(f) == 0) {
+    meta <- get_text(sprintf("https://www.geoboundaries.org/api/current/gbOpen/%s/ADM%d/", iso3, adm))
+    if (is.null(meta)) stop("geoBoundaries API not reachable for ", iso3, " ADM", adm)
+    url <- regmatches(meta, regexpr('"gjDownloadURL"\\s*:\\s*"[^"]+"', meta))
+    url <- sub('^"gjDownloadURL"\\s*:\\s*"', "", sub('"$', "", url))
+    if (!nzchar(url)) stop("No download URL in the geoBoundaries answer for ", iso3)
+    f <- download_versioned(url, dir, name = name)
+  }
+  sf::st_read(f[1], quiet = TRUE)
+}
+
+# Natural Earth (public domain): first-level divisions of every country
+natural_earth_admin1 <- function(iso2) {
+  dir <- file.path(CONFIG$dir_raw, "natural_earth")
+  url <- "https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_1_states_provinces.zip"
+  f <- newest_first(list.files(dir, "ne_10m_admin_1_states_provinces\\.zip$", full.names = TRUE))
+  if (length(f) == 0) f <- download_versioned(url, dir)
+  g <- read_shp_zip(f[1])
+  g[g$iso_a2 == iso2, ]
+}
+
+# --- Population denominators --------------------------------------------------------------
+
+# Eurostat: population on 1 January by NUTS3 (demo_r_pjangrp3) through the dissemination API (no key)
+eurostat_population_nuts3 <- function(cc, since = 2015) {
+  dir <- file.path(CONFIG$dir_raw, "eurostat")
+  url <- sprintf("%s/demo_r_pjangrp3/1.0/*.*.*.*.%s?format=TSV&compressed=false&c[sex]=T&c[age]=TOTAL&c[unit]=NR&c[geo]=%s&c[TIME_PERIOD]=ge:%d",
+                 CONFIG$eurostat$base, cc, cc, since)
+  f <- download_versioned(url, dir, name = sprintf("demo_r_pjangrp3_%s.tsv", cc))
+  parse_eurostat_tsv(f)
+}
+# Eurostat TSV (dimensions in the first column separated by commas, years as columns)
+parse_eurostat_tsv <- function(f) {
+  raw <- readr::read_tsv(f, col_types = readr::cols(.default = "c"), progress = FALSE)
+  key <- names(raw)[1]; dims <- strsplit(sub("\\\\.*$", "", key), ",")[[1]]
+  long <- raw |> tidyr_pivot_longer(names(raw)[-1]) |>
+    dplyr::mutate(year = as.integer(trimws(year)), value = suppressWarnings(as.numeric(gsub("[^0-9.]", "", value))))
+  keys <- do.call(rbind, strsplit(long[[key]], ","))
+  for (i in seq_along(dims)) long[[dims[i]]] <- keys[, i]
+  long[[key]] <- NULL
+  long
+}
+tidyr_pivot_longer <- function(df, cols) {   # without depending on tidyr
+  out <- do.call(rbind, lapply(cols, function(cn) data.frame(df[, setdiff(names(df), cols), drop = FALSE], year = cn, value = df[[cn]], stringsAsFactors = FALSE)))
+  out
+}
+
+# --- Marts (what the app reads) ----------------------------------------------------------------
+
+country_marts <- function(con) {
+  has <- function(tb) tb %in% DBI::dbListTables(con)
+  es_crime <- if (has("mart_crime_balance")) "
+    SELECT 'ES' AS country, territory_id, level, name, parent_id, offence_type_id, included_in, sensitive,
+           name_es AS name_local, name_en, year, quarter, cumulative, quarterly
+    FROM mart_crime_balance" else NULL
+  other_crime <- "
+    SELECT s.country, s.territory_id, s.level, coalesce(t.name, s.territory_id) AS name, t.parent_id,
+           o.offence_type_id, o.included_in, o.sensitive, o.name_local, o.name_en,
+           s.year, s.quarter, s.cumulative,
+           CASE WHEN s.quarter = 1 THEN s.cumulative
+                WHEN lag(s.quarter) OVER w = s.quarter - 1 THEN s.cumulative - lag(s.cumulative) OVER w END AS quarterly
+    FROM (SELECT country, territory_id, level, offence_code, year, quarter, sum(cumulative) AS cumulative
+          FROM stg_country_crime GROUP BY ALL) s
+    JOIN ref_country_offence_types o ON o.country = s.country AND o.source_code = s.offence_code
+    LEFT JOIN dim_territory t ON t.territory_id = s.territory_id
+    WHERE o.offence_type_id <> 'unmapped'
+    WINDOW w AS (PARTITION BY s.country, s.territory_id, o.offence_type_id, s.year ORDER BY s.quarter)"
+  # Several source codes may map to one offence type: add them up
+  other_crime <- paste0("SELECT country, territory_id, level, name, parent_id, offence_type_id, included_in, sensitive, name_local, name_en, year, quarter,
+                                sum(cumulative) AS cumulative, sum(quarterly) AS quarterly FROM (", other_crime, ") GROUP BY ALL")
+  DBI::dbExecute(con, paste0("CREATE OR REPLACE TABLE mart_country_crime AS ", paste(c(es_crime, other_crime), collapse = " UNION ALL "), " ORDER BY country, territory_id, offence_type_id, year, quarter"))
+
+  es_pop <- if (has("mart_population_municipal")) "SELECT 'ES' AS country, level, territory_id, year, population::DOUBLE AS population FROM mart_population_municipal" else NULL
+  DBI::dbExecute(con, paste0("CREATE OR REPLACE TABLE mart_country_population AS ",
+                             paste(c(es_pop, "SELECT country, level, territory_id, year, population FROM ref_country_population"), collapse = " UNION ALL "), " ORDER BY ALL"))
+
+  # One row per country with data: names, levels, source and population metadata for the app
+  rows <- lapply(COUNTRY_MODULES, function(m) data.frame(
+    country = m$code, name_en = m$name_en, name_local = m$name_local, lang = m$lang, levels = paste(m$levels, collapse = ";"),
+    level_labels_en = paste(vapply(m$levels, function(l) m$level_labels[[l]][1], ""), collapse = ";"),
+    level_labels_local = paste(vapply(m$levels, function(l) m$level_labels[[l]][2], ""), collapse = ";"),
+    level_singular_en = paste(vapply(m$levels, function(l) { x <- m$level_labels[[l]]; if (length(x) >= 3) x[3] else x[1] }, ""), collapse = ";"),
+    level_singular_local = paste(vapply(m$levels, function(l) { x <- m$level_labels[[l]]; if (length(x) >= 4) x[4] else if (length(x) >= 3) x[3] else x[2] }, ""), collapse = ";"),
+    source = m$source$name, publisher = m$source$publisher, url = m$source$url, licence = m$source$licence, measure = m$source$measure,
+    population_source = m$population_source %||% "", boundaries_attribution = m$boundaries_attribution %||% "",
+    not_published_en = m$not_published[1] %||% "", not_published_local = m$not_published[2] %||% "",
+    notes_en = m$notes_en %||% "", default_region = m$default_region %||% "", stringsAsFactors = FALSE))
+  meta <- if (length(rows) > 0) do.call(rbind, rows) else data.frame()
+  loaded <- DBI::dbGetQuery(con, "SELECT country, min(year * 10 + quarter) AS first_period, max(year * 10 + quarter) AS last_period, count(*) AS rows FROM stg_country_crime GROUP BY 1")
+  if (nrow(meta) > 0) meta <- merge(meta, loaded, by = "country", all.x = TRUE)
+  meta <- if (nrow(meta) > 0) meta[!is.na(meta$rows) & meta$rows > 0, ] else meta
+  DBI::dbWriteTable(con, "mart_country_meta", meta, overwrite = TRUE)
+  invisible(TRUE)
+}
+
+# --- Pipeline ----------------------------------------------------------------------------------
+
+country_steps <- function(con, download = TRUE, only = NULL) {
+  mods <- COUNTRY_MODULES; if (!is.null(only)) mods <- mods[intersect(names(mods), only)]
+  if (length(mods) == 0) { message("No country modules registered."); return(invisible(FALSE)) }
+  fetch <- function(label, expr) if (download) tryCatch(expr, error = function(e) message("Download not available (", label, "): ", conditionMessage(e)))
+  for (m in mods) {
+    step(sprintf("%s (%s): %s", m$name_en, m$code, m$source$name))
+    dir.create(m$dir_raw, recursive = TRUE, showWarnings = FALSE)
+    fetch(m$code, m$download())
+    attempt(paste(m$code, "territory not loaded"), m$territory(con))
+    attempt(paste(m$code, "offence types not loaded"), load_country_types(con, m$code))
+    attempt(paste(m$code, "data not loaded"), m$ingest(con))
+    attempt(paste(m$code, "population not loaded (no rates)"), m$population(con))
+  }
+  invisible(TRUE)
+}
+
+update_countries <- function(download = TRUE, only = NULL) {
+  with_db(function(con) {
+    country_steps(con, download, only)
+    if (is.null(only) && exists("eurostat_rates_update", mode = "function")) eurostat_rates_update(con, download)
+    step("Tables for the app")
+    build_marts(con)
+    country_status(con)
+  })
+}
+
+country_status <- function(con) {
+  if (!"stg_country_crime" %in% DBI::dbListTables(con)) return(invisible(NULL))
+  x <- DBI::dbGetQuery(con, "
+    SELECT c.country, count(DISTINCT c.territory_id) AS territories, min(c.year) AS from_y, max(c.year * 10 + c.quarter) AS to_p,
+           (SELECT count(*) FROM ref_country_population p WHERE p.country = c.country) AS pop_rows
+    FROM stg_country_crime c GROUP BY 1 ORDER BY 1")
+  message("Other countries")
+  for (m in COUNTRY_MODULES) {
+    r <- x[x$country == m$code, ]
+    if (nrow(r) == 0) message("[!!] ", m$name_en, ": no data loaded yet")
+    else message(sprintf("[ok] %-18s %d territories, %d to %dQ%d%s%s", m$name_en, r$territories, r$from_y, r$to_p %/% 10, r$to_p %% 10,
+                         if (r$pop_rows > 0) "" else " (no population: no rates)", if (file.exists(m$gpkg)) "" else " (no boundaries: table only)"))
+  }
+  invisible(x)
+}

@@ -1,0 +1,68 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+TOTAL_CRIMES_OFFENCES,total,"Crimes and offences excluding road traffic offences (sum, not an official total)","Crimes and offences excluding road traffic offences (sum, not an official total)",,no
+All Crimes,all_crimes,All crimes (official total of crimes),All crimes (official total of crimes),total,no
+All crimes,all_crimes,All crimes (official total of crimes),All crimes (official total of crimes),total,no
+All Offences,unmapped,,,,no
+All offences,unmapped,,,,no
+All Group 1: Non-sexual crimes of violence,violence,Non-sexual crimes of violence,Non-sexual crimes of violence,all_crimes,no
+All Group 2: Sexual crimes,sexual_offences,Sexual crimes,Sexual crimes,all_crimes,yes
+All Group 3: Crimes of dishonesty,dishonesty,"Crimes of dishonesty (theft, housebreaking, fraud)","Crimes of dishonesty (theft, housebreaking, fraud)",all_crimes,no
+All Group 4: Damage and reckless behaviour,criminal_damage,Damage and reckless behaviour,Damage and reckless behaviour,all_crimes,no
+All Group 5: Crimes against society,crimes_against_society,"Crimes against society (drugs, weapons, public justice)","Crimes against society (drugs, weapons, public justice)",all_crimes,no
+All Group 6: Antisocial offences,antisocial_offences,Antisocial offences,Antisocial offences,total,no
+All Group 7: Miscellaneous offences,other_offences,Miscellaneous offences,Miscellaneous offences,total,no
+All Group 8: Road traffic offences,unmapped,,,,no
+All Group 8: Motor vehicle offences,unmapped,,,,no
+Crimes: Group 1: Murder and culpable homicide,homicide,Murder and culpable homicide,Murder and culpable homicide,violence,yes
+Crimes: Group 1: Death by dangerous driving,death_dangerous_driving,Death by dangerous driving,Death by dangerous driving,violence,yes
+Crimes: Group 1: Serious assault and attempted murder,assault,Serious assault and attempted murder,Serious assault and attempted murder,violence,no
+Crimes: Group 1: Common assault,common_assault,Common assault,Common assault,violence,no
+Crimes: Group 1: Robbery,robbery_violence,Robbery,Robbery,violence,no
+Crimes: Group 1: Other non-sexual violence,violence_other,Other non-sexual violence,Other non-sexual violence,violence,no
+Crimes: Group 1: Domestic abuse (of female),domestic_violence,Domestic abuse,Domestic abuse,violence,yes
+Crimes: Group 1: Domestic Abuse (Scotland) Act 2018,domestic_violence,Domestic abuse,Domestic abuse,violence,yes
+Crimes: Group 2: Rape & attempted rape,rape,Rape and attempted rape,Rape and attempted rape,sexual_offences,yes
+Crimes: Group 2: Rape and attempted rape,rape,Rape and attempted rape,Rape and attempted rape,sexual_offences,yes
+Crimes: Group 2: Sexual assault,sexual_assault,Sexual assault,Sexual assault,sexual_offences,yes
+Crimes: Group 2: Crimes associated with prostitution,prostitution,Crimes associated with prostitution,Crimes associated with prostitution,sexual_offences,yes
+Crimes: Group 2: Causing to view sexual activity or images,sexual_images,Causing to view sexual activity or images,Causing to view sexual activity or images,sexual_offences,yes
+Crimes: Group 2: Indecent photos of children,indecent_images_children,Indecent photos of children,Indecent photos of children,sexual_offences,yes
+Crimes: Group 2: Other sexual crimes,other_sexual_offences,Other sexual crimes,Other sexual crimes,sexual_offences,yes
+Crimes: Group 3: Housebreaking,burglary,Housebreaking,Housebreaking,dishonesty,no
+Crimes: Group 3: Theft by opening lockfast places,theft_lockfast,Theft by opening lockfast places,Theft by opening lockfast places,dishonesty,no
+Crimes: Group 3: Theft from a motor vehicle,theft_from_vehicle,Theft from a motor vehicle,Theft from a motor vehicle,dishonesty,no
+Crimes: Group 3: Theft of a motor vehicle,vehicle_theft,Theft of a motor vehicle,Theft of a motor vehicle,dishonesty,no
+Crimes: Group 3: Shoplifting,shoplifting,Shoplifting,Shoplifting,dishonesty,no
+Crimes: Group 3: Other theft,theft,Other theft,Other theft,dishonesty,no
+Crimes: Group 3: Fraud,fraud,Fraud,Fraud,dishonesty,no
+Crimes: Group 3: Other dishonesty,dishonesty_other,Other dishonesty,Other dishonesty,dishonesty,no
+Crimes: Group 4: Fire-raising,arson,Fire-raising,Fire-raising,criminal_damage,no
+Crimes: Group 4: Vandalism,criminal_damage_only,Vandalism,Vandalism,criminal_damage,no
+Crimes: Group 4: Reckless conduct,reckless_conduct,Reckless conduct,Reckless conduct,criminal_damage,no
+Crimes: Group 5: Crimes against public justice,public_justice,Crimes against public justice,Crimes against public justice,crimes_against_society,no
+Crimes: Group 5: Weapons possession (not used),weapons,Weapons possession (not used),Weapons possession (not used),crimes_against_society,no
+Crimes: Group 5: Weapons possession (used),weapons_used,Weapons possession (used),Weapons possession (used),crimes_against_society,no
+Crimes: Group 5: Handling offensive weapons,weapons,Handling offensive weapons,Handling offensive weapons,crimes_against_society,no
+Crimes: Group 5: Drugs - Supply,drug_trafficking,Drugs: supply,Drugs: supply,crimes_against_society,no
+Crimes: Group 5: Drugs - Possession,drug_use,Drugs: possession,Drugs: possession,crimes_against_society,no
+Crimes: Group 5: Other crimes against society,other,Other crimes against society,Other crimes against society,crimes_against_society,no
+Offences: Group 6: Threatening and abusive behaviour,public_order,Threatening and abusive behaviour,Threatening and abusive behaviour,antisocial_offences,no
+Offences: Group 6: Drunkenness and other disorderly conduct,public_order_drunkenness,Drunkenness and other disorderly conduct,Drunkenness and other disorderly conduct,antisocial_offences,no
+Offences: Group 6: Urinating etc.,public_order_other,Urinating etc.,Urinating etc.,antisocial_offences,no
+Offences: Group 6: Hate aggravated conduct,hate_conduct,Hate aggravated conduct,Hate aggravated conduct,antisocial_offences,no
+Offences: Group 6: Racially aggravated conduct,hate_conduct,Hate aggravated conduct,Hate aggravated conduct,antisocial_offences,no
+Offences: Group 7: Community and public order offences,community_public_order,Community and public order offences,Community and public order offences,other_offences,no
+Offences: Group 7: Environmental offences,environmental,Environmental offences,Environmental offences,other_offences,no
+Offences: Group 7: Licensing offences,licensing,Licensing offences,Licensing offences,other_offences,no
+Offences: Group 7: Wildlife offences,wildlife,Wildlife offences,Wildlife offences,other_offences,no
+Offences: Group 7: Other misc. offences,other_offences_misc,Other miscellaneous offences,Other miscellaneous offences,other_offences,no
+Offences: Group 7: Other miscellaneous offences,other_offences_misc,Other miscellaneous offences,Other miscellaneous offences,other_offences,no
+Offences: Group 8: Dangerous and careless driving,unmapped,,,,no
+Offences: Group 8: Driving under the influence,unmapped,,,,no
+Offences: Group 8: Speeding,unmapped,,,,no
+Offences: Group 8: Unlawful use of vehicle,unmapped,,,,no
+Offences: Group 8: Vehicle defect offences,unmapped,,,,no
+Offences: Group 8: Seat belt offences,unmapped,,,,no
+Offences: Group 8: Mobile phone offences,unmapped,,,,no
+Offences: Group 8: Other road traffic offences,unmapped,,,,no
+Offences: Group 8: Other motor vehicle offences,unmapped,,,,no

@@ -1,0 +1,33 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+TOTAL_EVENTOS,total,"Soma dos eventos publicados (não é um total oficial)","Sum of the published events (not an official total)",,no
+Homicídio doloso,homicide,Homicídio doloso (vítimas),Intentional homicide (victims),total,yes
+Feminicídio,homicide,Feminicídio (vítimas),Femicide (victims),homicide,yes
+Tentativa de homicídio,attempted_homicide,Tentativa de homicídio,Attempted homicide,total,yes
+Tentativa de feminicídio,attempted_homicide,Tentativa de feminicídio,Attempted femicide,attempted_homicide,yes
+Lesão corporal seguida de morte,lethal_violence_other,Lesão corporal seguida de morte (vítimas),Bodily harm followed by death (victims),total,yes
+Roubo seguido de morte (latrocínio),robbery_homicide,Roubo seguido de morte (latrocínio) (vítimas),Robbery followed by death (victims),total,yes
+Estupro,sexual_offences,Estupro,Rape,total,yes
+Roubo a instituição financeira,robbery_bank,Roubo a instituição financeira,Robbery of a financial institution,total,no
+Roubo de carga,robbery_cargo,Roubo de carga,Cargo robbery,total,no
+Roubo de veículo,vehicle_robbery,Roubo de veículo,Vehicle robbery,total,no
+Furto de veículo,vehicle_theft,Furto de veículo,Vehicle theft,total,no
+Roubo de celular,robbery_violence,Roubo de celular,Mobile-phone robbery,total,no
+Furto de celular,theft,Furto de celular,Mobile-phone theft,total,no
+Tráfico de drogas,drug_trafficking,Tráfico de drogas,Drug trafficking,total,no
+Morte por intervenção de agente do Estado,unmapped,Morte por intervenção de agente do Estado,Death caused by a state agent,,yes
+Mortes a esclarecer (sem indício de crime),unmapped,Mortes a esclarecer (sem indício de crime),Deaths under investigation (no sign of crime),,yes
+Morte no trânsito ou em decorrência dele (exceto homicídio doloso),unmapped,Morte no trânsito,Road-traffic deaths,,yes
+Suicídio,unmapped,Suicídio,Suicide,,yes
+Morte de Agente do Estado,unmapped,Morte de agente do Estado,Death of a state agent,,yes
+Suicídio de Agente do Estado,unmapped,Suicídio de agente do Estado,Suicide of a state agent,,yes
+Pessoa Desaparecida,unmapped,Pessoa desaparecida,Missing person,,yes
+Pessoa Localizada,unmapped,Pessoa localizada,Person found,,yes
+Apreensão de Cocaína,unmapped,Apreensão de cocaína (kg),Cocaine seized (kg),,no
+Apreensão de Maconha,unmapped,Apreensão de maconha (kg),Cannabis seized (kg),,no
+Arma de Fogo Apreendida,unmapped,Arma de fogo apreendida,Firearms seized,,no
+Mandado de prisão cumprido,unmapped,Mandado de prisão cumprido,Arrest warrants executed,,no
+Atendimento pré-hospitalar,unmapped,Atendimento pré-hospitalar (bombeiros),Pre-hospital care (fire service),,no
+Busca e salvamento,unmapped,Busca e salvamento (bombeiros),Search and rescue (fire service),,no
+Combate a incêndios,unmapped,Combate a incêndios (bombeiros),Fire fighting (fire service),,no
+Emissão de Alvarás de licença,unmapped,Emissão de alvarás de licença (bombeiros),Licences issued (fire service),,no
+Realização de vistorias,unmapped,Realização de vistorias (bombeiros),Inspections (fire service),,no

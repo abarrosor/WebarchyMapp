@@ -1,0 +1,85 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+TOTAL,total,Rikokset yhteensä (ICCS),All offences recorded (ICCS total),,no
+01,iccs_01_death,Kuolemaan johtaneet tai sitä tavoitelleet teot,Acts leading to death or intending to cause death,total,yes
+0101,homicide,Tahallinen henkirikos,Intentional homicide,iccs_01_death,yes
+0102,attempted_homicide,Tahallisen henkirikoksen yritys,Attempted intentional homicide,iccs_01_death,yes
+0103,non_intentional_homicide,Tuottamuksellinen henkirikos,Non-intentional homicide,iccs_01_death,yes
+0104,assisted_suicide,Itsemurhaan avustaminen tai yllyttäminen,Assisting or instigating suicide,iccs_01_death,yes
+0105,euthanasia,Eutanasia,Euthanasia,iccs_01_death,yes
+0106,illegal_feticide,Laiton sikiön surmaaminen,Illegal feticide,iccs_01_death,yes
+0109,other_death,Muut kuolemaan johtaneet teot,Other acts leading to death or intending to cause death,iccs_01_death,yes
+02,iccs_02_harm,Henkilöön kohdistuvat vahingoittavat teot,Acts causing harm or intending to cause harm to the person,total,no
+0201,assault_threats,Pahoinpitelyt ja uhkaukset,Assaults and threats,iccs_02_harm,no
+02011,assault,Pahoinpitely,Assault,assault_threats,no
+02012,threats,Uhkaus,Threat,assault_threats,no
+0202,deprivation_of_liberty,Vapauteen kohdistuvat teot (vapaudenriisto ym.),"Acts against liberty (kidnapping, deprivation of liberty)",iccs_02_harm,yes
+0203,slavery,Orjuus ja hyväksikäyttö,Slavery and exploitation,iccs_02_harm,yes
+0204,human_trafficking,Ihmiskauppa,Trafficking in persons,iccs_02_harm,yes
+0205,coercion,Pakottaminen,Coercion,iccs_02_harm,no
+0206,negligence,Huolimattomuus,Negligence,iccs_02_harm,no
+0207,dangerous_acts,"Vaarantamisrikokset (ml. rattijuopumus, liikenneturvallisuuden vaarantaminen)","Dangerous acts (incl. drunk driving, endangering traffic safety)",iccs_02_harm,no
+0208,harassment_stalking,"Pelkoa tai ahdistusta aiheuttavat teot (häirintä, vainoaminen)","Acts intended to induce fear or emotional distress (harassment, stalking)",iccs_02_harm,no
+0209,defamation,Kunnianloukkaus,Defamation or insult,iccs_02_harm,no
+0210,discrimination,Syrjintä,Discrimination,iccs_02_harm,no
+0211,privacy_violation,Yksityisyyteen kohdistuvat teot,Acts that trespass against the person (privacy),iccs_02_harm,no
+0219,other_harm,Muut henkilöön kohdistuvat vahingoittavat teot,Other acts causing harm to the person,iccs_02_harm,no
+03,sexual_offences,Seksuaalirikokset,Injurious acts of a sexual nature,total,yes
+0301,sexual_violence,Seksuaalinen väkivalta,Sexual violence,sexual_offences,yes
+03011,rape,Raiskaus,Rape,sexual_violence,yes
+03012,sexual_assault,Seksuaalinen kajoaminen / ahdistelu,Sexual assault,sexual_violence,yes
+03019,other_sexual_violence,Muu seksuaalinen väkivalta,Other acts of sexual violence,sexual_violence,yes
+0302,sexual_exploitation,Seksuaalinen hyväksikäyttö (ml. lapset),Sexual exploitation (incl. of children),sexual_offences,yes
+0309,other_sexual_offences,Muut seksuaalirikokset,Other injurious acts of a sexual nature,sexual_offences,yes
+04,iccs_04_robbery,Väkivaltaa tai uhkaa sisältävät omaisuusrikokset (ryöstö),Acts against the person involving violence or threat (robbery),total,no
+0401,robbery_violence,Ryöstö,Robbery,iccs_04_robbery,no
+0409,other_robbery,Muut väkivaltaa tai uhkaa sisältävät omaisuusrikokset,Other acts involving violence or threat against property,iccs_04_robbery,no
+05,property_offences,Omaisuusrikokset (ilman väkivaltaa),Acts against property only,total,no
+0501,burglary,Murto,Burglary,property_offences,no
+05011,burglary_residential,Asuntomurto,Burglary of residential premises,burglary,no
+05012,burglary_non_residential,Murto muihin tiloihin,Burglary of non-residential premises,burglary,no
+05019,other_burglary,Muu murto,Other burglary,burglary,no
+0502,theft,Varkaus,Theft,property_offences,no
+05021,vehicle_theft,Moottoriajoneuvon varkaus,Theft of a motorised vehicle,theft,no
+05022,theft_from_vehicle,Varkaus ajoneuvosta tai ajoneuvon osien varkaus,Theft of vehicle parts or from a vehicle,theft,no
+05023,theft_personal,Henkilökohtaisen omaisuuden varkaus,Theft of personal property,theft,no
+05024,theft_business,Yrityksiltä varastaminen (ml. myymälävarkaus),Theft from businesses (incl. shoplifting),theft,no
+05025,theft_livestock,Karjan varkaus,Theft of livestock,theft,no
+05026,theft_services,Palvelujen varkaus,Theft of services,theft,no
+05029,other_theft,Muu varkaus,Other theft,theft,no
+0503,intellectual_property,Immateriaalioikeusrikokset,Intellectual property offences,property_offences,no
+0504,criminal_damage,Vahingonteko,Property damage,property_offences,no
+0509,other_property,Muut omaisuusrikokset,Other acts against property only,property_offences,no
+06,drug_offences,Huumausainerikokset,Acts involving controlled drugs or other psychoactive substances,total,no
+0601,drug_use,Huumausaineiden käyttö ja hallussapito,Unlawful possession or use of controlled drugs,drug_offences,no
+0602,drug_trafficking,"Huumausaineiden kauppa, valmistus ja salakuljetus","Unlawful trafficking, cultivation or production of controlled drugs",drug_offences,no
+0609,other_drug,Muut huumausainerikokset,Other acts involving controlled drugs,drug_offences,no
+07,fraud_corruption,"Petos, väärennys ja korruptio","Acts involving fraud, deception or corruption",total,no
+0701,fraud,Petos,Fraud,fraud_corruption,no
+0702,forgery,Väärennys,Forgery / counterfeiting,fraud_corruption,no
+0703,corruption,Korruptio,Corruption,fraud_corruption,no
+0704,money_laundering,"Rikoshyötyyn liittyvät teot (rahanpesu, kätkeminen)","Acts involving the proceeds of crime (money laundering, handling)",fraud_corruption,no
+0709,other_fraud,Muut petos- ja korruptiorikokset,"Other acts involving fraud, deception or corruption",fraud_corruption,no
+08,public_order,"Yleistä järjestystä, viranomaisia ja valtiota vastaan tehdyt teot","Acts against public order, authority and provisions of the State",total,no
+0801,public_order_behaviour,Järjestyshäiriöt,Acts against public order behavioural standards,public_order,no
+0802,public_order_sexual,Seksuaalisia normeja koskevat järjestysrikokset,Acts against public order sexual standards,public_order,no
+0803,freedom_of_expression_offences,Ilmaisunvapauteen liittyvät rikokset,Acts related to freedom of expression or control of expression,public_order,no
+0804,revenue_offences,Vero- ja tullirikokset sekä sääntelyrikkomukset,Acts contrary to public revenue or regulatory provisions,public_order,no
+0805,migration_offences,Maahantuloon ja ulkomaalaisiin liittyvät rikokset,Acts related to migration,public_order,no
+0806,justice_system_offences,Oikeudenkäyttöä vastaan tehdyt rikokset,Acts against the justice system,public_order,no
+0807,democratic_participation_offences,Demokraattiseen osallistumiseen liittyvät rikokset,Acts related to democratic participation,public_order,no
+0808,labour_law_offences,Työrikokset,Acts contrary to labour law,public_order,no
+0809,other_public_order,Muut yleistä järjestystä vastaan tehdyt teot,"Other acts against public order, authority and provisions of the State",public_order,no
+09,public_safety_state,Yleistä turvallisuutta ja valtion turvallisuutta vastaan tehdyt teot,Acts against public safety and state security,total,no
+0901,weapons,Ampuma-ase- ja räjähderikokset,"Acts involving weapons, explosives and other destructive materials",public_safety_state,no
+0902,state_security,Valtion turvallisuutta vastaan tehdyt rikokset,Acts against the State,public_safety_state,no
+0903,organised_crime,Järjestäytyneeseen rikollisuuteen liittyvät teot,Acts related to an organized criminal group,public_safety_state,no
+0904,terrorism,Terrorismirikokset,Terrorism,public_safety_state,no
+0909,other_public_safety,Muut yleistä turvallisuutta vastaan tehdyt teot,Other acts against public safety and state security,public_safety_state,no
+10,environmental,Ympäristörikokset,Acts against the natural environment,total,no
+1001,pollution,Ympäristön pilaaminen,Acts that cause environmental pollution or degradation,environmental,no
+1002,waste_offences,Jätteiden laiton käsittely,Acts involving the movement or dumping of waste,environmental,no
+1003,fauna_flora,Suojeltuihin eläin- ja kasvilajeihin kohdistuvat rikokset,Trade or possession of protected species of fauna and flora,environmental,no
+1009,other_environmental,Muut ympäristörikokset,Other acts against the natural environment,environmental,no
+11,other_offences,Muut rikokset,Other criminal acts not elsewhere classified,total,no
+1101,universal_jurisdiction,Yleistoimivallan alaiset rikokset,Acts under universal jurisdiction,other_offences,no
+1109,other_nec,Muut muualle luokittelemattomat rikokset,Other criminal acts not elsewhere classified,other_offences,no

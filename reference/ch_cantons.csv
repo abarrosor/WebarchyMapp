@@ -1,0 +1,27 @@
+bfs_number,abbr,name,nuts3
+1,ZH,Zürich,CH040
+2,BE,Bern / Berne,CH021
+3,LU,Luzern,CH061
+4,UR,Uri,CH062
+5,SZ,Schwyz,CH063
+6,OW,Obwalden,CH064
+7,NW,Nidwalden,CH065
+8,GL,Glarus,CH051
+9,ZG,Zug,CH066
+10,FR,Fribourg / Freiburg,CH022
+11,SO,Solothurn,CH023
+12,BS,Basel-Stadt,CH031
+13,BL,Basel-Landschaft,CH032
+14,SH,Schaffhausen,CH052
+15,AR,Appenzell Ausserrhoden,CH053
+16,AI,Appenzell Innerrhoden,CH054
+17,SG,St. Gallen,CH055
+18,GR,Graubünden / Grigioni / Grischun,CH056
+19,AG,Aargau,CH033
+20,TG,Thurgau,CH057
+21,TI,Ticino,CH070
+22,VD,Vaud,CH011
+23,VS,Valais / Wallis,CH012
+24,NE,Neuchâtel,CH024
+25,GE,Genève,CH013
+26,JU,Jura,CH025

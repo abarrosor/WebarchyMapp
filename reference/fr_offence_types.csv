@@ -1,0 +1,23 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+TOTAL_INDICATEURS,total,"Ensemble des indicateurs publiés (somme, pas un total officiel)","All published indicators (sum, not an official total)",,no
+Cambriolages de logement,burglary,Cambriolages de logement,Residential burglary,total,no
+Destructions et dégradations volontaires,criminal_damage,Destructions et dégradations volontaires,Criminal damage,total,no
+Escroqueries et fraudes aux moyens de paiement,fraud,Escroqueries et fraudes aux moyens de paiement,Fraud and payment-card fraud,total,no
+Escroqueries,fraud,Escroqueries,Fraud,total,no
+Trafic de stupéfiants,drug_trafficking,Trafic de stupéfiants,Drug trafficking,total,no
+Usage de stupéfiants,drug_use,Usage de stupéfiants,Drug use,total,no
+Usage de stupéfiants (AFD),drug_use_fine,Usage de stupéfiants (amendes forfaitaires),Drug use (fixed-penalty notices),total,no
+Violences physiques hors cadre familial,assault,Violences physiques hors cadre familial,Physical violence outside the family,total,no
+Violences physiques intrafamiliales,domestic_violence,Violences physiques intrafamiliales,Domestic physical violence,total,yes
+Coups et blessures volontaires,assault,Coups et blessures volontaires,Assault (to 2024),total,no
+Coups et blessures volontaires intrafamiliaux,domestic_violence,Coups et blessures volontaires intrafamiliaux,Domestic assault (to 2024),total,yes
+Autres coups et blessures volontaires,assault,Autres coups et blessures volontaires,Other assault (to 2024),total,no
+Violences sexuelles,sexual_offences,Violences sexuelles,Sexual violence,total,yes
+Vols avec armes,robbery_armed,Vols avec armes,Armed robbery,total,no
+Vols violents sans arme,robbery_violence,Vols violents sans arme,Robbery without a weapon,total,no
+Vols sans violence contre des personnes,theft,Vols sans violence contre des personnes,Theft from persons without violence,total,no
+Vols d'accessoires sur véhicules,vehicle_accessory_theft,Vols d'accessoires sur véhicules,Theft of vehicle accessories,total,no
+Vols dans les véhicules,theft_from_vehicle,Vols dans les véhicules,Theft from vehicles,total,no
+Vols de véhicules,vehicle_theft,Vols de véhicules,Vehicle theft,total,no
+Homicides,homicide,Homicides,Homicide,total,yes
+Tentatives d'homicides,attempted_homicide,Tentatives d'homicides,Attempted homicide,total,yes

@@ -1,0 +1,23 @@
+source_text,motive_id,name_es,name_en
+LESIONES,assault,Lesiones,Assault
+VIOLENCIA DOMESTICA Y DE GENERO,domestic_gender_violence,Violencia doméstica y de género,Domestic and gender-based violence
+VIOLENCIA DOMESTICA,domestic_gender_violence,Violencia doméstica y de género,Domestic and gender-based violence
+MALOS TRATOS A MENORES,child_abuse,Malos tratos a menores,Child abuse
+AMENAZAS,threats,Amenazas,Threats
+ABUSOS Y AGRSIONES SEXUALES,sexual_offences,Abusos y agresiones sexuales,Sexual abuse and assault
+ABUSOS Y AGRESIONES SEXUALES,sexual_offences,Abusos y agresiones sexuales,Sexual abuse and assault
+MENDICIDAD CON MENORES,begging_with_minors,Mendicidad con menores,Begging with minors
+HURTOS,theft,Hurtos,Theft
+ROBO CON FUERZA EN INMUEBLES,burglary,Robo con fuerza en inmuebles,Burglary
+ROBO CON FUERZA EN VEHICULOS,theft_from_vehicles,Robo con fuerza en vehículos,Theft from vehicles
+ROBO CON VIOLENCIA O INTIMIDACION EN LAS PERSONAS,robbery_violence,Robo con violencia o intimidación,Robbery with violence or intimidation
+ROBO / HURTO DE USO DE VEHICULOS,vehicle_theft,Robo o hurto de uso de vehículos,Vehicle theft
+OTROS CONTRA EL PATRIMONIO,other_property,Otros contra el patrimonio,Other property offences
+DAÑOS,criminal_damage,Daños,Criminal damage
+CONTRA LA PROPIEDAD INTELECTUAL / INDUSTRIAL,intellectual_property,Contra la propiedad intelectual o industrial,Intellectual property offences
+CONTRA LA SALUD PUBLICA,drug_offences,Contra la salud pública (drogas),Drug offences
+CONTRA LA SEGURIDAD VIAL,road_safety,Contra la seguridad vial,Road safety offences
+FALSEDAD DOCUMENTAL,document_forgery,Falsedad documental,Document forgery
+"ATENTADO, RESISTENCIA Y DESOBEDIENCIA A AGENTE DE LA AUTORIDAD",assault_on_officer,"Atentado, resistencia y desobediencia a agente",Assaulting or resisting an officer
+OTROS MOTIVOS DE DETENCION,other_grounds,Otros motivos de detención,Other grounds for arrest
+TOTAL,total,Total,Total

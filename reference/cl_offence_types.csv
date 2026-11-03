@@ -1,0 +1,28 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+Delitos de mayor connotación social,total,Delitos de mayor connotación social (DMCS),Offences of high social impact (DMCS),,no
+SUMA_DMCS,total,"Suma de los DMCS exportados (no es el total oficial)","Sum of the exported DMCS (not the official total)",,no
+Robo con violencia o intimidación,robbery_violence,Robo con violencia o intimidación,Robbery with violence or intimidation,total,no
+Robo por sorpresa,robbery_snatch,Robo por sorpresa,Snatch robbery,total,no
+Robo de vehículo motorizado,vehicle_theft,Robo de vehículo motorizado,Motor-vehicle theft,total,no
+Robo de objetos de o desde vehículo,theft_from_vehicle,Robo de objetos de o desde vehículo,Theft from vehicles,total,no
+Robo en lugar habitado,burglary,Robo en lugar habitado,Residential burglary,total,no
+Robo en lugar no habitado,burglary_other,Robo en lugar no habitado,Non-residential burglary,total,no
+Otros robos con fuerza,other,Otros robos con fuerza,Other theft with forced entry,total,no
+Hurtos,theft,Hurtos,Theft,total,no
+Hurto,theft,Hurto,Theft,total,no
+"Lesiones menos graves, graves o gravísimas",assault,"Lesiones menos graves, graves o gravísimas",Serious assault,total,no
+Lesiones leves,assault,Lesiones leves,Minor assault,total,no
+Lesiones,assault,Lesiones,Assault,total,no
+Homicidios,homicide,Homicidios,Homicide,total,yes
+Homicidio,homicide,Homicidio,Homicide,total,yes
+Violaciones,sexual_offences,Violaciones,Rape,total,yes
+Violación,sexual_offences,Violación,Rape,total,yes
+Violencia intrafamiliar,domestic_violence,Violencia intrafamiliar (todas las víctimas),Domestic violence,,yes
+Abusos sexuales y otros delitos sexuales,sexual_offences,Abusos sexuales y otros delitos sexuales,Sexual abuse and other sexual offences,,yes
+Infracción a la ley de armas,weapons,Infracción a la ley de armas,Weapons-law offences,,no
+Infracción a la ley de drogas,drug_offences,Infracción a la ley de drogas,Drug-law offences,,no
+Incivilidades,public_order,Incivilidades,Incivilities,,no
+Amenazas,public_order,Amenazas,Threats,,no
+Receptación,other,Receptación,Handling stolen goods,,no
+Robo frustrado,other,Robo frustrado,Attempted robbery,,no
+Abigeato,other,Abigeato,Cattle theft,,no

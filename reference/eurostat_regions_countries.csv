@@ -1,0 +1,24 @@
+code,iso3,name_en,name_local,lang,nuts2_en,nuts2_local,nuts2_en_s,nuts2_local_s,nuts3_en,nuts3_local,nuts3_en_s,nuts3_local_s,default_region
+AT,AUT,Austria,Österreich,de,States,Bundesländer,State,Bundesland,Groups of districts (NUTS 3),Gruppen von Bezirken (NUTS 3),Group of districts,Gruppe von Bezirken,AT13
+BE,BEL,Belgium,België / Belgique,fr,Provinces,Provinces,Province,Province,Arrondissements,Arrondissements,Arrondissement,Arrondissement,BE10
+BG,BGR,Bulgaria,България,bg,Planning regions,Райони за планиране,Planning region,Район за планиране,Districts,Области,District,Област,BG41
+HR,HRV,Croatia,Hrvatska,hr,Regions,Regije,Region,Regija,Counties,Županije,County,Županija,HR05
+CY,CYP,Cyprus,Κύπρος,el,Country,Χώρα,Country,Χώρα,Country (NUTS 3),Χώρα (NUTS 3),Country,Χώρα,CY00
+EE,EST,Estonia,Eesti,et,Country,Riik,Country,Riik,Groups of counties,Maakondade rühmad,Group of counties,Maakondade rühm,EE00
+GR,GRC,Greece,Ελλάδα,el,Regions,Περιφέρειες,Region,Περιφέρεια,Regional units,Περιφερειακές ενότητες,Regional unit,Περιφερειακή ενότητα,EL30
+IT,ITA,Italy,Italia,it,Regions,Regioni,Region,Regione,Provinces,Province,Province,Provincia,ITI4
+LV,LVA,Latvia,Latvija,lv,Country,Valsts,Country,Valsts,Statistical regions,Statistiskie reģioni,Statistical region,Statistiskais reģions,LV00
+LT,LTU,Lithuania,Lietuva,lt,Regions,Regionai,Region,Regionas,Counties,Apskritys,County,Apskritis,LT01
+LU,LUX,Luxembourg,Lëtzebuerg,fr,Country,Pays,Country,Pays,Country (NUTS 3),Pays (NUTS 3),Country,Pays,LU00
+MT,MLT,Malta,Malta,en,Country,Country,Country,Country,Islands,Islands,Island,Island,MT00
+RO,ROU,Romania,România,ro,Development regions,Regiuni de dezvoltare,Development region,Regiune de dezvoltare,Counties,Județe,County,Județ,RO32
+SK,SVK,Slovakia,Slovensko,sk,Areas,Oblasti,Area,Oblasť,Regions,Kraje,Region,Kraj,SK01
+SI,SVN,Slovenia,Slovenija,sl,Cohesion regions,Kohezijski regiji,Cohesion region,Kohezijska regija,Statistical regions,Statistične regije,Statistical region,Statistična regija,SI04
+SE,SWE,Sweden,Sverige,sv,National areas,Riksområden,National area,Riksområde,Counties,Län,County,Län,SE11
+NO,NOR,Norway,Norge,no,Regions,Landsdeler,Region,Landsdel,Counties,Fylker,County,Fylke,NO08
+IS,ISL,Iceland,Ísland,is,Country,Land,Country,Land,Regions,Landsvæði,Region,Landsvæði,IS00
+TR,TUR,Türkiye,Türkiye,tr,Sub-regions,Alt bölgeler,Sub-region,Alt bölge,Provinces,İller,Province,İl,TR10
+RS,SRB,Serbia,Србија,sr,Regions,Региони,Region,Регион,Districts,Области,District,Област,RS11
+ME,MNE,Montenegro,Crna Gora,sr,Country,Država,Country,Država,Country (NUTS 3),Država (NUTS 3),Country,Država,ME00
+AL,ALB,Albania,Shqipëri,sq,Regions,Rajone,Region,Rajon,Counties,Qarqe,County,Qark,AL02
+LI,LIE,Liechtenstein,Liechtenstein,de,Country,Land,Country,Land,Country (NUTS 3),Land (NUTS 3),Country,Land,LI00

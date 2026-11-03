@@ -1,0 +1,8 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+TOTAL_DENUNCIAS,total,"Total de denuncias de los delitos publicados (suma, no es un total oficial)","All published complaint categories (sum, not an official total)",,no
+RAPIÑA,robbery_violence,Rapiña (robo con violencia o amenazas),Robbery with violence or threats (rapiña),total,no
+HURTO,theft,Hurto,Theft (hurto),total,no
+LESIONES,assault,"Lesiones (personales, graves y gravísimas)","Assault (personal injuries, serious and very serious)",total,no
+VIOLENCIA DOMESTICA,domestic_violence,Violencia doméstica,Domestic violence,total,yes
+ABIGEATO,cattle_theft,Abigeato (hurto de ganado),Cattle theft (abigeato),total,no
+HOMICIDIO DOLOSO CONSUMADO,homicide,"Homicidios dolosos consumados (víctimas, serie aparte: no se suma al total)","Completed intentional homicides (victims, separate series: not added to the total)",,yes

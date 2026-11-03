@@ -1,0 +1,36 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+TOTAL_SNIC,total,"Suma de los hechos publicados (no es un total oficial)","Sum of the published offences (not an official total)",,no
+Homicidios dolosos,homicide,Homicidios dolosos,Intentional homicide,total,yes
+Homicidios dolosos en grado de tentativa,attempted_homicide,Homicidios dolosos en grado de tentativa,Attempted homicide,total,yes
+Lesiones dolosas,assault,Lesiones dolosas,Intentional bodily harm,total,no
+Otros delitos contra las personas,other,Otros delitos contra las personas,Other offences against persons,total,no
+Robos (excluye los agravados por el resultado de lesiones y/o muertes),robbery_violence,Robos,Robbery,total,no
+Robos agravados por el resultado de lesiones y/o muertes,robbery_violence,Robos agravados por lesiones y/o muertes,Robbery aggravated by injury or death,total,yes
+Tentativas de robo,robbery_violence,Tentativas de robo,Attempted robbery,total,no
+Hurtos,theft,Hurtos,Theft,total,no
+Tentativas de hurto,theft,Tentativas de hurto,Attempted theft,total,no
+Otros delitos contra la propiedad,other,Otros delitos contra la propiedad,Other offences against property,total,no
+Violaciones,sexual_offences,Violaciones,Rape,total,yes
+Abusos sexuales con acceso carnal,sexual_offences,Abusos sexuales con acceso carnal,Sexual abuse with carnal access (rape),total,yes
+Otros delitos contra la integridad sexual,sexual_offences,Otros delitos contra la integridad sexual,Other sexual offences,total,yes
+Amenazas,public_order,Amenazas,Threats,total,no
+Delitos contra la libertad,other,Delitos contra la libertad,Offences against liberty,total,no
+Delitos contra la seguridad pública,public_order,Delitos contra la seguridad pública,Offences against public safety,total,no
+Delitos contra el orden público,public_order,Delitos contra el orden público,Offences against public order,total,no
+Ley 23.737 (estupefacientes),drug_offences,Infracciones a la ley 23.737 (estupefacientes),Drug-law offences (Law 23.737),total,no
+Infracciones a la ley de estupefacientes,drug_offences,Infracciones a la ley de estupefacientes,Drug-law offences,total,no
+Otros delitos previstos en leyes especiales,other,Otros delitos previstos en leyes especiales,Other offences under special laws,total,no
+Homicidios culposos en accidentes viales,unmapped,Homicidios culposos en accidentes viales,Negligent homicide in road accidents,,yes
+Muertes en siniestros viales,unmapped,Muertes en siniestros viales,Road-traffic deaths,,yes
+Homicidios culposos por otros hechos,unmapped,Homicidios culposos por otros hechos,Other negligent homicide,,yes
+Lesiones culposas en accidentes viales,unmapped,Lesiones culposas en accidentes viales,Negligent injury in road accidents,,no
+Lesiones en siniestros viales,unmapped,Lesiones en siniestros viales,Road-traffic injuries,,no
+Lesiones culposas por otros hechos,unmapped,Lesiones culposas por otros hechos,Other negligent injury,,no
+Delitos contra el estado civil,unmapped,Delitos contra el estado civil,Offences against civil status,,no
+Delitos contra la seguridad de la nación,unmapped,Delitos contra la seguridad de la nación,Offences against national security,,no
+Delitos contra los poderes públicos y el orden constitucional,unmapped,Delitos contra los poderes públicos y el orden constitucional,Offences against public powers,,no
+Delitos contra la administración pública,unmapped,Delitos contra la administración pública,Offences against public administration,,no
+Delitos contra la fe pública,unmapped,Delitos contra la fe pública,Offences against public faith (forgery),,no
+Delitos contra el orden económico y financiero,unmapped,Delitos contra el orden económico y financiero,Economic and financial offences,,no
+Contravenciones,unmapped,Contravenciones,Misdemeanours,,no
+Suicidios,unmapped,Suicidios,Suicides,,yes

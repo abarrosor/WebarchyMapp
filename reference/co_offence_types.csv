@@ -1,0 +1,21 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+TOTAL_FAMILIAS,total,"Delitos publicados en datos abiertos (suma, no es un total oficial)","Offences published as open data (sum, not an official total)",,no
+ARTÍCULO 239. HURTO AUTOMOTORES,vehicle_theft,Hurto de automotores,Theft of motor vehicles,total,no
+ARTÍCULO 239. HURTO MOTOCICLETAS,vehicle_theft,Hurto de motocicletas,Theft of motorcycles,total,no
+ARTÍCULO 239. HURTO RESIDENCIAS,burglary,Hurto a residencias,Residential burglary (from 2024 only in the open data),total,no
+ARTÍCULO 239. HURTO ENTIDADES COMERCIALES,commercial_theft,Hurto a entidades comerciales,Theft from commercial premises,total,no
+ARTÍCULO 111. LESIONES PERSONALES,assault,Lesiones personales,Assault (personal injury),total,no
+ARTÍCULO 112. INCAPACIDAD PARA TRABAJAR O ENFERMEDAD,assault,Lesiones personales: incapacidad para trabajar o enfermedad,Assault: incapacity to work or illness,total,no
+ARTÍCULO 113. DEFORMIDAD,assault,Lesiones personales: deformidad,Assault: disfigurement,total,no
+ARTÍCULO 114. PERTURBACIÓN FUNCIONAL,assault,Lesiones personales: perturbación funcional,Assault: functional impairment,total,no
+ARTÍCULO 115. LESIONES CON PERTURBACION PSIQUICA TRANSITORIA,assault,Lesiones personales: perturbación psíquica transitoria,Assault: transitory psychological harm,total,no
+ARTÍCULO 116. PÉRDIDA ANATÓMICA O FUNCIONAL DE UN ÓRGANO O MIEMBRO,assault,Lesiones personales: pérdida anatómica o funcional,Assault: loss of an organ or limb,total,no
+ARTÍCULO 119. LESIONES PERSONALES ( CIRCUNSTANCIAS DE AGRAVACIÓN),assault,Lesiones personales agravadas,Aggravated assault,total,no
+ARTÍCULO 136. LESIONES EN PERSONA PROTEGIDA,assault,Lesiones en persona protegida,Injury of a protected person,total,no
+ARTÍCULO 120. LESIONES CULPOSAS ( EN ACCIDENTE DE TRANSITO ),unmapped,Lesiones culposas en accidente de tránsito (excluido),Negligent injury in traffic accidents (excluded),,no
+ARTICULO 120 LESIONES CULPOSAS,unmapped,Lesiones culposas (excluido),Negligent injury (excluded),,no
+ARTÍCULO 125. LESIONES AL FETO,unmapped,Lesiones al feto (excluido),Injury to the foetus (excluded),,yes
+ARTÍCULO 126. LESIONE CULPOSAS AL FETO,unmapped,Lesiones culposas al feto (excluido),Negligent injury to the foetus (excluded),,yes
+DELITOS SEXUALES,sexual_offences,Delitos sexuales (todos los artículos 205-219),Sexual offences (all articles 205-219),total,yes
+VIOLENCIA INTRAFAMILIAR,domestic_violence,Violencia intrafamiliar,Domestic violence,total,yes
+AMENAZAS,threats,Amenazas,Threats,total,no

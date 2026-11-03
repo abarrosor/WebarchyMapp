@@ -1,0 +1,92 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+TOT,total,Overtrædelsens art i alt,All reported offences (Criminal Code and special legislation; Road Traffic Act excluded),,no
+1,criminal_code,Straffelov i alt,Criminal Code offences in total,total,no
+1000,unspecified_criminal_code,Uoplyst straffelov,"Criminal Code, unspecified",criminal_code,no
+11,sexual_offences,Seksualforbrydelser i alt,Sexual offences in total,criminal_code,yes
+1110,incest,Blodskam mv.,Incest etc.,sexual_offences,yes
+1120,rape,Voldtægt mv.,Rape etc.,sexual_offences,yes
+1130,child_sexual_abuse,Heteroseksuel sædelighedsforbrydelse mod barn under 12 år (Udgået 2013),Heterosexual sexual offence against a child under 12 (discontinued 2013),sexual_offences,yes
+1131,child_sexual_abuse,Seksualforbrydelse mod barn under 12 år (Ny fra 2013),Sexual offence against a child under 12 (from 2013),sexual_offences,yes
+1140,other_sexual_offences,Heteroseksuel sædelighedsforbrydelse i øvrigt (Udgået 2013),Other heterosexual sexual offence (discontinued 2013),sexual_offences,yes
+1141,child_sexual_abuse,Seksualforbrydelse mod barn under 15 år (Ny fra 2013),Sexual offence against a child under 15 (from 2013),sexual_offences,yes
+1145,other_sexual_offences,Seksualforbrydelse i øvrigt (Ny fra 2013),Other sexual offence (from 2013),sexual_offences,yes
+1146,child_sexual_abuse,Grooming,Grooming,sexual_offences,yes
+1150,child_sexual_abuse,Homoseksuel sædelighedsforbrydelse mod barn under 12 år (Udgået 2013),Homosexual sexual offence against a child under 12 (discontinued 2013),sexual_offences,yes
+1160,other_sexual_offences,Homoseksuel sædelighedsforbrydelse i øvrigt (Udgået 2013),Other homosexual sexual offence (discontinued 2013),sexual_offences,yes
+1172,indecency,Blufærdighedskrænkelse ved beføling,Indecent conduct by touching,sexual_offences,yes
+1174,indecency,Blufærdighedskrænkelse ved blotteri,Indecent exposure,sexual_offences,yes
+1176,indecency,Blufærdighedskrænkelse i øvrigt,Other indecent conduct,sexual_offences,yes
+1180,prostitution_offences,Utugt mv.,Prostitution-related offences,sexual_offences,yes
+12,violent_offences,Voldsforbrydelser i alt,Violent offences in total,criminal_code,no
+1210,assault_on_officials,Vold og lignende mod offentlig myndighed,Violence against public authority,violent_offences,no
+1220,public_order,Opløb/forstyrrelse af offentlig orden,Riot / disturbance of public order,violent_offences,no
+1230,homicide,Manddrab,Homicide,violent_offences,yes
+1240,attempted_homicide,Forsøg på manddrab,Attempted homicide,violent_offences,yes
+1250,psychological_violence,Psykisk vold mv.,Psychological violence (close relationships),violent_offences,yes
+1252,assault,Simpel vold,Common assault,violent_offences,no
+1255,assault,Alvorligere vold,Aggravated assault,violent_offences,no
+1258,assault,Særlig alvorlig vold,Especially aggravated assault,violent_offences,no
+1260,assault,Vold mod sagesløs,Violence against a defenceless person,violent_offences,no
+1270,assault,Forsætlig legemskrænkelse i øvrigt,Other intentional bodily harm,violent_offences,no
+1280,assault,Forsætlig legemsbeskadigelse,Intentional bodily injury,violent_offences,no
+1283,negligent_homicide_injury,Uagtsomt manddrab/legemsbeskadigelse,Negligent manslaughter / bodily injury,violent_offences,yes
+1286,other_violence,Forbrydelse mod liv og legeme,Other offences against life and body,violent_offences,no
+1289,deprivation_of_liberty,Forbrydelse mod den personlige frihed,Offences against personal liberty,violent_offences,yes
+1292,threats,Trusler,Threats,violent_offences,no
+13,property_offences,Ejendomsforbrydelser i alt,Property offences in total,criminal_code,no
+1304,forgery,Dokumentfalsk,Forgery of documents,property_offences,no
+1308,forgery,Dokumentfalsk med check,Cheque forgery,property_offences,no
+1312,arson,Brandstiftelse,Arson,property_offences,no
+1316,burglary_non_residential,"Indbrud i forretning, virksomhed mv.","Burglary in shops, businesses etc.",property_offences,no
+1320,burglary,Indbrud i beboelser,Residential burglary,property_offences,no
+1324,burglary_non_residential,Indbrud i ubeboede bebyggelser,Burglary in uninhabited buildings,property_offences,no
+1328,theft_from_vehicle,"Tyveri fra bil, båd mv.","Theft from cars, boats etc.",property_offences,no
+1332,shoplifting,Butikstyverier mv.,Shoplifting etc.,property_offences,no
+1336,theft,Andre tyverier,Other theft,property_offences,no
+1339,vehicle_theft,Tyveri/brugstyveri af køretøj,Theft / joyriding of a motor vehicle,property_offences,no
+1342,vehicle_theft,Tyveri/brugstyveri af knallert,Theft / joyriding of a moped,property_offences,no
+1345,bicycle_theft,Tyveri/brugstyveri af cykel,Bicycle theft,property_offences,no
+1348,theft,Tyveri/brugstyveri af andet,Theft / unlawful use of other items,property_offences,no
+1351,other_property,Ulovlig omgang med hittegods,Unlawful handling of lost property,property_offences,no
+1354,embezzlement,Underslæb,Embezzlement,property_offences,no
+1357,fraud,Bedrageri,Fraud,property_offences,no
+1360,fraud,Checkbedrageri,Cheque fraud,property_offences,no
+1363,fraud,Mandatsvig,Breach of trust,property_offences,no
+1366,extortion,Afpresning og åger,Extortion and usury,property_offences,no
+1372,fraud,Skyldnersvig,Debtor fraud,property_offences,no
+1376,handling_stolen_goods,Hæleri,Handling stolen goods,property_offences,no
+1380,robbery_violence,Røveri,Robbery,property_offences,no
+1384,tax_fraud,Grov skattesvig mv.,Aggravated tax fraud etc.,property_offences,no
+1390,criminal_damage,Hærværk,Criminal damage,property_offences,no
+1394,handling_stolen_goods,Uagtsomt hæleri,Negligent handling of stolen goods,property_offences,no
+1398,other_property,Berigelsesforbrydelse og formuekrænkelse,Other acquisitive and property offences,property_offences,no
+14,other_criminal_code,Andre straffelovsforbrydelser i alt,Other Criminal Code offences in total,criminal_code,no
+1410,offences_against_authority,Forbrydelse mod offentlig myndighed mv.,Offences against public authority etc.,other_criminal_code,no
+1415,other,Forbrydelse i offentlig tjeneste,Offences in public office,other_criminal_code,no
+1420,perjury,Falsk forklaring for retten,Perjury in court,other_criminal_code,no
+1425,perjury,Falsk forklaring i øvrigt,Other false statements,other_criminal_code,no
+1430,counterfeiting,Forbrydelse vedrørende penge og bevismateriale,Offences concerning money and evidence,other_criminal_code,no
+1435,drug_trafficking,Salg af narkotika mv.,Sale of narcotics etc. (Criminal Code),other_criminal_code,no
+1440,drug_trafficking,Smugling mv. af narkotika,Smuggling of narcotics etc. (Criminal Code),other_criminal_code,no
+1445,other,Almenskadelige forbrydelser mv.,Offences causing public danger,other_criminal_code,no
+1450,other,Ulovligt erhverv mv.,Unlawful business etc.,other_criminal_code,no
+1455,family_offences,Forbrydelser i familieforhold,Offences in family relationships,other_criminal_code,yes
+1460,traffic_negligent_homicide,Uagtsomt manddrab mv. i forbindelse med færdselsuheld,Negligent manslaughter etc. in traffic accidents,other_criminal_code,yes
+1475,restraining_order_breach,Tilhold (Udgået 2012),Breach of a restraining order (discontinued 2012),other_criminal_code,no
+1485,privacy_defamation,Freds- og ærekrænkelser,Violations of privacy and defamation,other_criminal_code,no
+3,special_laws,Særlove i alt,Special legislation in total (Road Traffic Act excluded),total,no
+3210,drug_offences,Lov om euforiserende stoffer,Euphoriant Substances Act (drugs),special_laws,no
+3410,weapons,Våbenloven,Weapons Act,special_laws,no
+3610,tax_offences,Skatte- og afgiftslove mv.,Tax and duty laws,special_laws,no
+3810,other_special_laws,Andre strafferetlige særlove,Other penal special laws,special_laws,no
+3815,other_special_laws,Sundheds- og sociallove,Health and social laws,special_laws,no
+3820,other_special_laws,Bygge- og boliglove,Building and housing laws,special_laws,no
+3825,environmental,Miljøloven,Environmental Protection Act,special_laws,no
+3830,other_special_laws,"Love vedrørende dyr, jagt mv.","Laws on animals, hunting etc.",special_laws,no
+3835,other_special_laws,"Love vedrørende arbejde, transport mv.","Laws on work, transport etc.",special_laws,no
+3840,other_special_laws,Selskabs- og firmalovgivningen mv.,Company legislation etc.,special_laws,no
+3845,other_special_laws,Love vedrørende forsvaret o.l.,Laws on defence etc.,special_laws,no
+3850,other_special_laws,Love vedrørende offentlige forsyninger,Laws on public utilities,special_laws,no
+3855,other_special_laws,"Love vedrørende spil, bevilling, næring","Laws on gambling, licences, trade",special_laws,no
+3865,other_special_laws,Særlovgivning i øvrigt,Other special legislation,special_laws,no
+3870,other_special_laws,Uoplyst særlovgivning,"Special legislation, unspecified",special_laws,no

@@ -1,0 +1,16 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive,match_pattern
+OGOLEM,total,Przestępstwa stwierdzone ogółem,"All recorded offences (ogółem)",,no,"^og[oó][lł]em$|^przest[eę]pstwa( stwierdzone)? og[oó][lł]em"
+KRYMINALNE,unmapped,Przestępstwa o charakterze kryminalnym,"Criminal-character offences (alternative grouping, overlaps the chapters below)",,no,kryminaln
+GOSPODARCZE,unmapped,Przestępstwa o charakterze gospodarczym,"Economic-character offences (alternative grouping, overlaps the chapters below)",,no,"^o charakterze gospodarczym|charakterze gospodarcz"
+DROGOWE,unmapped,Przestępstwa drogowe,"Road traffic offences (not shown)",,no,drogow
+BEZPIECZENSTWO_KOMUNIKACJA,unmapped,Przestępstwa przeciwko bezpieczeństwu powszechnemu i bezpieczeństwu w komunikacji,"Offences against public safety and traffic safety (mostly drink-driving; not shown)",,no,bezpiecze
+ZYCIE_ZDROWIE,life_and_health,Przestępstwa przeciwko życiu i zdrowiu,"Offences against life and health (incl. homicide and assault)",total,no,"[zż]yci[ua]"
+MIENIE,property_offences,Przestępstwa przeciwko mieniu,"Property offences (theft, burglary, robbery, damage, fraud)",total,no,mieniu
+WOLNOSC_SEKSUALNA,liberty_sexual_offences,"Przestępstwa przeciwko wolności, wolności sumienia i wyznania, wolności seksualnej i obyczajności","Offences against liberty, freedom of conscience, sexual liberty and decency",total,yes,"wolno[sś]ci"
+RODZINA_OPIEKA,family_offences,Przestępstwa przeciwko rodzinie i opiece,"Offences against the family and guardianship (incl. domestic abuse)",total,yes,rodzinie
+INSTYTUCJE,offences_against_state_institutions,Przestępstwa przeciwko instytucjom państwowym i samorządu terytorialnego,Offences against state and local-government institutions,total,no,instytucjom
+WYMIAR_SPRAWIEDLIWOSCI,offences_against_justice,Przestępstwa przeciwko wymiarowi sprawiedliwości,Offences against the administration of justice,total,no,wymiarowi
+DOKUMENTY,document_fraud,Przestępstwa przeciwko wiarygodności dokumentów,Offences against the credibility of documents,total,no,wiarygodno
+OBROT_GOSPODARCZY,economic_offences,Przestępstwa przeciwko obrotowi gospodarczemu,Offences against economic transactions,total,no,obrotowi gospodarcz
+OBROT_PIENIEZNY,currency_offences,Przestępstwa przeciwko obrotowi pieniędzmi i papierami wartościowymi,Offences against monetary and securities transactions,total,no,"obrotowi pieni"
+NARKOMANIA,drug_offences,Przestępstwa z ustawy o przeciwdziałaniu narkomanii,Drug offences (Act on counteracting drug addiction),total,no,narkoman

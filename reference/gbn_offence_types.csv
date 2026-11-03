@@ -1,0 +1,24 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+Total police recorded crime,total,Total police recorded crime,Total police recorded crime,,no
+Violence with injury (including homicide & death/serious injury by unlawful driving),violence_with_injury,Violence with injury (incl. homicide),Violence with injury (incl. homicide and death or serious injury by unlawful driving),total,no
+Violence without injury (including harassment),violence_without_injury,Violence without injury (incl. harassment),Violence without injury (incl. harassment),total,no
+Sexual offences,sexual_offences,Sexual offences,Sexual offences,total,yes
+Robbery,robbery_violence,Robbery,Robbery,total,no
+Theft - burglary residential,burglary,Burglary - residential,Burglary - residential (from April 2017),total,no
+Theft - burglary business & community,burglary_non_residential,Burglary - business and community,Burglary - business and community (from April 2017),total,no
+Theft - domestic burglary,burglary,Domestic burglary,Domestic burglary (to March 2017),total,no
+Theft - non-domestic burglary,burglary_non_residential,Non-domestic burglary,Non-domestic burglary (to March 2017),total,no
+Theft from the person,theft_from_person,Theft from the person,Theft from the person,total,no
+Theft - vehicle offences,vehicle_offences,Vehicle offences,Vehicle offences (theft of and from vehicles),total,no
+Bicycle theft,bicycle_theft,Bicycle theft,Bicycle theft,total,no
+Theft - shoplifting,shoplifting,Shoplifting,Shoplifting,total,no
+Theft – shoplifting,shoplifting,Shoplifting,Shoplifting,total,no
+All other theft offences,theft,All other theft offences,All other theft offences,total,no
+Criminal damage,criminal_damage,Criminal damage,Criminal damage,total,no
+Trafficking of drugs,drug_trafficking,Trafficking of drugs,Trafficking of drugs,total,no
+Possession of drugs,drug_use,Possession of drugs,Possession of drugs,total,no
+Possession of weapons offences,weapons,Possession of weapons offences,Possession of weapons offences,total,no
+Public order offences,public_order,Public order offences,Public order offences,total,no
+Miscellaneous crimes against society,other,Miscellaneous crimes against society,Miscellaneous crimes against society,total,no
+Violence without injury,violence_without_injury,Violence without injury,Violence without injury (from April 2019, harassment shown separately),total,no
+Harassment,harassment,Harassment,Harassment (from April 2019),total,no

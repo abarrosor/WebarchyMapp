@@ -1,0 +1,44 @@
+pfa_code,pfa_name,force_name
+E23000001,Metropolitan Police,Metropolitan Police
+E23000002,Cumbria,Cumbria
+E23000003,Lancashire,Lancashire
+E23000004,Merseyside,Merseyside
+E23000005,Greater Manchester,Greater Manchester
+E23000006,Cheshire,Cheshire
+E23000007,Northumbria,Northumbria
+E23000008,Durham,Durham
+E23000009,North Yorkshire,North Yorkshire
+E23000010,West Yorkshire,West Yorkshire
+E23000011,South Yorkshire,South Yorkshire
+E23000012,Humberside,Humberside
+E23000013,Cleveland,Cleveland
+E23000014,West Midlands,West Midlands
+E23000015,Staffordshire,Staffordshire
+E23000016,West Mercia,West Mercia
+E23000017,Warwickshire,Warwickshire
+E23000018,Derbyshire,Derbyshire
+E23000019,Nottinghamshire,Nottinghamshire
+E23000020,Lincolnshire,Lincolnshire
+E23000021,Leicestershire,Leicestershire
+E23000022,Northamptonshire,Northamptonshire
+E23000023,Cambridgeshire,Cambridgeshire
+E23000024,Norfolk,Norfolk
+E23000025,Suffolk,Suffolk
+E23000026,Bedfordshire,Bedfordshire
+E23000027,Hertfordshire,Hertfordshire
+E23000028,Essex,Essex
+E23000029,Thames Valley,Thames Valley
+E23000030,Hampshire,Hampshire
+E23000031,Surrey,Surrey
+E23000032,Kent,Kent
+E23000033,Sussex,Sussex
+E23000034,"London, City of",City of London
+E23000035,Devon & Cornwall,Devon and Cornwall
+E23000036,Avon and Somerset,Avon and Somerset
+E23000037,Gloucestershire,Gloucestershire
+E23000038,Wiltshire,Wiltshire
+E23000039,Dorset,Dorset
+W15000001,North Wales,North Wales
+W15000002,Gwent,Gwent
+W15000003,South Wales,South Wales
+W15000004,Dyfed-Powys,Dyfed-Powys

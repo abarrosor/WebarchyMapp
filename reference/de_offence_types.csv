@@ -1,0 +1,39 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+------,total,Straftaten insgesamt,"All offences (Straftaten insgesamt, official total)",,no
+000000,offences_against_life,Straftaten gegen das Leben,Offences against life,total,yes
+010000,homicide,Mord (§ 211 StGB),Murder,offences_against_life,yes
+020000,homicide,"Totschlag und Tötung auf Verlangen (§§ 212, 213, 216 StGB)",Manslaughter and killing on request,offences_against_life,yes
+100000,sexual_offences,Straftaten gegen die sexuelle Selbstbestimmung,Sexual offences,total,yes
+111000,rape,"Vergewaltigung, sexuelle Nötigung und sexueller Übergriff (§§ 177, 178 StGB)","Rape, sexual coercion and sexual assault",sexual_offences,yes
+131000,sexual_offences_minors,Sexueller Missbrauch von Kindern (§§ 176-176e StGB),Sexual abuse of children,sexual_offences,yes
+200000,violence_offences,Rohheitsdelikte und Straftaten gegen die persönliche Freiheit,Violent offences and offences against personal liberty,total,no
+210000,robbery_violence,"Raub, räuberische Erpressung und räuberischer Angriff auf Kraftfahrer (§§ 249-252, 255, 316a StGB)",Robbery and extortion with violence,violence_offences,no
+220000,assault,"Körperverletzung (§§ 223-227, 229, 231 StGB)",Bodily harm,violence_offences,no
+222000,assault_aggravated,"Gefährliche und schwere Körperverletzung, Verstümmelung weiblicher Genitalien (§§ 224, 226, 226a, 231 StGB)",Dangerous and grievous bodily harm,assault,no
+224000,assault_simple,Vorsätzliche einfache Körperverletzung (§ 223 StGB),Intentional simple bodily harm,assault,no
+230000,liberty_offences,Straftaten gegen die persönliche Freiheit,Offences against personal liberty,violence_offences,no
+232100,coercion,Nötigung (§ 240 StGB),Coercion,liberty_offences,no
+232200,threats,Bedrohung (§ 241 StGB),Threats,liberty_offences,no
+******,theft,Diebstahl insgesamt,"Theft, total",total,no
+3*****,theft_simple,Diebstahl ohne erschwerende Umstände (§§ 242 ff. StGB),Theft without aggravating circumstances,theft,no
+4*****,theft_aggravated,Diebstahl unter erschwerenden Umständen (§§ 243-244a StGB),Theft under aggravating circumstances,theft,no
+435*00,burglary,Wohnungseinbruchdiebstahl (§ 244 Abs. 1 Nr. 3 und Abs. 4 StGB),Residential burglary,theft_aggravated,no
+***100,vehicle_theft,Diebstahl von Kraftwagen,Theft of motor cars,theft,no
+***300,bicycle_theft,Diebstahl von Fahrrädern,Bicycle theft,theft,no
+***700,theft_from_vehicle,Diebstahl an/aus Kraftfahrzeugen,Theft from or of parts of motor vehicles,theft,no
+*26*00,shoplifting,Ladendiebstahl,Shoplifting,theft,no
+*35*00,theft_from_dwelling,Diebstahl in/aus Wohnungen,Theft in or from dwellings,theft,no
+500000,fraud_forgery,Vermögens- und Fälschungsdelikte,Fraud and forgery offences,total,no
+510000,fraud,"Betrug (§§ 263, 263a, 264, 264a, 265, 265a-e StGB)",Fraud,fraud_forgery,no
+600000,other_stgb,Sonstige Straftatbestände (StGB),Other offences of the Criminal Code,total,no
+674000,criminal_damage,Sachbeschädigung (§§ 303-305a StGB),Criminal damage,other_stgb,no
+700000,other_laws,Strafrechtliche Nebengesetze,Offences under other federal criminal laws,total,no
+726200,weapons,Straftaten gegen das Waffengesetz,Weapons Act offences,other_laws,no
+730000,drug_offences,Rauschgiftdelikte (BtMG),Drug offences (Narcotics Act),other_laws,no
+710000,unmapped,"Straftaten gegen das Aufenthalts-, das Asyl- und das Freizügigkeitsgesetz/EU",Immigration-law offences (not shown by area),other_laws,no
+891000,unmapped,Wirtschaftskriminalität (Summenschlüssel),Economic crime (summary key: overlaps other groups),,no
+892000,unmapped,Gewaltkriminalität (Summenschlüssel),Violent crime (summary key: overlaps other groups),,no
+893000,unmapped,Rauschgiftkriminalität (Summenschlüssel),Drug-related crime (summary key: overlaps other groups),,no
+897000,unmapped,Computerkriminalität (Summenschlüssel),Cybercrime (summary key: overlaps other groups),,no
+898000,unmapped,Umweltkriminalität (Summenschlüssel),Environmental crime (summary key: overlaps other groups),,no
+899000,unmapped,Straßenkriminalität (Summenschlüssel),Street crime (summary key: overlaps other groups),,no

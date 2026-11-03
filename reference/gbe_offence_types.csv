@@ -1,0 +1,36 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+TOTAL_RECORDED,total,"All offence groups excluding fraud (sum, not an official total)","All offence groups excluding fraud (sum, not an official total)",,no
+Violence against the person,violence_against_person,Violence against the person,Violence against the person,total,no
+Homicide,homicide,Homicide,Homicide,violence_against_person,yes
+Death or serious injury - unlawful driving,death_unlawful_driving,Death or serious injury caused by unlawful driving,Death or serious injury caused by unlawful driving,violence_against_person,yes
+Death or serious injury caused by unlawful driving,death_unlawful_driving,Death or serious injury caused by unlawful driving,Death or serious injury caused by unlawful driving,violence_against_person,yes
+Violence with injury,violence_with_injury,Violence with injury,Violence with injury,violence_against_person,no
+Violence without injury,violence_without_injury,Violence without injury,Violence without injury,violence_against_person,no
+Stalking and harassment,stalking_harassment,Stalking and harassment,Stalking and harassment,violence_against_person,no
+Sexual offences,sexual_offences,Sexual offences,Sexual offences,total,yes
+Rape,rape,Rape,Rape,sexual_offences,yes
+Other sexual offences,other_sexual_offences,Other sexual offences,Other sexual offences,sexual_offences,yes
+Robbery,robbery_violence,Robbery,Robbery,total,no
+Robbery of business property,robbery_business,Robbery of business property,Robbery of business property,robbery_violence,no
+Robbery of personal property,robbery_personal,Robbery of personal property,Robbery of personal property,robbery_violence,no
+Theft offences,theft_offences,Theft offences,Theft offences,total,no
+Burglary,burglary,Burglary,Burglary,theft_offences,no
+Residential burglary,burglary,Residential burglary,Residential burglary,theft_offences,no
+Non-residential burglary,burglary_non_residential,Non-residential burglary,Non-residential burglary,theft_offences,no
+Domestic burglary,burglary,Domestic burglary,Domestic burglary (to March 2017),theft_offences,no
+Non-domestic burglary,burglary_non_residential,Non-domestic burglary,Non-domestic burglary (to March 2017),theft_offences,no
+Vehicle offences,vehicle_offences,Vehicle offences,Vehicle offences (theft of and from vehicles),theft_offences,no
+Theft from the person,theft_from_person,Theft from the person,Theft from the person,theft_offences,no
+Bicycle theft,bicycle_theft,Bicycle theft,Bicycle theft,theft_offences,no
+Shoplifting,shoplifting,Shoplifting,Shoplifting,theft_offences,no
+All other theft offences,theft,All other theft offences,All other theft offences,theft_offences,no
+Criminal damage and arson,criminal_damage,Criminal damage and arson,Criminal damage and arson,total,no
+Arson,arson,Arson,Arson,criminal_damage,no
+Criminal damage,criminal_damage_only,Criminal damage,Criminal damage (excluding arson),criminal_damage,no
+Drug offences,drug_offences,Drug offences,Drug offences,total,no
+Trafficking of drugs,drug_trafficking,Trafficking of drugs,Trafficking of drugs,drug_offences,no
+Possession of drugs,drug_use,Possession of drugs,Possession of drugs,drug_offences,no
+Possession of weapons offences,weapons,Possession of weapons offences,Possession of weapons offences,total,no
+Public order offences,public_order,Public order offences,Public order offences,total,no
+Miscellaneous crimes against society,other,Miscellaneous crimes against society,Miscellaneous crimes against society,total,no
+Fraud offences,unmapped,Fraud offences,Fraud offences (recorded centrally by Action Fraud; excluded),,no

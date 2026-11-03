@@ -1,0 +1,14 @@
+province_code,iso_3166_2,name_en,name_fr,dguid
+10,CA-NL,Newfoundland and Labrador,Terre-Neuve-et-Labrador,2021A000210
+11,CA-PE,Prince Edward Island,Île-du-Prince-Édouard,2021A000211
+12,CA-NS,Nova Scotia,Nouvelle-Écosse,2021A000212
+13,CA-NB,New Brunswick,Nouveau-Brunswick,2021A000213
+24,CA-QC,Quebec,Québec,2021A000224
+35,CA-ON,Ontario,Ontario,2021A000235
+46,CA-MB,Manitoba,Manitoba,2021A000246
+47,CA-SK,Saskatchewan,Saskatchewan,2021A000247
+48,CA-AB,Alberta,Alberta,2021A000248
+59,CA-BC,British Columbia,Colombie-Britannique,2021A000259
+60,CA-YT,Yukon,Yukon,2021A000260
+61,CA-NT,Northwest Territories,Territoires du Nord-Ouest,2021A000261
+62,CA-NU,Nunavut,Nunavut,2021A000262

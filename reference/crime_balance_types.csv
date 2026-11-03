@@ -1,0 +1,21 @@
+source_text,offence_type_id,included_in,sensitive,name_es,name_en,note
+CRIMINALIDAD CONVENCIONAL,conventional_total,total,no,Criminalidad convencional (total),Conventional crime (total),Published since 2022
+Homicidios dolosos y asesinatos consumados,homicides_completed,conventional_total,yes,Homicidios y asesinatos consumados,Completed homicides and murders,
+Homicidios dolosos y asesinatos en grado tentativa,homicides_attempted,conventional_total,yes,Homicidios y asesinatos en tentativa,Attempted homicides and murders,
+Delitos graves y menos graves de lesiones y riña tumultuaria,assault_brawl,conventional_total,no,Lesiones y riña tumultuaria,Assault and brawls,
+Secuestro,kidnapping,conventional_total,yes,Secuestro,Kidnapping,
+Delitos contra la libertad sexual,sexual_offences,conventional_total,yes,Delitos contra la libertad sexual,Sexual offences,"Published until 2021 as 'libertad e indemnidad sexual'"
+Agresión sexual con penetración,rape,sexual_offences,yes,Agresión sexual con penetración,Rape,
+Resto de delitos contra la libertad sexual,sexual_offences_other,sexual_offences,yes,Resto de delitos contra la libertad sexual,Other sexual offences,
+Robos con violencia e intimidación,robbery_violence,conventional_total,no,Robos con violencia o intimidación,Robbery with violence or intimidation,
+"Robos con fuerza en domicilios, establecimientos y otras instalaciones",burglary,conventional_total,no,Robos con fuerza,Burglary,"Homes, premises and other facilities"
+Robos con fuerza en domicilios,burglary_homes,burglary,no,Robos con fuerza en domicilios,Residential burglary,
+Hurtos,theft,conventional_total,no,Hurtos,Theft,
+Sustracciones de vehículos,vehicle_theft,conventional_total,no,Sustracción de vehículos,Vehicle theft,
+Tráfico de drogas,drug_trafficking,conventional_total,no,Tráfico de drogas,Drug trafficking,
+Resto de criminalidad convencional,conventional_other,conventional_total,no,Resto de criminalidad convencional,Other conventional crime,Published since 2022
+Resto de infracciones penales,other_offences,total,no,Resto de infracciones penales,Other criminal offences,"Published until 2021; includes cybercrime, not comparable with conventional_other"
+CIBERCRIMINALIDAD (infracciones penales cometidas en/por medio ciber),cyber_total,total,no,Cibercriminalidad (total),Cybercrime (total),Published since 2022
+Estafas informáticas,cyber_fraud,cyber_total,no,Estafas informáticas,Online fraud,Published since 2022
+Otros ciberdelitos,cyber_other,cyber_total,no,Otros ciberdelitos,Other cybercrime,Published since 2022
+TOTAL INFRACCIONES PENALES,total,,no,Total de infracciones penales,Total criminal offences,

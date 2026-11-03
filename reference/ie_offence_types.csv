@@ -1,0 +1,87 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+TOTAL_GROUPS,total,"All ICCS groups (sum of the 16 groups, not an official total)","All ICCS groups (sum of the 16 groups, not an official total)",,no
+01,homicide,Homicide & related offences,Homicide & related offences,total,yes
+0111,murder,Murder,Murder,homicide,yes
+0112,manslaughter,Manslaughter,Manslaughter,homicide,yes
+0113,infanticide,Infanticide,Infanticide,homicide,yes
+012,dangerous_driving_death,Dangerous driving leading to death,Dangerous driving leading to death,homicide,yes
+02,sexual_offences,Sexual offences,Sexual offences,total,yes
+021,rape_sexual_assault,Rape and sexual assault,Rape and sexual assault,sexual_offences,yes
+022,other_sexual_offences,Other sexual offences,Other sexual offences,sexual_offences,yes
+03,assault,"Attempts/threats to murder, assaults, harassments and related offences","Attempts/threats to murder, assaults, harassments and related offences",total,no
+0311,attempted_homicide,Murder-attempt,Murder-attempt,assault,yes
+0313,threat_to_kill,Threat to kill or cause serious harm,Threat to kill or cause serious harm,assault,no
+033,harassment,Harassment and related offences,Harassment and related offences,assault,no
+034,assault_causing_harm,"Assault causing harm, poisoning","Assault causing harm, poisoning",assault,no
+035,other_assault,Other assault,Other assault,assault,no
+04,dangerous_acts,Dangerous or negligent acts,Dangerous or negligent acts,total,no
+0411,dangerous_driving_harm,Dangerous driving causing serious bodily harm,Dangerous driving causing serious bodily harm,dangerous_acts,no
+0412,drink_driving,Driving/in charge of a vehicle while over legal alcohol limit,Driving/in charge of a vehicle while over legal alcohol limit,dangerous_acts,no
+0412_13,intoxicated_driving,"Driving/in charge of a vehicle while intoxicated (alcohol and/or drugs, from 2025)","Driving/in charge of a vehicle while intoxicated (alcohol and/or drugs, from 2025)",dangerous_acts,no
+0413,drug_driving,Driving/in charge of a vehicle under the influence of drugs,Driving/in charge of a vehicle under the influence of drugs,dangerous_acts,no
+0414,careless_driving,Dangerous/careless driving and motorway offences,Dangerous/careless driving and motorway offences,dangerous_acts,no
+0415,speeding,Speeding,Speeding,dangerous_acts,no
+0421,endangerment,Endangerment with potential for serious harm/death,Endangerment with potential for serious harm/death,dangerous_acts,no
+0422,child_neglect,"Abandoning a child, child neglect and cruelty","Abandoning a child, child neglect and cruelty",dangerous_acts,yes
+0423,dangerous_boat_use,Unseaworthy/dangerous use of boat or ship,Unseaworthy/dangerous use of boat or ship,dangerous_acts,no
+0424,aircraft_interference,False alarm/interference with aircraft or air transport facilities,False alarm/interference with aircraft or air transport facilities,dangerous_acts,no
+0425,endangering_traffic,Endangering traffic offences,Endangering traffic offences,dangerous_acts,no
+05,kidnapping,Kidnapping and related offences,Kidnapping and related offences,total,yes
+0511,false_imprisonment,False imprisonment,False imprisonment,kidnapping,yes
+0512,child_abduction,Abduction of person under 16 years of age,Abduction of person under 16 years of age,kidnapping,yes
+0513,human_trafficking,Human trafficking offences,Human trafficking offences,kidnapping,yes
+06,robbery_violence,"Robbery, extortion and hijacking offences","Robbery, extortion and hijacking offences",total,no
+0611,robbery_establishment,Robbery of an establishment or institution,Robbery of an establishment or institution,robbery_violence,no
+0612,robbery_in_transit,Robbery of cash or goods in transit,Robbery of cash or goods in transit,robbery_violence,no
+0613,robbery_from_person,Robbery from the person,Robbery from the person,robbery_violence,no
+0621,extortion,Blackmail or extortion,Blackmail or extortion,robbery_violence,no
+0631,hijacking,"Carjacking, hijacking/unlawful seizure of aircraft/vessel","Carjacking, hijacking/unlawful seizure of aircraft/vessel",robbery_violence,no
+07,burglary,Burglary and related offences,Burglary and related offences,total,no
+0711,aggravated_burglary,Aggravated burglary,Aggravated burglary,burglary,no
+0712,burglary_not_aggravated,Burglary (not aggravated),Burglary (not aggravated),burglary,no
+0713,going_equipped,"Possession of an article (with intent to burgle, steal, demand)","Possession of an article (with intent to burgle, steal, demand)",burglary,no
+08,theft,Theft and related offences,Theft and related offences,total,no
+081,vehicle_theft,Theft/taking of vehicle and related offences,Theft/taking of vehicle and related offences,theft,no
+0821,theft_from_person,Theft from person,Theft from person,theft,no
+0822,shoplifting,Theft from shop,Theft from shop,theft,no
+084,other_theft,"Other thefts, handling stolen property","Other thefts, handling stolen property",theft,no
+09,fraud,"Fraud, deception and related offences","Fraud, deception and related offences",total,no
+10,drug_offences,Controlled drug offences,Controlled drug offences,total,no
+1011,drug_importation,Importation of drugs,Importation of drugs,drug_offences,no
+1012,drug_cultivation,Cultivation or manufacture of drugs,Cultivation or manufacture of drugs,drug_offences,no
+1021,drug_trafficking,Possession of drugs for sale or supply,Possession of drugs for sale or supply,drug_offences,no
+1022,drug_use,Possession of drugs for personal use,Possession of drugs for personal use,drug_offences,no
+103,other_drug_offences,Other drug offences,Other drug offences,drug_offences,no
+11,weapons,Weapons and explosives offences,Weapons and explosives offences,total,no
+111,explosives,"Explosives, chemical weapons offences","Explosives, chemical weapons offences",weapons,no
+1121,discharging_firearm,Discharging a firearm,Discharging a firearm,weapons,no
+1122,firearm_possession,Possession of a firearm,Possession of a firearm,weapons,no
+113,offensive_weapons,Offensive weapons offences (n.e.c.),Offensive weapons offences (n.e.c.),weapons,no
+114,fireworks,Fireworks offences,Fireworks offences,weapons,no
+12,criminal_damage,Damage to property and to the environment offences,Damage to property and to the environment offences,total,no
+1211,arson,Arson,Arson,criminal_damage,no
+1212,criminal_damage_not_arson,Criminal damage (not arson),Criminal damage (not arson),criminal_damage,no
+1221,litter,Litter offences,Litter offences,criminal_damage,no
+13,public_order,Public order and other social code offences,Public order and other social code offences,total,no
+131,disorderly_conduct,Disorderly conduct,Disorderly conduct,public_order,no
+132,trespass,Trespass offences,Trespass offences,public_order,no
+133,liquor_licensing,Liquor licensing offences,Liquor licensing offences,public_order,no
+134,prostitution,Prostitution offences,Prostitution offences,public_order,no
+135,betting_offences,"Regulated betting/money, collection/trading offences","Regulated betting/money, collection/trading offences",public_order,no
+136,social_code_nec,Social code offences (n.e.c.),Social code offences (n.e.c.),public_order,no
+14,road_traffic_offences,Road and traffic offences,Road and traffic offences,total,no
+1411,driving_licence_offences,"Driving licence-failure to have, produce, etc.","Driving licence-failure to have, produce, etc.",road_traffic_offences,no
+1412,insurance_offences,"Insurance-failure to have, produce, display, etc.","Insurance-failure to have, produce, display, etc.",road_traffic_offences,no
+142,vehicle_tax_offences,Vehicle tax/registration offences,Vehicle tax/registration offences,road_traffic_offences,no
+143,roadworthiness_offences,Roadworthiness/regulatory offences,Roadworthiness/regulatory offences,road_traffic_offences,no
+1432,road_traffic_obstruction,Obstruction under Road Traffic Acts,Obstruction under Road Traffic Acts,road_traffic_offences,no
+1433,other_road_offences,Other road offences,Other road offences,road_traffic_offences,no
+1441,goods_carriage_offences,Road transport - carriage of goods offences,Road transport - carriage of goods offences,road_traffic_offences,no
+1442,psv_offences,Public service vehicle offences,Public service vehicle offences,road_traffic_offences,no
+1443,light_rail_offences,Light rail offences (Luas),Light rail offences (Luas),road_traffic_offences,no
+15,offences_against_government,"Offences against government, justice procedures and organisation of crime","Offences against government, justice procedures and organisation of crime",total,no
+151,offences_against_government_agents,Offences against government and its agents,Offences against government and its agents,offences_against_government,no
+152,organised_crime,Organisation of crime and conspiracy to commit crime,Organisation of crime and conspiracy to commit crime,offences_against_government,no
+153,perverting_justice,Perverting the course of justice,Perverting the course of justice,offences_against_government,no
+157,custody_court_order_breach,"Offences while in custody, breach of court orders","Offences while in custody, breach of court orders",offences_against_government,no
+16,other,Offences not elsewhere classified,Offences not elsewhere classified,total,no

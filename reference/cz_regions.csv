@@ -1,0 +1,15 @@
+code,nuts3,name_cs,name_en,match_pattern
+10,CZ010,Hlavní město Praha,Prague,"^hl\.? ?m\.? praha|hlavní město praha|^praha"
+20,CZ020,Středočeský kraj,Central Bohemian Region,středočesk
+31,CZ031,Jihočeský kraj,South Bohemian Region,jihočesk
+32,CZ032,Plzeňský kraj,Plzeň Region,plzeňsk
+41,CZ041,Karlovarský kraj,Karlovy Vary Region,karlovarsk
+42,CZ042,Ústecký kraj,Ústí nad Labem Region,ústeck
+51,CZ051,Liberecký kraj,Liberec Region,libereck
+52,CZ052,Královéhradecký kraj,Hradec Králové Region,královéhradeck
+53,CZ053,Pardubický kraj,Pardubice Region,pardubick
+63,CZ063,Kraj Vysočina,Vysočina Region,vysočin
+64,CZ064,Jihomoravský kraj,South Moravian Region,jihomoravsk
+71,CZ071,Olomoucký kraj,Olomouc Region,olomouck
+72,CZ072,Zlínský kraj,Zlín Region,zlínsk
+80,CZ080,Moravskoslezský kraj,Moravian-Silesian Region,moravskoslezsk

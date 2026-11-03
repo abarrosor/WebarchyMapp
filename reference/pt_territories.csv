@@ -1,0 +1,344 @@
+ine_code,level,parent_code,dico,name
+11,region,PT,,Norte
+15,region,PT,,Algarve
+19,region,PT,,Centro
+1A,region,PT,,Grande Lisboa
+1B,region,PT,,Península de Setúbal
+1C,region,PT,,Alentejo
+1D,region,PT,,Oeste e Vale do Tejo
+20,region,PT,,Região Autónoma dos Açores
+30,region,PT,,Região Autónoma da Madeira
+111,province,11,,Alto Minho
+112,province,11,,Cávado
+119,province,11,,Ave
+11A,province,11,,Área Metropolitana do Porto
+11B,province,11,,Alto Tâmega e Barroso
+11C,province,11,,Tâmega e Sousa
+11D,province,11,,Douro
+11E,province,11,,Terras de Trás-os-Montes
+150,province,15,,Algarve
+191,province,19,,Região de Aveiro
+192,province,19,,Região de Coimbra
+193,province,19,,Região de Leiria
+194,province,19,,Viseu Dão Lafões
+195,province,19,,Beira Baixa
+196,province,19,,Beiras e Serra da Estrela
+1A0,province,1A,,Grande Lisboa
+1B0,province,1B,,Península de Setúbal
+1C1,province,1C,,Alentejo Litoral
+1C2,province,1C,,Baixo Alentejo
+1C3,province,1C,,Alto Alentejo
+1C4,province,1C,,Alentejo Central
+1D1,province,1D,,Oeste
+1D2,province,1D,,Médio Tejo
+1D3,province,1D,,Lezíria do Tejo
+200,province,20,,Região Autónoma dos Açores
+300,province,30,,Região Autónoma da Madeira
+1111601,municipality,111,1601,Arcos de Valdevez
+1111602,municipality,111,1602,Caminha
+1111603,municipality,111,1603,Melgaço
+1111604,municipality,111,1604,Monção
+1111605,municipality,111,1605,Paredes de Coura
+1111606,municipality,111,1606,Ponte da Barca
+1111607,municipality,111,1607,Ponte de Lima
+1111608,municipality,111,1608,Valença
+1111609,municipality,111,1609,Viana do Castelo
+1111610,municipality,111,1610,Vila Nova de Cerveira
+1120301,municipality,112,0301,Amares
+1120302,municipality,112,0302,Barcelos
+1120303,municipality,112,0303,Braga
+1120306,municipality,112,0306,Esposende
+1120310,municipality,112,0310,Terras de Bouro
+1120313,municipality,112,0313,Vila Verde
+1190304,municipality,119,0304,Cabeceiras de Basto
+1190307,municipality,119,0307,Fafe
+1190308,municipality,119,0308,Guimarães
+1190309,municipality,119,0309,Póvoa de Lanhoso
+1190311,municipality,119,0311,Vieira do Minho
+1190312,municipality,119,0312,Vila Nova de Famalicão
+1190314,municipality,119,0314,Vizela
+1191705,municipality,119,1705,Mondim de Basto
+11A0104,municipality,11A,0104,Arouca
+11A0107,municipality,11A,0107,Espinho
+11A0109,municipality,11A,0109,Santa Maria da Feira
+11A0113,municipality,11A,0113,Oliveira de Azeméis
+11A0116,municipality,11A,0116,São João da Madeira
+11A0119,municipality,11A,0119,Vale de Cambra
+11A1304,municipality,11A,1304,Gondomar
+11A1306,municipality,11A,1306,Maia
+11A1308,municipality,11A,1308,Matosinhos
+11A1310,municipality,11A,1310,Paredes
+11A1312,municipality,11A,1312,Porto
+11A1313,municipality,11A,1313,Póvoa de Varzim
+11A1314,municipality,11A,1314,Santo Tirso
+11A1315,municipality,11A,1315,Valongo
+11A1316,municipality,11A,1316,Vila do Conde
+11A1317,municipality,11A,1317,Vila Nova de Gaia
+11A1318,municipality,11A,1318,Trofa
+11B1702,municipality,11B,1702,Boticas
+11B1703,municipality,11B,1703,Chaves
+11B1706,municipality,11B,1706,Montalegre
+11B1709,municipality,11B,1709,Ribeira de Pena
+11B1712,municipality,11B,1712,Valpaços
+11B1713,municipality,11B,1713,Vila Pouca de Aguiar
+11C0106,municipality,11C,0106,Castelo de Paiva
+11C0305,municipality,11C,0305,Celorico de Basto
+11C1301,municipality,11C,1301,Amarante
+11C1302,municipality,11C,1302,Baião
+11C1303,municipality,11C,1303,Felgueiras
+11C1305,municipality,11C,1305,Lousada
+11C1307,municipality,11C,1307,Marco de Canaveses
+11C1309,municipality,11C,1309,Paços de Ferreira
+11C1311,municipality,11C,1311,Penafiel
+11C1804,municipality,11C,1804,Cinfães
+11C1813,municipality,11C,1813,Resende
+11D0403,municipality,11D,0403,Carrazeda de Ansiães
+11D0404,municipality,11D,0404,Freixo de Espada à Cinta
+11D0409,municipality,11D,0409,Torre de Moncorvo
+11D0914,municipality,11D,0914,Vila Nova de Foz Côa
+11D1701,municipality,11D,1701,Alijó
+11D1704,municipality,11D,1704,Mesão Frio
+11D1707,municipality,11D,1707,Murça
+11D1708,municipality,11D,1708,Peso da Régua
+11D1710,municipality,11D,1710,Sabrosa
+11D1711,municipality,11D,1711,Santa Marta de Penaguião
+11D1714,municipality,11D,1714,Vila Real
+11D1801,municipality,11D,1801,Armamar
+11D1805,municipality,11D,1805,Lamego
+11D1807,municipality,11D,1807,Moimenta da Beira
+11D1812,municipality,11D,1812,Penedono
+11D1815,municipality,11D,1815,São João da Pesqueira
+11D1818,municipality,11D,1818,Sernancelhe
+11D1819,municipality,11D,1819,Tabuaço
+11D1820,municipality,11D,1820,Tarouca
+11E0401,municipality,11E,0401,Alfândega da Fé
+11E0402,municipality,11E,0402,Bragança
+11E0405,municipality,11E,0405,Macedo de Cavaleiros
+11E0406,municipality,11E,0406,Miranda do Douro
+11E0407,municipality,11E,0407,Mirandela
+11E0408,municipality,11E,0408,Mogadouro
+11E0410,municipality,11E,0410,Vila Flor
+11E0411,municipality,11E,0411,Vimioso
+11E0412,municipality,11E,0412,Vinhais
+1500801,municipality,150,0801,Albufeira
+1500802,municipality,150,0802,Alcoutim
+1500803,municipality,150,0803,Aljezur
+1500804,municipality,150,0804,Castro Marim
+1500805,municipality,150,0805,Faro
+1500806,municipality,150,0806,Lagoa
+1500807,municipality,150,0807,Lagos
+1500808,municipality,150,0808,Loulé
+1500809,municipality,150,0809,Monchique
+1500810,municipality,150,0810,Olhão
+1500811,municipality,150,0811,Portimão
+1500812,municipality,150,0812,São Brás de Alportel
+1500813,municipality,150,0813,Silves
+1500814,municipality,150,0814,Tavira
+1500815,municipality,150,0815,Vila do Bispo
+1500816,municipality,150,0816,Vila Real de Santo António
+1910101,municipality,191,0101,Águeda
+1910102,municipality,191,0102,Albergaria-a-Velha
+1910103,municipality,191,0103,Anadia
+1910105,municipality,191,0105,Aveiro
+1910108,municipality,191,0108,Estarreja
+1910110,municipality,191,0110,Ílhavo
+1910112,municipality,191,0112,Murtosa
+1910114,municipality,191,0114,Oliveira do Bairro
+1910115,municipality,191,0115,Ovar
+1910117,municipality,191,0117,Sever do Vouga
+1910118,municipality,191,0118,Vagos
+1920111,municipality,192,0111,Mealhada
+1920601,municipality,192,0601,Arganil
+1920602,municipality,192,0602,Cantanhede
+1920603,municipality,192,0603,Coimbra
+1920604,municipality,192,0604,Condeixa-a-Nova
+1920605,municipality,192,0605,Figueira da Foz
+1920606,municipality,192,0606,Góis
+1920607,municipality,192,0607,Lousã
+1920608,municipality,192,0608,Mira
+1920609,municipality,192,0609,Miranda do Corvo
+1920610,municipality,192,0610,Montemor-o-Velho
+1920611,municipality,192,0611,Oliveira do Hospital
+1920612,municipality,192,0612,Pampilhosa da Serra
+1920613,municipality,192,0613,Penacova
+1920614,municipality,192,0614,Penela
+1920615,municipality,192,0615,Soure
+1920616,municipality,192,0616,Tábua
+1920617,municipality,192,0617,Vila Nova de Poiares
+1921808,municipality,192,1808,Mortágua
+1931002,municipality,193,1002,Alvaiázere
+1931003,municipality,193,1003,Ansião
+1931004,municipality,193,1004,Batalha
+1931007,municipality,193,1007,Castanheira de Pêra
+1931008,municipality,193,1008,Figueiró dos Vinhos
+1931009,municipality,193,1009,Leiria
+1931010,municipality,193,1010,Marinha Grande
+1931013,municipality,193,1013,Pedrógão Grande
+1931015,municipality,193,1015,Pombal
+1931016,municipality,193,1016,Porto de Mós
+1940901,municipality,194,0901,Aguiar da Beira
+1941802,municipality,194,1802,Carregal do Sal
+1941803,municipality,194,1803,Castro Daire
+1941806,municipality,194,1806,Mangualde
+1941809,municipality,194,1809,Nelas
+1941810,municipality,194,1810,Oliveira de Frades
+1941811,municipality,194,1811,Penalva do Castelo
+1941814,municipality,194,1814,Santa Comba Dão
+1941816,municipality,194,1816,São Pedro do Sul
+1941817,municipality,194,1817,Sátão
+1941821,municipality,194,1821,Tondela
+1941822,municipality,194,1822,Vila Nova de Paiva
+1941823,municipality,194,1823,Viseu
+1941824,municipality,194,1824,Vouzela
+1950502,municipality,195,0502,Castelo Branco
+1950505,municipality,195,0505,Idanha-a-Nova
+1950506,municipality,195,0506,Oleiros
+1950507,municipality,195,0507,Penamacor
+1950508,municipality,195,0508,Proença-a-Nova
+1950509,municipality,195,0509,Sertã
+1950510,municipality,195,0510,Vila de Rei
+1950511,municipality,195,0511,Vila Velha de Ródão
+1960501,municipality,196,0501,Belmonte
+1960503,municipality,196,0503,Covilhã
+1960504,municipality,196,0504,Fundão
+1960902,municipality,196,0902,Almeida
+1960903,municipality,196,0903,Celorico da Beira
+1960904,municipality,196,0904,Figueira de Castelo Rodrigo
+1960905,municipality,196,0905,Fornos de Algodres
+1960906,municipality,196,0906,Gouveia
+1960907,municipality,196,0907,Guarda
+1960908,municipality,196,0908,Manteigas
+1960909,municipality,196,0909,Mêda
+1960910,municipality,196,0910,Pinhel
+1960911,municipality,196,0911,Sabugal
+1960912,municipality,196,0912,Seia
+1960913,municipality,196,0913,Trancoso
+1A01105,municipality,1A0,1105,Cascais
+1A01106,municipality,1A0,1106,Lisboa
+1A01107,municipality,1A0,1107,Loures
+1A01109,municipality,1A0,1109,Mafra
+1A01110,municipality,1A0,1110,Oeiras
+1A01111,municipality,1A0,1111,Sintra
+1A01114,municipality,1A0,1114,Vila Franca de Xira
+1A01115,municipality,1A0,1115,Amadora
+1A01116,municipality,1A0,1116,Odivelas
+1B01502,municipality,1B0,1502,Alcochete
+1B01503,municipality,1B0,1503,Almada
+1B01504,municipality,1B0,1504,Barreiro
+1B01506,municipality,1B0,1506,Moita
+1B01507,municipality,1B0,1507,Montijo
+1B01508,municipality,1B0,1508,Palmela
+1B01510,municipality,1B0,1510,Seixal
+1B01511,municipality,1B0,1511,Sesimbra
+1B01512,municipality,1B0,1512,Setúbal
+1C10211,municipality,1C1,0211,Odemira
+1C11501,municipality,1C1,1501,Alcácer do Sal
+1C11505,municipality,1C1,1505,Grândola
+1C11509,municipality,1C1,1509,Santiago do Cacém
+1C11513,municipality,1C1,1513,Sines
+1C20201,municipality,1C2,0201,Aljustrel
+1C20202,municipality,1C2,0202,Almodôvar
+1C20203,municipality,1C2,0203,Alvito
+1C20204,municipality,1C2,0204,Barrancos
+1C20205,municipality,1C2,0205,Beja
+1C20206,municipality,1C2,0206,Castro Verde
+1C20207,municipality,1C2,0207,Cuba
+1C20208,municipality,1C2,0208,Ferreira do Alentejo
+1C20209,municipality,1C2,0209,Mértola
+1C20210,municipality,1C2,0210,Moura
+1C20212,municipality,1C2,0212,Ourique
+1C20213,municipality,1C2,0213,Serpa
+1C20214,municipality,1C2,0214,Vidigueira
+1C31201,municipality,1C3,1201,Alter do Chão
+1C31202,municipality,1C3,1202,Arronches
+1C31203,municipality,1C3,1203,Avis
+1C31204,municipality,1C3,1204,Campo Maior
+1C31205,municipality,1C3,1205,Castelo de Vide
+1C31206,municipality,1C3,1206,Crato
+1C31207,municipality,1C3,1207,Elvas
+1C31208,municipality,1C3,1208,Fronteira
+1C31209,municipality,1C3,1209,Gavião
+1C31210,municipality,1C3,1210,Marvão
+1C31211,municipality,1C3,1211,Monforte
+1C31212,municipality,1C3,1212,Nisa
+1C31213,municipality,1C3,1213,Ponte de Sor
+1C31214,municipality,1C3,1214,Portalegre
+1C31215,municipality,1C3,1215,Sousel
+1C40701,municipality,1C4,0701,Alandroal
+1C40702,municipality,1C4,0702,Arraiolos
+1C40703,municipality,1C4,0703,Borba
+1C40704,municipality,1C4,0704,Estremoz
+1C40705,municipality,1C4,0705,Évora
+1C40706,municipality,1C4,0706,Montemor-o-Novo
+1C40707,municipality,1C4,0707,Mora
+1C40708,municipality,1C4,0708,Mourão
+1C40709,municipality,1C4,0709,Portel
+1C40710,municipality,1C4,0710,Redondo
+1C40711,municipality,1C4,0711,Reguengos de Monsaraz
+1C40712,municipality,1C4,0712,Vendas Novas
+1C40713,municipality,1C4,0713,Viana do Alentejo
+1C40714,municipality,1C4,0714,Vila Viçosa
+1D11001,municipality,1D1,1001,Alcobaça
+1D11005,municipality,1D1,1005,Bombarral
+1D11006,municipality,1D1,1006,Caldas da Rainha
+1D11011,municipality,1D1,1011,Nazaré
+1D11012,municipality,1D1,1012,Óbidos
+1D11014,municipality,1D1,1014,Peniche
+1D11101,municipality,1D1,1101,Alenquer
+1D11102,municipality,1D1,1102,Arruda dos Vinhos
+1D11104,municipality,1D1,1104,Cadaval
+1D11108,municipality,1D1,1108,Lourinhã
+1D11112,municipality,1D1,1112,Sobral de Monte Agraço
+1D11113,municipality,1D1,1113,Torres Vedras
+1D21401,municipality,1D2,1401,Abrantes
+1D21402,municipality,1D2,1402,Alcanena
+1D21408,municipality,1D2,1408,Constância
+1D21410,municipality,1D2,1410,Entroncamento
+1D21411,municipality,1D2,1411,Ferreira do Zêzere
+1D21413,municipality,1D2,1413,Mação
+1D21417,municipality,1D2,1417,Sardoal
+1D21418,municipality,1D2,1418,Tomar
+1D21419,municipality,1D2,1419,Torres Novas
+1D21420,municipality,1D2,1420,Vila Nova da Barquinha
+1D21421,municipality,1D2,1421,Ourém
+1D31103,municipality,1D3,1103,Azambuja
+1D31403,municipality,1D3,1403,Almeirim
+1D31404,municipality,1D3,1404,Alpiarça
+1D31405,municipality,1D3,1405,Benavente
+1D31406,municipality,1D3,1406,Cartaxo
+1D31407,municipality,1D3,1407,Chamusca
+1D31409,municipality,1D3,1409,Coruche
+1D31412,municipality,1D3,1412,Golegã
+1D31414,municipality,1D3,1414,Rio Maior
+1D31415,municipality,1D3,1415,Salvaterra de Magos
+1D31416,municipality,1D3,1416,Santarém
+2004101,municipality,200,4101,Vila do Porto
+2004201,municipality,200,4201,Lagoa (R.A.A.)
+2004202,municipality,200,4202,Nordeste
+2004203,municipality,200,4203,Ponta Delgada
+2004204,municipality,200,4204,Povoação
+2004205,municipality,200,4205,Ribeira Grande
+2004206,municipality,200,4206,Vila Franca do Campo
+2004301,municipality,200,4301,Angra do Heroísmo
+2004302,municipality,200,4302,Vila da Praia da Vitória
+2004401,municipality,200,4401,Santa Cruz da Graciosa
+2004501,municipality,200,4501,Calheta (R.A.A.)
+2004502,municipality,200,4502,Velas
+2004601,municipality,200,4601,Lajes do Pico
+2004602,municipality,200,4602,Madalena
+2004603,municipality,200,4603,São Roque do Pico
+2004701,municipality,200,4701,Horta
+2004801,municipality,200,4801,Lajes das Flores
+2004802,municipality,200,4802,Santa Cruz das Flores
+2004901,municipality,200,4901,Corvo
+3003101,municipality,300,3101,Calheta (R.A.M.)
+3003102,municipality,300,3102,Câmara de Lobos
+3003103,municipality,300,3103,Funchal
+3003104,municipality,300,3104,Machico
+3003105,municipality,300,3105,Ponta do Sol
+3003106,municipality,300,3106,Porto Moniz
+3003107,municipality,300,3107,Ribeira Brava
+3003108,municipality,300,3108,Santa Cruz
+3003109,municipality,300,3109,Santana
+3003110,municipality,300,3110,São Vicente
+3003201,municipality,300,3201,Porto Santo

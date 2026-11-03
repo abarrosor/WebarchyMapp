@@ -1,0 +1,15 @@
+group_id,sort_order,name_es,name_en
+theft,1,Hurtos,Theft
+robbery_violence,2,Robos con violencia o intimidación,Robbery with violence or intimidation
+burglary,3,Robos con fuerza (incluido interior de vehículos),Burglary (incl. from vehicles)
+vehicle_theft,4,Robo o hurto de uso de vehículos,Vehicle theft
+criminal_damage,5,Daños,Criminal damage
+assault,6,Lesiones,Assault
+threats,7,Amenazas y coacciones,Threats and coercion
+fraud,8,Estafas y apropiaciones,Fraud and misappropriation
+drugs,9,Contra la salud pública (drogas),Drug offences
+squatting,10,Ocupación y allanamiento,Squatting and trespass
+public_order,11,Orden público,Public order
+road_safety,12,Seguridad vial,Road safety offences
+other,13,Otros delitos,Other offences
+sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately)

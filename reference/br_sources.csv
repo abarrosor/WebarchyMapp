@@ -1,0 +1,10 @@
+key,url,name,verified,note
+vde_year,https://www.gov.br/mj/pt-br/assuntos/sua-seguranca/seguranca-publica/estatistica/download/dnsp-base-de-dados/bancovde-{year}.xlsx/@@download/file,bancovde-{year}.xlsx,yes,"MJSP SINESP VDE yearly workbook (one per year 2015->; {year} is replaced). Links verified on the gov.br page on 2026-11-03."
+vde_page,https://www.gov.br/mj/pt-br/assuntos/sua-seguranca/seguranca-publica/estatistica/dados-nacionais-1/base-de-dados-e-notas-metodologicas-dos-gestores-estaduais-sinesp-vde-2022-e-2023,,yes,"Landing page with the yearly files and the methodological notes of the state managers."
+vde_first_year,2015,,yes,"First year available."
+ibge_municipios,https://servicodados.ibge.gov.br/api/v1/localidades/municipios?view=nivelado,ibge_municipios.json,no,"IBGE 'localidades' API (key-less): 7-digit municipality codes, names and UF. Not fetchable from the audit sandbox (robots); documented public API."
+sidra_municipios,https://apisidra.ibge.gov.br/values/t/6579/n6/all/v/9324/p/last%2012,sidra_6579_municipios.json,yes,"IBGE SIDRA table 6579 (estimated resident population), all municipalities, last 12 years. Pattern verified with two municipalities."
+sidra_ufs,https://apisidra.ibge.gov.br/values/t/6579/n3/all/v/9324/p/all,sidra_6579_ufs.json,yes,"Same table for the 27 UFs."
+sidra_brasil,https://apisidra.ibge.gov.br/values/t/6579/n1/all/v/9324/p/all,sidra_6579_brasil.json,yes,"Same table for Brazil."
+malha_uf,https://servicodados.ibge.gov.br/api/v3/malhas/estados/{uf}?formato=application/vnd.geo+json&qualidade=minima&intrarregiao=municipio,ibge_malha_{uf}.geojson,no,"IBGE malhas API v3: municipalities of one UF as GeoJSON ({uf} = 2-digit code). Not fetchable from the sandbox (robots)."
+malha_ufs,https://servicodados.ibge.gov.br/api/v3/malhas/paises/BR?formato=application/vnd.geo+json&qualidade=minima&intrarregiao=UF,ibge_malha_ufs.geojson,no,"IBGE malhas API v3: the 27 UFs as GeoJSON."

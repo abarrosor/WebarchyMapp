@@ -1,0 +1,112 @@
+source_text,group_id,sensitive
+Furt,theft,no
+Robatori amb violència i/o intimidació,robbery_violence,no
+Robatori amb força,burglary,no
+Robatori amb força interior vehicle,burglary,no
+Robatori i furt d'us de vehicle,vehicle_theft,no
+Danys,criminal_damage,no
+Estafes,fraud,no
+Apropiació indeguda,fraud,no
+Administració deslleial,fraud,no
+Defraudacions de fluid elèctric i anàlogues,fraud,no
+Lesions,assault,no
+Amenaces,threats,no
+Coaccions,threats,no
+Contra la salut pública,drugs,no
+Ocupació immobles,squatting,no
+Usurpació,squatting,no
+Entrada a domicili aliè,squatting,no
+Entrada a vivenda aliena,squatting,no
+Abandonament lloc accident,road_safety,no
+Conducció temerària,road_safety,no
+Conduir sense permís,road_safety,no
+Conduir sota els efectes d'alcohol i drogues,road_safety,no
+Negativa a sotmetre's a les proves,road_safety,no
+Originar un greu risc per la circulació,road_safety,no
+Velocitat penalment punible,road_safety,no
+Desordres públics,public_order,no
+Altres delictes contra l'ordre públic,public_order,no
+Organitzacions i grups criminals,public_order,no
+Assassinat Consumat,sensitive,yes
+Assassinat Temptativa,sensitive,yes
+Homicidi Consumat,sensitive,yes
+Homicidi per imprudència,sensitive,yes
+Homicidi Temptativa,sensitive,yes
+Inducció i cooperació al suïcidi,sensitive,yes
+suicidi menor/disc per les tic,sensitive,yes
+Agressions sexuals i Abusos sexuals,sensitive,yes
+Assetjament sexual,sensitive,yes
+Exhibicionisme i provocació sexual,sensitive,yes
+Relatius a la prostitució,sensitive,yes
+Resta delictes sexuals,sensitive,yes
+Tortures,sensitive,yes
+Tracte degradant / vexatori,sensitive,yes
+Tràfic d'éssers humans,sensitive,yes
+Contra els drets i deures familiars,sensitive,yes
+Detenció il·legal,sensitive,yes
+Segrest,sensitive,yes
+Avortament,sensitive,yes
+Lesions al fetus,sensitive,yes
+Trencament de condemna,sensitive,yes
+De la usurpació de l'estat civil,other,no
+Falsedats documentals,other,no
+Falsificació de moneda i efectes timbrats,other,no
+Usurpació de funcions públiques i intrusisme,other,no
+Blanqueig de capitals,other,no
+Alteració dels preus,other,no
+Extorsió,other,no
+Frustració d'execució,other,no
+Mercat i consumidors,other,no
+Propietat industrial,other,no
+Propietat intel·lectual,other,no
+Receptació i altres conductes afins,other,no
+Societaris,other,no
+Sostracció de cosa pròpia d'utilitat social,other,no
+Contra els animals,other,no
+Contra els drets de ciutadans estrangers,other,no
+Contra exercici drets fonamentals i llibertats públiques,other,no
+"Contra la llibertat de consciència, religió i respecte als difunts",other,no
+Contra les institucions de l'Estat i divisió de poders,other,no
+Dels funcionaris públics contra les garanties constitucionals,other,no
+"Reunió, manifestació il·lícita",other,no
+"Acusació, denúncia falsa i simulació de delictes",other,no
+Encobriment,other,no
+Fals testimoni,other,no
+Obstrucció a la justícia i deslleialtat professional,other,no
+Omissió dels deures d'impedir delictes,other,no
+Prevaricació,other,no
+Realització arbitrària del propi dret,other,no
+Desobediència i denegació d'auxili,other,no
+Infidelitat custòdia documents i violació secrets,other,no
+Infidelitat en la custòdia de documents i violació de secrets,other,no
+Malversació,other,no
+Prevaricació de funcionaris públics,other,no
+Suborn,other,no
+Tràfic d'influències,other,no
+Descobriment i revelació de secrets,other,no
+Calúmnia,other,no
+Injúria,other,no
+Omissió del deure de socors,other,no
+Contra els drets dels treballadors,other,no
+Hisenda pública i seguretat social,other,no
+Incendi,other,no
+Risc catastròfic,other,no
+"Traïció, contra la pau, independència de l'estat i defensa nacional",other,no
+Contra el patrimoni històric,other,no
+Contra els recursos naturals i el medi ambient,other,no
+Contra l'ordenació del territori,other,no
+"Protecció de la flora, fauna i animals domèstics",other,no
+Faltes contra el patrimoni,other,no
+Faltes contra les persones,other,no
+Insolvències punibles,fraud,no
+Faltes contra l'ordre públic,public_order,no
+Corrupció als negocis,other,no
+Contra la llibertat,threats,no
+Contra la comunitat internacional,other,no
+Faltes contra els interessos generals,other,no
+Eutanàsia activa,sensitive,yes
+Abandó de destí i omissió deure perseguir delictes,other,no
+Negociacions i activitats prohibides a funcionaris,other,no
+Violació de secrets,other,no
+Fraus i exaccions il·legals,other,no
+Contra la seguretat colectiva,other,no

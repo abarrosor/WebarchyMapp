@@ -1,0 +1,76 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+T001161,total,"Misdrijven, totaal",All offences (official total),,no
+CRI1000,property_crime,1 Vermogensmisdrijven,Property crime,total,no
+CRI1100,theft_burglary,"11 Diefstal/verduistering en inbraak","Theft, embezzlement and burglary",property_crime,no
+CRI1200,fraud,12 Bedrog,Fraud (deception),property_crime,no
+CRI1300,forgery,13 Valsheidsmisdrijven,Forgery and counterfeiting,property_crime,no
+CRI1400,handling_stolen_goods,14 Heling,Handling stolen goods,property_crime,no
+CRI1500,extortion,15 Afpersing en afdreiging,Extortion and blackmail,property_crime,no
+CRI1600,bankruptcy_fraud,16 Bankbreuk,Fraudulent bankruptcy,property_crime,no
+CRI1700,money_laundering,17 Witwassen,Money laundering,property_crime,no
+CRI1800,property_crime_other,18 Vermogensmisdrijf (overig),Other property crime,property_crime,no
+CRI1110,robbery_violence,111 Diefstal en inbraak met geweld,Theft and burglary with violence (robbery),theft_burglary,no
+CRI1120,theft,112 Diefstal en inbraak zonder geweld,Theft and burglary without violence,theft_burglary,no
+CRI1210,fraud_scam,121 Oplichting,Swindling (scams),fraud,no
+CRI1220,fraud_bilking,122 Flessentrekkerij,Bilking (buying without paying),fraud,no
+CRI1230,fraud_other,123 Bedrog (overig),Other fraud,fraud,no
+CRI1310,counterfeit_currency,131 Muntmisdrijf,Counterfeit currency,forgery,no
+CRI1320,forgery_seals,132 Valsheid in zegels en merken,Forgery of seals and marks,forgery,no
+CRI1330,forgery_documents,133 Valsheid in geschriften,Forgery of documents,forgery,no
+CRI2000,damage_public_order,"2 Vernielingen, misdrijven tegen openbare orde en gezag","Criminal damage, public order and public authority offences",total,no
+CRI2100,criminal_damage,21 Vernieling en beschadiging,Criminal damage,damage_public_order,no
+CRI2200,public_order,22 Openbare orde misdrijf,Public order offences,damage_public_order,no
+CRI2300,arson,23 Brandstichting / ontploffing,Arson and explosion,damage_public_order,no
+CRI2400,offences_against_authority,24 Openbaar gezag misdrijf,Offences against public authority,damage_public_order,no
+CRI2110,damage_vehicle,211 Vernieling aan auto,Damage to vehicles,criminal_damage,no
+CRI2120,damage_public_building,212 Vernieling aan openbaar gebouw,Damage to public buildings,criminal_damage,no
+CRI2130,damage_public_transport,213 Vernieling middel openbaar vervoer,Damage to public transport,criminal_damage,no
+CRI2150,criminal_damage_other,"215 Vernieling, beschadiging (overig)",Other criminal damage,criminal_damage,no
+CRI2210,public_violence,221 Openlijke geweldpleging,Public violence (group violence),public_order,no
+CRI2220,trespass_dwelling,222 Huisvredebreuk,Trespass in a dwelling,public_order,no
+CRI2230,trespass_premises,223 Lokaalvredebreuk,Trespass on premises,public_order,no
+CRI2240,computer_trespass,224 Computervredebreuk,Computer trespass (hacking),public_order,no
+CRI2250,discrimination,225 Discriminatie,Discrimination,public_order,no
+CRI2260,public_order_other,226 Openbare orde misdrijf (overig),Other public order offences,public_order,no
+CRI2211,public_violence_person,2211 Openlijk geweld tegen persoon,Public violence against persons,public_violence,no
+CRI2212,public_violence_property,2212 Openlijk geweld tegen goed,Public violence against property,public_violence,no
+CRI2410,disobeying_official_order,241 Niet opvolgen van ambtelijk bevel,Disobeying an official order,offences_against_authority,no
+CRI2420,resisting_authority,242 Wederspannigheid,Resisting a public official,offences_against_authority,no
+CRI2430,false_report,243 Valse aangifte,False report to the police,offences_against_authority,no
+CRI2450,illegal_stay,245 Verblijf ongewenste vreemdeling,Stay of a person declared undesirable (immigration),offences_against_authority,yes
+CRI2460,authority_other,246 Openbaar gezag misdrijf (overig),Other offences against public authority,offences_against_authority,no
+CRI3000,violent_sexual_offences,3 Gewelds- en seksuele misdrijven,Violent and sexual offences,total,no
+CRI3100,assault,31 Mishandeling,Assault,violent_sexual_offences,no
+CRI3200,threats_stalking,32 Bedreiging en stalking,Threats and stalking,violent_sexual_offences,no
+CRI3300,sexual_offences,33 Seksueel misdrijf,Sexual offences,violent_sexual_offences,yes
+CRI3400,homicide,34 Levensmisdrijf,"Homicide, incl. attempts (offences against life)",violent_sexual_offences,yes
+CRI3500,kidnapping,35 Vrijheidsbeneming/gijzeling,Deprivation of liberty and hostage-taking,violent_sexual_offences,yes
+CRI3624,human_trafficking,36 Mensenhandel en mensensmokkel,Human trafficking and people smuggling,violent_sexual_offences,yes
+CRI3700,violence_other,37 Geweldsmisdrijf (overig),Other violent offences,violent_sexual_offences,no
+CRI3210,threats,321 Bedreiging,Threats,threats_stalking,no
+CRI3220,stalking,322 Stalking,Stalking,threats_stalking,no
+CRI3310,sexual_assault,331 Aanranding,Sexual assault,sexual_offences,yes
+CRI3320,rape,332 Verkrachting,Rape,sexual_offences,yes
+CRI3330,indecent_exposure,333 Schennis der eerbaarheid,Indecent exposure,sexual_offences,yes
+CRI3340,sexual_abuse_minor,334 Ontucht met minderjarige,Sexual abuse of a minor,sexual_offences,yes
+CRI3350,pornography_offences,335 Pornografie,Pornography offences,sexual_offences,yes
+CRI3360,sexual_abuse_authority,336 Ontucht met misbruik van gezag,Sexual abuse by a person in authority,sexual_offences,yes
+CRI3370,sexual_offences_other,337 Seksueel misdrijf (overig),Other sexual offences,sexual_offences,yes
+CRI4000,other_criminal_code,4 Misdrijven WvSr (overig),Other Criminal Code offences,total,no
+CRI5000,traffic_offences,5 Verkeersmisdrijven,Traffic offences (Road Traffic Act),total,no
+CRI5100,hit_and_run,51 Verlaten plaats ongeval,Leaving the scene of an accident,traffic_offences,no
+CRI5200,drink_driving,52 Rijden onder invloed,Driving under the influence,traffic_offences,no
+CRI5300,driving_while_disqualified,53 Rijden tijdens ontzegging besturen,Driving while disqualified,traffic_offences,no
+CRI5400,driving_during_ban,54 Rijden tijdens rijverbod,Driving during a driving ban,traffic_offences,no
+CRI5500,false_number_plate,55 Voeren vals kenteken,Using a false number plate,traffic_offences,no
+CRI5600,joyriding,56 Joyriding,Joyriding,traffic_offences,no
+CRI5700,refusing_breath_test,57 Weigeren blaastest/bloedonderzoek ed,Refusing a breath or blood test,traffic_offences,no
+CRI5800,traffic_offences_other,58 Verkeersmisdrijf (overig),Other traffic offences,traffic_offences,no
+CRI6000,drug_offences,6 Drugsmisdrijven,Drug offences (Opium Act),total,no
+CRI6100,hard_drugs,61 Harddrugs,Hard drugs,drug_offences,no
+CRI6200,soft_drugs,62 Softdrugs,Soft drugs,drug_offences,no
+CRI6300,drug_offences_other,63 Drugsmisdrijf (overig),Other drug offences,drug_offences,no
+CRI7000,weapons,7 (Vuur)wapenmisdrijven,Firearms and weapons offences,total,no
+CRI9000,other_laws,9 Misdrijven overige wetten,Offences under other laws,total,no
+CRI9100,military_offences,91 Militaire misdrijven,Military offences,other_laws,no
+CRI9200,other_laws_other,92 Misdrijven (overig),Other offences under other laws,other_laws,no

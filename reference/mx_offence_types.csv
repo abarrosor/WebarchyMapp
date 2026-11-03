@@ -1,0 +1,57 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+TOTAL_TIPOS,total,Total de delitos del fuero común (suma de tipos),"Total fuero común offences (sum of types, as published by SESNSP)",,no
+Homicidio doloso,homicide,Homicidio doloso,Intentional homicide,total,yes
+Homicidio culposo,unmapped,Homicidio culposo,"Negligent homicide (mostly traffic deaths)",total,yes
+Feminicidio,homicide,Feminicidio,Feminicide,total,yes
+Lesiones dolosas,assault,Lesiones dolosas,Intentional injuries (assault),total,no
+Lesiones culposas,unmapped,Lesiones culposas,"Negligent injuries (mostly traffic accidents)",total,no
+Aborto,other,Aborto,Abortion offences,total,yes
+Otros delitos que atentan contra la vida y la integridad corporal,other,Otros delitos contra la vida y la integridad corporal,Other offences against life and physical integrity,total,no
+Secuestro,kidnapping,Secuestro,Kidnapping,total,yes
+Tráfico de menores,offences_against_minors,Tráfico de menores,Trafficking of minors,total,yes
+Rapto,kidnapping,Rapto,Abduction (rapto),total,yes
+Otros delitos que atentan contra la libertad personal,other,Otros delitos contra la libertad personal,Other offences against personal liberty,total,no
+Abuso sexual,sexual_offences,Abuso sexual,Sexual abuse,total,yes
+Acoso sexual,sexual_offences,Acoso sexual,Sexual harassment (acoso),total,yes
+Hostigamiento sexual,sexual_offences,Hostigamiento sexual,Sexual harassment by a superior (hostigamiento),total,yes
+Violación simple,sexual_offences,Violación simple,Rape,total,yes
+Violación equiparada,sexual_offences,Violación equiparada,Statutory / equivalent rape,total,yes
+Incesto,sexual_offences,Incesto,Incest,total,yes
+Otros delitos que atentan contra la libertad y la seguridad sexual,sexual_offences,Otros delitos contra la libertad y la seguridad sexual,Other sexual offences,total,yes
+Robo a casa habitación,burglary,Robo a casa habitación,Residential burglary,total,no
+Robo de vehículo automotor,vehicle_theft,Robo de vehículo automotor,Vehicle theft,total,no
+Robo de autopartes,theft_from_vehicle,Robo de autopartes,Theft of vehicle parts,total,no
+Robo a transportista,cargo_theft,Robo a transportista,Theft from freight carriers,total,no
+Robo a transeúnte en vía pública,street_robbery,Robo a transeúnte en vía pública,Robbery of pedestrians in the street,total,no
+Robo a transeúnte en espacio abierto al público,street_robbery,Robo a transeúnte en espacio abierto al público,Robbery of pedestrians in open public spaces,total,no
+Robo en transporte público individual,transport_robbery,Robo en transporte público individual,Robbery in taxis,total,no
+Robo en transporte público colectivo,transport_robbery,Robo en transporte público colectivo,Robbery on public transport,total,no
+Robo en transporte individual,transport_robbery,Robo en transporte individual,Robbery in private vehicles,total,no
+Robo a institución bancaria,bank_robbery,Robo a institución bancaria,Bank robbery,total,no
+Robo a negocio,business_robbery,Robo a negocio,Robbery / theft at businesses,total,no
+Robo de ganado,livestock_theft,Robo de ganado,Livestock theft,total,no
+Robo de maquinaria,theft,Robo de maquinaria,Theft of machinery,total,no
+Otros robos,theft,Otros robos,Other thefts and robberies,total,no
+Fraude,fraud,Fraude,Fraud,total,no
+Abuso de confianza,fraud,Abuso de confianza,Breach of trust,total,no
+Extorsión,extortion,Extorsión,Extortion,total,no
+Daño a la propiedad,criminal_damage,Daño a la propiedad,Criminal damage,total,no
+Despojo,other,Despojo,Dispossession of property (despojo),total,no
+Otros delitos contra el patrimonio,other,Otros delitos contra el patrimonio,Other property offences,total,no
+Violencia familiar,domestic_violence,Violencia familiar,Domestic violence,total,yes
+Violencia de género en todas sus modalidades distinta a la violencia familiar,gender_violence,Violencia de género distinta a la violencia familiar,Gender-based violence other than domestic violence,total,yes
+Incumplimiento de obligaciones de asistencia familiar,other,Incumplimiento de obligaciones de asistencia familiar,Failure to pay family support,total,no
+Otros delitos contra la familia,other,Otros delitos contra la familia,Other offences against the family,total,no
+Corrupción de menores,offences_against_minors,Corrupción de menores,Corruption of minors,total,yes
+Trata de personas,human_trafficking,Trata de personas,Human trafficking,total,yes
+Otros delitos contra la sociedad,other,Otros delitos contra la sociedad,Other offences against society,total,no
+Narcomenudeo,drug_offences,Narcomenudeo,Retail drug dealing (narcomenudeo),total,no
+Amenazas,threats,Amenazas,Threats,total,no
+Allanamiento de morada,trespass,Allanamiento de morada,Trespass (home invasion without theft),total,no
+Evasión de presos,other,Evasión de presos,Escape from custody,total,no
+Falsedad,other,Falsedad,False statements,total,no
+Falsificación,forgery,Falsificación,Forgery,total,no
+Contra el medio ambiente,other,Delitos contra el medio ambiente,Environmental offences,total,no
+Delitos cometidos por servidores públicos,other,Delitos cometidos por servidores públicos,Offences by public officials,total,no
+Electorales,other,Delitos electorales,Electoral offences,total,no
+Otros delitos del Fuero Común,other,Otros delitos del fuero común,Other fuero común offences,total,no

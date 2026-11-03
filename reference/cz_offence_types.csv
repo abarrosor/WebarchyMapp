@@ -1,0 +1,23 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive,match_pattern
+Celková kriminalita,total,Celková kriminalita,Total registered offences,,no,^celková kriminalita
+Násilná kriminalita,violent_crime,Násilná kriminalita,Violent crime,total,no,^násilná kriminalita
+Vražda,homicide,Vražda,Murder,violent_crime,yes,^vražd
+Úmyslné ublížení na zdraví,assault,Úmyslné ublížení na zdraví,Intentional bodily harm,violent_crime,no,ublížení na zdraví
+Loupež,robbery_violence,Loupež,Robbery,violent_crime,no,^loupež
+Mravnostní kriminalita,sexual_offences,Mravnostní kriminalita,Sexual (morality) offences,total,yes,^mravnostní
+Znásilnění,rape,Znásilnění,Rape,sexual_offences,yes,^znásiln
+Sexuální násilí,sexual_violence,Sexuální násilí,Sexual violence,sexual_offences,yes,^sexuální násilí
+Majetková kriminalita,property_crime,Majetková kriminalita,Property crime,total,no,^majetková
+Krádeže prosté,theft,Krádeže prosté,Simple theft,property_crime,no,^krádeže prosté
+Vloupání do soukromých obytných prostor,burglary,Vloupání do soukromých obytných prostor,Residential burglary,property_crime,no,^vloupání
+Krádeže motorových vozidel nebo jejich součástek,vehicle_theft,Krádeže motorových vozidel nebo jejich součástek,Theft of motor vehicles or their parts,property_crime,no,^krádeže motorových
+Ostatní kriminalita,other_general_crime,Ostatní (obecná) kriminalita,Other general crime,total,no,^ostatní (obecná )?kriminalita
+"Nedovolená výroba, držení a šíření drog",drug_offences,"Nedovolená výroba, držení a šíření drog","Drug offences (production, possession, distribution)",other_general_crime,no,^nedovolená výroba
+Maření výkonu úředního rozhodnutí,obstruction_of_official_decision,Maření výkonu úředního rozhodnutí,Obstruction of an official decision,other_general_crime,no,^maření
+Hospodářská kriminalita,economic_crime,Hospodářská kriminalita,Economic crime,total,no,^hospodářská
+Úvěrový podvod,credit_fraud,Úvěrový podvod,Credit fraud,economic_crime,no,^úvěrový podvod
+Kyberkriminalita,cyber_crime,Kyberkriminalita,Cybercrime,economic_crime,no,^kyberkriminalita
+Zkrácení daně,tax_evasion,Zkrácení daně,Tax evasion,economic_crime,no,^zkrácení daně
+Zbývající kriminalita,remaining_crime,Zbývající kriminalita,Remaining crime,total,no,^zbývající
+Dopravní nehody silniční nedbalostní,unmapped,Dopravní nehody silniční nedbalostní,"Negligent road traffic accidents (not shown)",remaining_crime,no,^dopravní nehody
+Zanedbání povinné výživy,maintenance_neglect,Zanedbání povinné výživy,Neglect of compulsory maintenance,remaining_crime,no,^zanedbání

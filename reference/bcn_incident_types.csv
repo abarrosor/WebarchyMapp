@@ -1,0 +1,102 @@
+code,description,block,sensitive,name_es,name_en
+000,INCENDIS,emergencies,no,Incendios,Fires
+010,EXPLOSIONS,emergencies,no,Explosiones,Explosions
+020,PLUJA TORRENCIAL,emergencies,no,Lluvia torrencial,Torrential rain
+021,VENTS FORTS,emergencies,no,Vientos fuertes,Strong winds
+022,NEU I GEL,emergencies,no,Nieve y hielo,Snow and ice
+023,COMUNICATS D'EMERGÈNCIA,emergencies,no,Avisos de emergencia,Emergency notices
+030,MATÈRIES PERILLOSES,emergencies,no,Materias peligrosas,Hazardous materials
+040,TRANSPORT PÚBLIC,services,no,Transporte público,Public transport
+050,ATEMPTATS,emergencies,yes,Atentados,Attacks
+060,SUBMINISTRAMENTS BÀSICS,services,no,Suministros básicos,Basic utilities
+061,AVARIES DE SERVEIS PÚBLICS,services,no,Averías de servicios públicos,Public service faults
+062,AVARIES DE SERVEIS MUNICIPALS,services,no,Averías de servicios municipales,Municipal service faults
+063,EDIFICIS OFICIALS,services,no,Edificios oficiales,Official buildings
+070,SINISTRES EN EDIFICIS,emergencies,no,Siniestros en edificios,Building incidents
+080,SISMES,emergencies,no,Seísmos,Earthquakes
+090,TRASLLAT D'ORGANS,service_support,yes,Traslado de órganos,Organ transport
+100,ÀMBIT DE PROTECCIÓ DEL MENOR,assistance,yes,Protección de menores,Child protection
+101,ÀMBIT EDUCATIU,assistance,yes,Ámbito educativo,Schools
+102,REFORMA,assistance,yes,Justicia juvenil,Juvenile justice
+200,INCIDÈNCIES AMB AFECTACIÓ DE VIA,traffic,no,Incidencias en la vía,Road incidents
+201,INCIDÈNCIES AMB PERILL PEL TRÀNSIT,traffic,no,Peligro para el tráfico,Traffic hazards
+202,RESTRICCIONS TEMPORALS DE TRÀNSIT,traffic,no,Restricciones de tráfico,Traffic restrictions
+203,SENYALS AUTOMATITZADES,traffic,no,Semáforos,Traffic lights
+204,SENYALS NO AUTOMATITZADES,traffic,no,Señales,Road signs
+210,ACCIDENTS DE TRÀNSIT SENSE FERITS,traffic,no,Accidentes sin heridos,Crashes without injuries
+211,ACCIDENTS DE TRÀNSIT AMB FERITS,traffic,yes,Accidentes con heridos,Crashes with injuries
+212,ACCIDENTS DE TRANSIT AMB MATERIES PERILLOSSES,traffic,yes,Accidentes con materias peligrosas,Crashes with hazardous materials
+213,ACCIDENTS (GUB-CME) (CME-GUB),traffic,yes,Accidentes (coordinados con emergencias),Crashes (coordinated with emergency services)
+21M,ACCIDENTS REBUTS PER PASSARELA CME,traffic,yes,Accidentes recibidos de emergencias,Crashes reported by emergency services
+220,INFRACCIONS EN GUALS I RESERVES,traffic,no,Infracciones en vados y reservas,Driveway and reserved-space offences
+221,INFRACCIONS PER ESTACIONAMENTS,traffic,no,Infracciones de estacionamiento,Parking offences
+222,INFRACCIONS EN MOVIMENT,traffic,no,Infracciones en circulación,Moving traffic offences
+223,INFRACCIONS EN MOVIMENT (VEHICLES),traffic,no,Infracciones en circulación (vehículos),Moving traffic offences (vehicles)
+224,INFRACCIONS EN MOVIMENT (VEHICLES),traffic,no,Infracciones en circulación (vehículos),Moving traffic offences (vehicles)
+230,TRASLLATS DE VEHICLES SENSE INFRACCIÓ,traffic,no,Traslado de vehículos sin infracción,Vehicle removals without offence
+240,CONTROLS DE TRÀNSIT,traffic,no,Controles de tráfico,Traffic checks
+241,SUPORTS,traffic,no,Apoyos,Support
+242,IMMOBILITZACIONS /DESIMMOBILITZACIONS,traffic,no,Inmovilizaciones de vehículos,Vehicle immobilisations
+250,CONDUCCIONS I ACOMPANYAMENTS,service_support,no,Conducciones y acompañamientos,Escorts
+300,ASSISTÈNCIA A PERSONES EN EDIFICI,assistance,yes,Asistencia a personas en edificios,Assistance to people in buildings
+301,ASSISTÈNCIA A PERSONES EN ESPAIS PÚBLICS,assistance,yes,Asistencia a personas en la vía pública,Assistance to people in public spaces
+302,ASSISTÈNCIA A CONDUCTORS EN V. P.,assistance,no,Asistencia a conductores,Assistance to drivers
+303,ASSISTÈNCIA A MALALTS MENTALS,assistance,yes,Asistencia en salud mental,Mental health assistance
+304,ASSISTÈNCIA EN LES PLATGES,assistance,no,Asistencia en playas,Beach assistance
+305,COL·LABORACIONS AMB ALTRES SERVEIS,service_support,no,Colaboración con otros servicios,Support to other services
+310,COL·LECTIUS VULNERABLES,assistance,yes,Colectivos vulnerables,Vulnerable groups
+311,CIVITAS,coexistence,no,Civismo (ordenanza de convivencia),Civic behaviour (by-law)
+400,CONVIVÈNCIA VEINAL,coexistence,no,Convivencia vecinal,Disputes between neighbours
+401,MOLESTIES PER GENERADORS,coexistence,no,Molestias por generadores,Generator nuisance
+410,ACTIVITATS MOLESTES EN ESPAIS PÚBLICS,coexistence,no,Actividades molestas en la vía pública,Nuisance in public spaces
+411,VENDA AMBULANT,coexistence,no,Venta ambulante,Street vending
+420,INCIDÈNCIES DE LOCALS,coexistence,no,Incidencias en locales,Incidents at venues
+421,INFRACCIONS EN LOCALS,coexistence,no,Infracciones en locales,Venue offences
+422,INSPECCIONS / CONTROLS EN LOCALS,administrative,no,Inspecciones de locales,Venue inspections
+430,ESPECTACLES EN ESPAIS PÚBLICS,coexistence,no,Espectáculos en la vía pública,Street performances
+440,ANIMALS DE COMPANYIA,administrative,no,Animales de compañía,Pets
+441,ANIMALS / INSECTES PERILLOSOS,emergencies,no,Animales o insectos peligrosos,Dangerous animals or insects
+442,ALTRES INCIDÈNCIES AMB ANIMALS,administrative,no,Otras incidencias con animales,Other animal incidents
+450,OBRES / TREBALLS EN ESPAIS PÚBLICS,administrative,no,Obras en la vía pública,Street works
+451,OCUPACIONS D'ESPAIS PÚBLICS,administrative,no,Ocupación de la vía pública,Use of public space
+460,INCIDÈNCIES D'ALIMENTS,administrative,no,Incidencias con alimentos,Food incidents
+470,ALTRES INTERVENCIONS DE P. ADMINISTRATIVA,administrative,no,Otras intervenciones administrativas,Other administrative actions
+480,ALARMES D'INCENDI / ROBATORI,emergencies,no,Alarmas de incendio o robo,Fire or burglar alarms
+500,MANIFESTACIONS / CONCENTRACIONS,public_order,no,Manifestaciones y concentraciones,Demonstrations
+510,BARALLES,public_safety,no,Peleas,Fights
+21B,ACCIDENT REBUT PEL 080 (Recodificar),traffic,yes,Accidentes recibidos de bomberos,Crashes reported by fire service
+21S,ACCIDENT PROCEDENT PASSAREL·LA SEM,traffic,yes,Accidentes recibidos de emergencias médicas,Crashes reported by medical emergencies
+489,PROVES DEL SISTEMA,exclude,no,Pruebas del sistema,System tests
+511,VANDALISME,public_safety,no,Vandalismo,Vandalism
+512,TRIBUS URBANES,public_safety,no,Bandas juveniles,Youth gangs
+513,CONFLICTES EN LOCALS,public_safety,no,Conflictos en locales,Fights or disputes at venues
+520,OCUPACIONS IL·LÍCITES,public_safety,no,Ocupaciones ilegales,Squatting
+530,DELICTES CONTRA L'ORDRE PÚBLIC,public_safety,no,Delitos contra el orden público,Public order offences
+600,COL·LBORACIÓ AMB AUTORITAT JUDICIAL / POLICIAL,service_support,no,Colaboración con jueces u otras policías,Support to courts or other police
+610,ACTES CONTRA LA PROPIETAT PRIVADA,public_safety,no,Actos contra la propiedad privada,Offences against private property
+611,ACTES CONTRA LA PROPIETAT PÚBLICA,public_safety,no,Actos contra la propiedad pública,Offences against public property
+612,ACTES CONTRA LA PROPIETAT,public_safety,no,Actos contra la propiedad,Offences against property
+620,ESTUPEFAENTS / PSICOTROPICS,public_safety,no,Drogas,Drugs
+621,DELICTES ALIMENTARIS,administrative,no,Delitos alimentarios,Food offences
+630,CONTRA LA LLIBERTAT SEXUAL,public_safety,yes,Contra la libertad sexual,Sexual offences
+631,CONTRA ELS DRETS DELS TREBALLADORS,administrative,no,Contra los derechos de los trabajadores,Offences against workers' rights
+640,INFRACCIONS D'ESTRANGERS,administrative,yes,Infracciones de extranjería,Immigration offences
+650,VIGILÀNCIA POLICIAL,police_activity,no,Vigilancia policial,Police patrols
+660,VIOLÈNCIA DOMÈSTICA,public_safety,yes,Violencia doméstica,Domestic violence
+670,AGRESSIONS,public_safety,no,Agresiones,Assaults
+680,"ALTRES ACTUACIONS DE S, C,",police_activity,no,Otras actuaciones de seguridad ciudadana,Other public-safety actions
+700,ACTIVITAT AMB PRESOS,service_support,yes,Actividad con presos,Prisoner escorts
+710,CUSTÒDIES,service_support,yes,Custodias,Custody
+720,INCIDÈNCIES AMB PRESOS I DETINGUTS,service_support,yes,Incidencias con presos y detenidos,Incidents with prisoners and detainees
+800,FOGUERES / BARBACOES,emergencies,no,Hogueras y barbacoas,Bonfires and barbecues
+810,ABOCAMENT DE RESIDUS,administrative,no,Vertido de residuos,Illegal dumping
+820,CAÇA / PESCA / FLORA / FAUNA,administrative,no,"Caza, pesca, flora y fauna","Hunting, fishing, flora and fauna"
+830,ALTRES ACTUACIONS EN MEDI AMBIENT,administrative,no,Otras actuaciones de medio ambiente,Other environmental actions
+900,AVARIA TÈCNICA,services,no,Avería técnica,Technical fault
+920,FOC EXTERIOR,emergencies,no,Fuego exterior,Outdoor fire
+940,FUITES - PRODUCTES QUÍMICS,emergencies,no,Fugas de productos químicos,Chemical leaks
+950,SALVAMENTS,emergencies,no,Salvamentos,Rescues
+960,ASSISTÈNCIA TÈCNICA,services,no,Asistencia técnica,Technical assistance
+961,ASSISTÈNCIA TÈCNICA,services,no,Asistencia técnica,Technical assistance
+999,SENSE IDENTIFICAR,exclude,no,Sin identificar,Unidentified
+-1,Desconegut,exclude,no,Desconocido,Unknown

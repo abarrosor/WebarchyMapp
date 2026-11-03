@@ -1,0 +1,52 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+311.00.T0,total,Straftaten gemäss StGB – Total,"Offences under the Criminal Code (StGB), total",,no
+311.00.T1,life_and_limb,Total 1. Titel: Leib und Leben,Offences against life and limb (StGB title 1),total,no
+311.00.111.00,homicide,Tötungsdelikte (Art. 111–113/116),Homicide (completed and attempted),life_and_limb,yes
+311.00.122.00,assault_aggravated,Schwere Körperverletzung (Art. 122),Grievous bodily harm,life_and_limb,no
+311.00.123.00,assault,Einfache Körperverletzung (Art. 123),Bodily harm,life_and_limb,no
+311.00.126.00,assault_minor,Tätlichkeiten (Art. 126),Minor physical assault,life_and_limb,no
+311.00.134.00,affray,Beteiligung an einem Angriff (Art. 134),Participation in an attack,life_and_limb,no
+311.00.T2,property_offences,Total 2. Titel: Vermögen,Property offences (StGB title 2),total,no
+311.00.139.00,theft,Diebstahl (Art. 139),Theft (Art. 139 StGB),property_offences,no
+311.00.139.10,burglary,Einbruchdiebstahl (Art. 139),Burglary,theft,no
+311.00.139.71,theft_sneak_in,Einschleichdiebstahl (Art. 139),Sneak-in theft,theft,no
+311.00.139.72,theft_snatch,Entreissdiebstahl (Art. 139),Snatch theft,theft,no
+311.00.139.74,shoplifting,Ladendiebstahl (Art. 139),Shoplifting,theft,no
+311.00.139.75,pickpocketing,Taschendiebstahl (Art. 139),Pickpocketing,theft,no
+311.00.139.76,theft_trick,Trickdiebstahl (Art. 139),Trick theft,theft,no
+311.00.139.80,theft_from_vehicle,Fahrzeugeinbruchdiebstahl (Art. 139),Theft by breaking into a vehicle,theft,no
+311.00.139.81,vehicle_theft,Fahrzeugdiebstahl (Art. 139),Vehicle theft (incl. bicycles),theft,no
+311.00.139.82,theft_from_vehicle,Diebstahl ab/aus Fahrzeug (Art. 139),Theft from or off a vehicle,theft,no
+311.00.140.00,robbery_violence,Raub (Art. 140),Robbery,property_offences,no
+311.00.144.00,criminal_damage,Sachbeschädigung (Art. 144),Criminal damage,property_offences,no
+311.00.146.00,fraud,Betrug (Art. 146),Fraud,property_offences,no
+311.00.147.00,cyber_fraud,Betrügerischer Missbrauch einer Datenverarbeitungsanlage (Art. 147),Computer fraud,property_offences,no
+311.00.160.00,handling_stolen_goods,Hehlerei (Art. 160),Handling stolen goods,property_offences,no
+311.00.T3,honour_privacy,"Total 3. Titel: Ehre-, Geheim-, Privatbereich","Offences against honour, secrecy and privacy (title 3)",total,no
+311.00.T4,liberty_offences,Total 4. Titel: Freiheit,Offences against liberty (title 4),total,no
+311.00.180.00,threats,Drohung (Art. 180),Threats,liberty_offences,no
+311.00.181.00,coercion,Nötigung (Art. 181),Coercion,liberty_offences,no
+311.00.183.00,kidnapping,Freiheitsberaubung/Entführung (Art. 183),False imprisonment and abduction,liberty_offences,yes
+311.00.186.00,trespass,Hausfriedensbruch (Art. 186),Unlawful entry (trespass),liberty_offences,no
+311.00.T5,sexual_offences,Total 5. Titel: Sexuelle Integrität,Sexual offences (title 5),total,yes
+311.00.187.00,sexual_offences_minors,Sexuelle Handlungen mit Kindern (Art. 187),Sexual acts with children,sexual_offences,yes
+311.00.189.00,sexual_coercion,Sexuelle Nötigung (Art. 189),Sexual coercion,sexual_offences,yes
+311.00.190.00,rape,Vergewaltigung (Art. 190),Rape,sexual_offences,yes
+311.00.T6,family_offences,Total 6. Titel: Familie,Offences against the family (title 6),total,yes
+311.00.T7,public_danger,Total 7. Titel: Gemeingefährliche Verbrechen und Vergehen,Offences constituting a public danger (title 7),total,no
+311.00.221.00,arson,Brandstiftung (Art. 221),Arson,public_danger,no
+311.00.T8,other,Total 8. Titel: Öffentliche Gesundheit,Offences against public health (title 8),total,no
+311.00.T9,other,Total 9. Titel: Öffentlicher Verkehr,Offences against public transport (title 9),total,no
+311.00.T10,counterfeiting,"Total 10. Titel: Fälschung Geld, amtliche Wertzeichen, amtliche Zeichen, Mass und Gewicht","Counterfeiting of money, stamps and official marks (title 10)",total,no
+311.00.T11,forgery,Total 11. Titel: Urkundenfälschung,Forgery of documents (title 11),total,no
+311.00.T12,public_order,Total 12. Titel: Öffentlicher Frieden,Offences against public order (title 12),total,no
+311.00.T12bis,other,Total 12. Titel bis: Völkermord und Verbrechen gegen die Menschlichkeit,Genocide and crimes against humanity (title 12bis),total,no
+311.00.T13,other,Total 13. Titel: Staat und Landesverteidigung,Offences against the state and national defence (title 13),total,no
+311.00.T14,other,Total 14. Titel: Volkswille,Offences against the will of the people (title 14),total,no
+311.00.T15,offences_against_authority,Total 15. Titel: Öffentliche Gewalt,Offences against official powers (title 15),total,no
+311.00.285.00,violence_against_officials,Gewalt und Drohung gegen Behörden und Beamte (Art. 285),Violence and threats against authorities and officials,offences_against_authority,no
+311.00.T16,other,Total 16. Titel: Störung Beziehungen zum Ausland,Offences disturbing relations with foreign states (title 16),total,no
+311.00.T17,other,Total 17. Titel: Rechtspflege,Offences against the administration of justice (title 17),total,no
+311.00.T18,other,Total 18. Titel: Amts- und Berufspflicht,Breaches of official and professional duty (title 18),total,no
+311.00.T19,other,Total 19. Titel: Bestechung,Bribery (title 19),total,no
+311.00.T20,other,Total 20. Titel: Bundesrechtliche Bestimmungen,Other federal-law provisions of the StGB (title 20),total,no
