@@ -24,7 +24,10 @@ EUROSTAT_RATES <- list(
 
 # JSON-stat 2.0 (one dataset) -> long data frame with one column per dimension and `value`
 jsonstat_to_df <- function(js) {
+  # JSON-stat 1.x (PxWeb "json-stat"): one dataset under $dataset, ids and sizes inside $dimension
+  if (is.null(js$id) && !is.null(js$dataset)) { ds <- js$dataset; js <- list(id = ds$dimension$id, size = ds$dimension$size, dimension = ds$dimension[setdiff(names(ds$dimension), c("id", "size", "role"))], value = ds$value) }
   ids <- unlist(js$id); size <- unlist(js$size)
+  if (length(ids) == 0) stop("Not a JSON-stat dataset (top-level fields: ", paste(utils::head(names(js), 12), collapse = ", "), if (!is.null(js$error) || !is.null(js$message)) paste0("; message: ", js$error %||% js$message) else "", ")")
   cats <- lapply(ids, function(d) { idx <- js$dimension[[d]]$category$index; lab <- js$dimension[[d]]$category$label
     keys <- if (is.list(idx)) names(idx)[order(unlist(idx))] else if (!is.null(names(idx))) names(idx)[order(unlist(idx))] else unlist(idx)
     list(keys = keys, labels = unlist(lab)[keys]) })

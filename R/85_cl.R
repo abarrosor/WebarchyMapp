@@ -277,8 +277,9 @@ cl_territory <- function(con) {
   g <- g[ok, ]; g$territory_id <- paste("CL", cut$region_code[i[ok]], cut$province_code[i[ok]], cut$comuna_code[i[ok]], sep = "-"); g$name <- cut$comuna_name[i[ok]]
   g <- g[, c("territory_id", "name", attr(g, "sf_column"))]
   message("  building provincia and región polygons from the comunas")
-  gp <- g; gp$territory_id <- sub("-[^-]+$", "", gp$territory_id); gp <- gp |> dplyr::group_by(territory_id) |> dplyr::summarise(.groups = "drop"); gp$name <- tbl$name[match(gp$territory_id, tbl$territory_id)]
-  gr <- gp; gr$territory_id <- sub("-[^-]+$", "", gr$territory_id); gr <- gr |> dplyr::group_by(territory_id) |> dplyr::summarise(.groups = "drop"); gr$name <- tbl$name[match(gr$territory_id, tbl$territory_id)]
+  nm <- setNames(tbl$name, tbl$territory_id)
+  gp <- dissolve_territories(g, sub("-[^-]+$", "", g$territory_id), nm)        # provincias (repairs invalid BCN rings first)
+  gr <- dissolve_territories(gp, sub("-[^-]+$", "", gp$territory_id), nm)      # regiones
   save_country_gpkg(con, "CL", list(region = gr, province = gp, municipality = g), tolerance_m = 150)
   invisible(tbl)
 }

@@ -37,7 +37,7 @@ Every figure is shown with its source, what it measures and its limitations. Dif
 | 10 | Remove the automatic update |
 | 11 | Check whether the update is scheduled and how the last run went (`reports/update_*.log`) |
 | 12 | Rebuild the database from scratch from `data/raw/` (originals untouched) |
-| 13 | **Update only the other countries** (the *Country* menu of the app) and the Eurostat tables; option 1 includes them |
+| 13 | **Update only the other countries** (the *Country* menu of the app) and the Eurostat tables; option 1 includes them. A country whose raw and reference files did not change since its last load is kept as it is (Canada alone parses 50 GB); to reload one after a code fix: `update_countries(only = "CA")` in the console |
 
 The same actions exist as scripts in `scripts/` and `scripts/maintenance/`.
 

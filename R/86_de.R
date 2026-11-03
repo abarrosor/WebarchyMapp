@@ -24,7 +24,7 @@ DE_COLUMNS <- list(
   label  = c("^Straftat$", "^Straftat", "^Bezeichnung"),
   ags    = c("^Gemeindeschl", "^Kreisschl", "^AGS$", "^Schl[üu]e?ssel Kreis", "^Regionalschl"),
   name   = c("^Stadt-/Landkreis", "^Kreis$", "^Kreis ", "^Stadt", "^Bundesland$", "^Land$", "^Gebiet"),
-  value  = c("^Anzahl erfasste F[äa]lle$", "^erfasste F[äa]lle$", "^F[äa]lle$", "^erfasste F[äa]lle", "^Anzahl F[äa]lle"),
+  value  = c("^Anzahl erfasste F[äa]e?lle$", "^erfasste F[äa]e?lle$", "^F[äa]e?lle$", "^erfasste F[äa]e?lle", "^Anzahl F[äa]e?lle"),   # "Faelle" (ASCII) in the 2018 CSV
   pop    = c("^Einwohner", "^Bev[öo]lkerung", "^EWZ$")
 )
 

@@ -37,7 +37,7 @@ ch_var <- function(meta, pattern) {
 
 # POST a PX-Web query and keep the JSON-stat 2 answer as a versioned file
 ch_query <- function(cube, selections, name) {
-  body <- list(query = lapply(names(selections), function(code) list(code = code, selection = list(filter = "item", values = as.list(selections[[code]])))),
+  body <- list(query = lapply(names(selections), function(code) list(code = code, selection = list(filter = "item", values = I(as.character(selections[[code]]))))),   # I(): always a JSON array, even for one value
                response = list(format = "json-stat2"))
   tmp <- file.path(tempdir(), paste0("download_", name)); if (file.exists(tmp)) file.remove(tmp)
   on.exit(if (file.exists(tmp)) file.remove(tmp), add = TRUE)
@@ -49,7 +49,9 @@ ch_query <- function(cube, selections, name) {
 
 ch_download <- function(days = 60) {
   m <- COUNTRY_MODULES$CH
-  recent <- function(pattern) { f <- ch_file(pattern); !is.na(f) && difftime(Sys.time(), file.mtime(f), units = "days") < days }
+  # A saved answer counts as recent only if it is a JSON-stat dataset (an error page saved by an earlier run is downloaded again)
+  is_dataset <- function(f) tryCatch({ js <- jsonlite::fromJSON(f, simplifyVector = FALSE); !is.null(js$id) || !is.null(js$dataset) }, error = function(e) FALSE)
+  recent <- function(pattern) { f <- ch_file(pattern); !is.na(f) && difftime(Sys.time(), file.mtime(f), units = "days") < days && is_dataset(f) }
   # 1. Crime: the codes of reference/ch_offence_types.csv, all cantons, totals of Ausführungs-/Aufklärungsgrad, years in chunks
   vals <- function(v) vapply(v$values, as.character, ""); txts <- function(v) vapply(v$valueTexts, as.character, "")
   total_of <- function(v) { x <- vals(v)[grepl("Total", txts(v))]; if (length(x)) x[1] else vals(v)[1] }   # the "Total" code of a variable
@@ -88,7 +90,9 @@ ch_inspect <- function() {
   for (f in list.files(COUNTRY_MODULES$CH$dir_raw, "\\.json$", full.names = TRUE)) {
     js <- jsonlite::fromJSON(f, simplifyVector = FALSE)
     if (!is.null(js$id)) message(basename(f), ": dimensions ", paste(unlist(js$id), unlist(js$size), sep = "=", collapse = ", "))
-    else message(basename(f), ": metadata, variables ", paste(vapply(js$variables, `[[`, "", "code"), collapse = " | "))
+    else if (!is.null(js$dataset)) message(basename(f), ": JSON-stat 1.x dataset, dimensions ", paste(unlist(js$dataset$dimension$id), unlist(js$dataset$dimension$size), sep = "=", collapse = ", "))
+    else if (!is.null(js$variables)) message(basename(f), ": metadata, variables ", paste(vapply(js$variables, `[[`, "", "code"), collapse = " | "))
+    else message(basename(f), ": not recognised; top-level fields: ", paste(utils::head(names(js), 15), collapse = " | "), "\n  first 300 characters: ", substr(paste(readLines(f, n = 3, warn = FALSE), collapse = " "), 1, 300))
   }
 }
 

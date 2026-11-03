@@ -57,11 +57,26 @@ br_download <- function(days = 60) {
     tryCatch(download_versioned(sub("{year}", y, tmpl, fixed = TRUE), m$dir_raw, name = name),
              error = function(e) message("  BR ", y, ": not downloaded (", conditionMessage(e), ")"))
   }
-  for (key in c("ibge_municipios", "sidra_municipios", "sidra_ufs", "sidra_brasil")) {
+  for (key in c("ibge_municipios", "sidra_ufs", "sidra_brasil")) {
     name <- br_source(key, "name"); prev <- br_file(name)
     if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < 365) next
     tryCatch(download_versioned(br_source(key), m$dir_raw, name = name), error = function(e) message("  BR ", key, ": not downloaded (", conditionMessage(e), ")"))
   }
+  # SIDRA refuses the 5,570 municípios x many years in one call (HTTP 400): one call per year
+  # (years without an estimate, 2022 and 2023 census years, answer with an error and are skipped)
+  tmpl <- br_source("sidra_municipios"); tmpl_name <- br_source("sidra_municipios", "name")
+  for (y in first:this_year) {
+    name <- sub("{year}", y, tmpl_name, fixed = TRUE); prev <- br_file(name)
+    if (!is.na(prev) && (y < this_year || difftime(Sys.time(), file.mtime(prev), units = "days") < 365)) next
+    tryCatch(download_versioned(sub("{year}", y, tmpl, fixed = TRUE), m$dir_raw, name = name),
+             error = function(e) message("  BR sidra_municipios ", y, ": not downloaded (", conditionMessage(e), ")"))
+  }
+}
+# The yearly SIDRA municipal population files (newest version of each year)
+br_sidra_muni_files <- function() {
+  f <- list.files(COUNTRY_MODULES$BR$dir_raw, "_sidra_6579_municipios_[0-9]{4}\\.json$", full.names = TRUE)
+  if (!length(f)) return(character())
+  unlist(lapply(split(f, sub("^.*_([0-9]{4})\\.json$", "\\1", f)), function(x) newest_first(x)[1]))
 }
 
 # Print the header of each downloaded workbook (to adjust BR_COLUMNS or br_offence_types.csv)
@@ -124,7 +139,15 @@ br_month <- function(x) {
 
 # IBGE municipality list (7-digit code, name, UF) from the localidades API
 br_municipios <- function() {
-  f <- br_file(br_source("ibge_municipios", "name")); if (is.na(f)) return(NULL)
+  f <- br_file(br_source("ibge_municipios", "name"))
+  if (is.na(f)) {   # fallback: the SIDRA population files name every município as "Name - UF" with its 7-digit code
+    sf <- br_sidra_muni_files(); if (!length(sf)) return(NULL)
+    j <- do.call(rbind, lapply(sf, function(x) { d <- jsonlite::fromJSON(x); if (nrow(d) < 2) NULL else d[-1, c("D1C", "D1N")] }))
+    if (is.null(j) || nrow(j) == 0) return(NULL)
+    j <- j[!duplicated(j$D1C), ]; code <- sprintf("%07d", as.integer(j$D1C))
+    message("  municipality list taken from the SIDRA population files (IBGE localidades API not downloaded)")
+    return(data.frame(code = code, name = sub("\\s+-\\s+[A-Z]{2}$", "", j$D1N), uf_code = substr(code, 1, 2), stringsAsFactors = FALSE))
+  }
   j <- jsonlite::fromJSON(f, flatten = TRUE)
   nm <- names(j)
   id <- br_pick(nm, c("^municipio-id$", "^id$")); name <- br_pick(nm, c("^municipio-nome$", "^nome$"))
@@ -170,7 +193,7 @@ br_ingest <- function(con) {
   BR_STATE$unmatched <- unm |> dplyr::count(uf_code, municipio, sort = TRUE) |> as.data.frame()
   if (nrow(BR_STATE$unmatched)) message(sprintf("  %d municipality names not matched to IBGE codes (their figures stay in the UF totals; see br_inspect())", nrow(BR_STATE$unmatched)))
   # Monthly figures by level: municipality (matched names), UF (every row of the UF), country (sum of UFs)
-  monthly <- function(x, id, lv) { x$territory_id <- id; x$level <- lv
+  monthly <- function(x, id, lv) { x$territory_id <- as.character(id); x$level <- rep(lv, nrow(x))   # rep(): x may have 0 rows (no IBGE list)
     x |> dplyr::group_by(territory_id, level, offence_code, year, month) |> dplyr::summarise(n = sum(n, na.rm = TRUE), file = file[1], .groups = "drop") }
   m_mun <- monthly(d[!is.na(d$muni_code), ], paste("BR", d$uf_code[!is.na(d$muni_code)], d$muni_code[!is.na(d$muni_code)], sep = "-"), "municipality")
   m_uf  <- monthly(d, paste0("BR-", d$uf_code), "region")
@@ -179,7 +202,7 @@ br_ingest <- function(con) {
   # Synthetic total: sum of the events mapped to an offence type (never the unmapped ones)
   counted <- types$source_code[types$offence_type_id != "unmapped" & types$offence_type_id != "total"]
   tot <- all[all$offence_code %in% counted, ] |> dplyr::group_by(country, territory_id, level, year, month) |> dplyr::summarise(n = sum(n), file = file[1], .groups = "drop")
-  tot$offence_code <- "TOTAL_EVENTOS"
+  tot$offence_code <- rep("TOTAL_EVENTOS", nrow(tot))
   all <- rbind(all, tot[, names(all)])
   crime <- monthly_to_cumulative(all[, c("country", "territory_id", "level", "offence_code", "year", "month", "n")])
   crime$file <- all$file[match(paste(crime$territory_id, crime$year), paste(all$territory_id, all$year))]
@@ -187,8 +210,8 @@ br_ingest <- function(con) {
   # Territories present in the data but not in dim_territory (e.g. without IBGE list)
   ufs <- br_ufs()
   ensure_territories(con, "BR", paste0("BR-", ufs$uf_code), "region", "BR", ufs$uf_name)
-  mm <- unique(crime[crime$level == "municipality", "territory_id"])
-  ensure_territories(con, "BR", mm, "municipality", sub("-[^-]+$", "", mm), if (!is.null(mun)) mun$name[match(sub("^.*-", "", mm), mun$code)] else NULL)
+  mm <- unique(crime$territory_id[crime$level == "municipality"])
+  if (length(mm)) ensure_territories(con, "BR", mm, "municipality", sub("-[^-]+$", "", mm), if (!is.null(mun)) mun$name[match(sub("^.*-", "", mm), mun$code)] else NULL)
   replace_country_rows(con, "stg_country_crime", "BR", crime[, c("country", "territory_id", "level", "offence_code", "year", "quarter", "cumulative", "file")])
   log_ingest(con, "country_BR", paste(basename(files), collapse = ";"), NA, paste(range(crime$year), collapse = "-"), nrow(crime))
   message(sprintf("  BR: %s rows, %d territories, %d-%d", fmt_int(nrow(crime)), length(unique(crime$territory_id)), min(crime$year), max(crime$year)))
@@ -205,8 +228,9 @@ br_sidra <- function(f) {
 br_population <- function(con) {
   parts <- list()
   for (key in c("sidra_municipios", "sidra_ufs", "sidra_brasil")) {
-    f <- br_file(br_source(key, "name")); if (is.na(f)) { message("  no ", key, " file yet"); next }
-    p <- br_sidra(f); if (is.null(p)) next
+    fs <- if (key == "sidra_municipios") br_sidra_muni_files() else br_file(br_source(key, "name"))
+    fs <- fs[!is.na(fs)]; if (!length(fs)) { message("  no ", key, " file yet"); next }
+    p <- do.call(rbind, Filter(Negate(is.null), lapply(fs, br_sidra))); if (is.null(p) || nrow(p) == 0) next
     p <- p[!is.na(p$population), ]
     if (key == "sidra_municipios") { p$territory_id <- paste("BR", substr(p$code, 1, 2), sprintf("%07d", as.integer(p$code)), sep = "-"); p$level <- "municipality" }
     else if (key == "sidra_ufs") { p$territory_id <- paste0("BR-", p$code); p$level <- "region" }

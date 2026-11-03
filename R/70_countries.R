@@ -139,6 +139,18 @@ ensure_territories <- function(con, cc, ids, level, parent_id = NA, names = NULL
 
 # Save the boundary layers of a country (sf objects in any CRS) as data/territory_<cc>.gpkg.
 # Each layer needs territory_id and name; region_id / province_id are added from dim_territory.
+# Dissolve polygons into their parents (one feature per parent id). Geometries are repaired first and a
+# group whose union still fails is unioned after a zero buffer (invalid rings in some national files).
+dissolve_territories <- function(g, parent_ids, names = NULL) {
+  geom <- sf::st_make_valid(sf::st_geometry(g))
+  parts <- split(seq_along(geom), parent_ids)
+  one <- function(i) tryCatch(sf::st_union(geom[i]), error = function(e) sf::st_union(sf::st_buffer(sf::st_make_valid(geom[i]), 0)))
+  u <- do.call(c, lapply(parts, one))
+  out <- sf::st_sf(territory_id = names(parts), geometry = u, crs = sf::st_crs(g))
+  if (!is.null(names)) out$name <- names[match(out$territory_id, names(names))]
+  out
+}
+
 save_country_gpkg <- function(con, cc, layers, tolerance_m = 150) {
   gpkg <- COUNTRY_MODULES[[cc]]$gpkg
   terr <- DBI::dbGetQuery(con, paste0("SELECT territory_id, level, parent_id FROM dim_territory WHERE country = ", DBI::dbQuoteString(con, cc)))
@@ -284,7 +296,22 @@ country_marts <- function(con) {
 
 # --- Pipeline ----------------------------------------------------------------------------------
 
-country_steps <- function(con, download = TRUE, only = NULL) {
+# TRUE when the country has rows and nothing it is built from (raw files, its reference CSVs) changed since the last load
+country_unchanged <- function(con, m) {
+  if (!all(c("stg_country_crime", "ingest_log") %in% DBI::dbListTables(con))) return(FALSE)
+  last <- DBI::dbGetQuery(con, paste0("SELECT max(loaded_at) AS t FROM ingest_log WHERE source = ", DBI::dbQuoteString(con, paste0("country_", m$code))))$t
+  if (length(last) == 0 || is.na(last)) return(FALSE)
+  rows <- DBI::dbGetQuery(con, paste0("SELECT count(*) AS n FROM stg_country_crime WHERE country = ", DBI::dbQuoteString(con, m$code)))$n
+  if (rows == 0) return(FALSE)
+  files <- c(list.files(m$dir_raw, full.names = TRUE, recursive = TRUE),
+             list.files(CONFIG$dir_ref, paste0("^", tolower(m$code), "_.*\\.csv$"), full.names = TRUE))
+  length(files) > 0 && max(file.mtime(files)) < as.POSIXct(last)
+}
+
+# force = FALSE (full run): a country whose raw and reference files did not change since its last load
+# is not parsed again (Canada's 50 GB of CSV, the French communes...). A run limited with `only`
+# always reloads those countries (that is how a code fix is applied).
+country_steps <- function(con, download = TRUE, only = NULL, force = !is.null(only)) {
   mods <- COUNTRY_MODULES; if (!is.null(only)) mods <- mods[intersect(names(mods), only)]
   if (length(mods) == 0) { message("No country modules registered."); return(invisible(FALSE)) }
   fetch <- function(label, expr) if (download) tryCatch(expr, error = function(e) message("Download not available (", label, "): ", conditionMessage(e)))
@@ -292,17 +319,22 @@ country_steps <- function(con, download = TRUE, only = NULL) {
     step(sprintf("%s (%s): %s", m$name_en, m$code, m$source$name))
     dir.create(m$dir_raw, recursive = TRUE, showWarnings = FALSE)
     fetch(m$code, m$download())
-    attempt(paste(m$code, "territory not loaded"), m$territory(con))
     attempt(paste(m$code, "offence types not loaded"), load_country_types(con, m$code))
-    attempt(paste(m$code, "data not loaded"), m$ingest(con))
-    attempt(paste(m$code, "population not loaded (no rates)"), m$population(con))
+    unchanged <- !force && country_unchanged(con, m)
+    if (unchanged) message("= ", m$code, ": files unchanged since the last load, kept (update_countries(only = \"", m$code, "\") reloads it)")
+    else {
+      attempt(paste(m$code, "territory not loaded"), m$territory(con))
+      attempt(paste(m$code, "data not loaded"), m$ingest(con))
+    }
+    has_pop <- "ref_country_population" %in% DBI::dbListTables(con) && DBI::dbGetQuery(con, paste0("SELECT count(*) AS n FROM ref_country_population WHERE country = ", DBI::dbQuoteString(con, m$code)))$n > 0
+    if (!unchanged || !has_pop) attempt(paste(m$code, "population not loaded (no rates)"), m$population(con))   # a failed population is retried
   }
   invisible(TRUE)
 }
 
-update_countries <- function(download = TRUE, only = NULL) {
+update_countries <- function(download = TRUE, only = NULL, force = !is.null(only)) {
   with_db(function(con) {
-    country_steps(con, download, only)
+    country_steps(con, download, only, force)
     if (is.null(only) && exists("eurostat_rates_update", mode = "function")) eurostat_rates_update(con, download)
     step("Tables for the app")
     build_marts(con)
