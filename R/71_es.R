@@ -65,10 +65,10 @@ es_ingest <- function(con) {
   crime_balance_ingest(con, force = TRUE)            # fills stg_crime_balance / v_crime_balance (and registers islands and old municipalities)
   if (!"v_crime_balance" %in% c(DBI::dbListTables(con))) stop("v_crime_balance missing: the Crime Balance was not loaded")
   n <- DBI::dbWithTransaction(con, {
-    DBI::dbExecute(con, "DELETE FROM stg_country_crime WHERE country = 'ES'")
+    DBI::dbExecute(con, "DELETE FROM stg_country_crime WHERE country = 'ES' AND source = 'main'")
     DBI::dbExecute(con, "
-      INSERT INTO stg_country_crime
-      SELECT 'ES' AS country, s.territory_id, s.level, s.offence_type_key AS offence_code, s.year, s.quarter, s.value AS cumulative, s.file
+      INSERT INTO stg_country_crime (country, territory_id, level, offence_code, year, quarter, cumulative, file, source)
+      SELECT 'ES' AS country, s.territory_id, s.level, s.offence_type_key AS offence_code, s.year, s.quarter, s.value AS cumulative, s.file, 'main' AS source
       FROM stg_crime_balance s
       WHERE s.territory_id IS NOT NULL AND s.level IN ('country', 'region', 'province', 'municipality', 'island') AND s.value IS NOT NULL
       -- One publication per territory and period, the most recent one, with every type it carries (P-028):
@@ -76,7 +76,7 @@ es_ingest <- function(con) {
       -- scheme's aggregates ('Resto de infracciones penales') of that period are left out, never added
       QUALIFY s.pub_year * 10 + s.pub_quarter = max(s.pub_year * 10 + s.pub_quarter) OVER (PARTITION BY s.territory_id, s.year, s.quarter)")
   })
-  per <- DBI::dbGetQuery(con, "SELECT min(year) AS y0, max(year * 10 + quarter) AS p1, count(DISTINCT territory_id) AS t, count(DISTINCT territory_id) FILTER (level = 'municipality') AS m FROM stg_country_crime WHERE country = 'ES'")
+  per <- DBI::dbGetQuery(con, "SELECT min(year) AS y0, max(year * 10 + quarter) AS p1, count(DISTINCT territory_id) AS t, count(DISTINCT territory_id) FILTER (level = 'municipality') AS m FROM stg_country_crime WHERE country = 'ES' AND source = 'main'")
   log_ingest(con, "country_ES", "stg_crime_balance", NA, sprintf("%d-%dQ%d", per$y0, per$p1 %/% 10, per$p1 %% 10), n)
   message(sprintf("  ES: %s rows, %d territories (%d municipalities), %d-%dQ%d (figure of the latest publication)", fmt_int(n), per$t, per$m, per$y0, per$p1 %/% 10, per$p1 %% 10))
   invisible(n)
@@ -106,13 +106,18 @@ es_parity <- function(save = TRUE) {
     out <- list(); add <- function(check, n, detail = "") out[[length(out) + 1]] <<- data.frame(check = check, n = as.integer(n), detail = detail, stringsAsFactors = FALSE)
     if (!has("mart_crime_balance") || !has("mart_country_crime")) { message("Both mart_crime_balance and mart_country_crime are needed (run option 14 with ES first)."); return(invisible(NULL)) }
     old <- DBI::dbGetQuery(con, "SELECT territory_id, level, name, offence_type_id, year, quarter, cumulative FROM mart_crime_balance")
-    new <- DBI::dbGetQuery(con, "SELECT territory_id, level, name, offence_type_id, year, quarter, cumulative FROM mart_country_crime WHERE country = 'ES'")
+    new <- DBI::dbGetQuery(con, paste0("SELECT territory_id, level, name, offence_type_id, year, quarter, cumulative FROM mart_country_crime WHERE country = 'ES'", if ("source" %in% DBI::dbListFields(con, "mart_country_crime")) " AND source = 'main'" else ""))
     key <- function(d) paste(d$territory_id, d$offence_type_id, d$year, d$quarter)
     # the old mart may hold two rows for one type and period (two published labels of the same type): add them up like the new one
     old <- old |> dplyr::group_by(territory_id, level, offence_type_id, year, quarter) |> dplyr::summarise(name = dplyr::first(name), cumulative = sum(cumulative), .groups = "drop") |> as.data.frame()
     ko <- key(old); kn <- key(new)
     add("crime_rows_old", nrow(old)); add("crime_rows_new", nrow(new))
     only_old <- old[!ko %in% kn, ]; only_new <- new[!kn %in% ko, ]
+    # Expected: the old type scheme's aggregate in the periods republished with the new scheme (P-028)
+    new_scheme <- paste(new$territory_id, new$year, new$quarter)[new$offence_type_id == "conventional_total"]
+    p028 <- only_old$offence_type_id == "other_offences" & paste(only_old$territory_id, only_old$year, only_old$quarter) %in% new_scheme
+    add("crime_only_in_old_expected_p028", sum(p028), "old-scheme aggregate of a period republished with the new scheme: left out on purpose")
+    only_old <- only_old[!p028, ]
     add("crime_only_in_old", nrow(only_old), paste(utils::head(unique(only_old$territory_id), 5), collapse = ", "))
     add("crime_only_in_new", nrow(only_new), paste(utils::head(unique(only_new$territory_id), 5), collapse = ", "))
     j <- merge(old, new, by = c("territory_id", "offence_type_id", "year", "quarter"), suffixes = c("_old", "_new"))
@@ -125,10 +130,27 @@ es_parity <- function(save = TRUE) {
     add("offence_types_old", length(unique(old$offence_type_id))); add("offence_types_new", length(unique(new$offence_type_id)))
     if (has("mart_population_municipal") && has("mart_country_population")) {
       po <- DBI::dbGetQuery(con, "SELECT level, territory_id, year, population FROM mart_population_municipal")
-      pn <- DBI::dbGetQuery(con, "SELECT level, territory_id, year, population FROM mart_country_population WHERE country = 'ES'")
+      pn <- DBI::dbGetQuery(con, "SELECT level, territory_id, year, population FROM mart_country_population WHERE country = 'ES' AND level <> 'police_area'")
       pj <- merge(po, pn, by = c("level", "territory_id", "year"), all = TRUE, suffixes = c("_old", "_new"))
       add("population_only_in_old", sum(is.na(pj$population_new))); add("population_only_in_new", sum(is.na(pj$population_old)))
       add("population_differences", sum(!is.na(pj$population_old) & !is.na(pj$population_new) & abs(pj$population_old - pj$population_new) > 0.5))
+    }
+    # Mossos by police area (second source, R/72_es_mossos.R) against the old yearly mart: full years, every group
+    if (has("mart_mossos_abp_year") && "source" %in% DBI::dbListFields(con, "mart_country_crime")) {
+      ao <- DBI::dbGetQuery(con, "SELECT territory_id, year, group_id AS offence_type_id, cumulative FROM mart_mossos_abp_year WHERE to_month = 12")
+      an <- DBI::dbGetQuery(con, "SELECT territory_id, year, offence_type_id, cumulative FROM mart_country_crime WHERE country = 'ES' AND source = 'mossos' AND quarter = 4 AND offence_type_id <> 'sensitive'")   # the old mart kept sensitive types inside the total only
+      aj <- merge(ao, an, by = c("territory_id", "year", "offence_type_id"), all = TRUE, suffixes = c("_old", "_new"))
+      add("mossos_rows_old", nrow(ao)); add("mossos_rows_new", nrow(an))
+      add("mossos_only_in_old", sum(is.na(aj$cumulative_new)), paste(utils::head(unique(aj$offence_type_id[is.na(aj$cumulative_new)]), 5), collapse = ", "))
+      add("mossos_only_in_new", sum(is.na(aj$cumulative_old)), paste(utils::head(unique(aj$offence_type_id[is.na(aj$cumulative_old)]), 5), collapse = ", "))
+      dd <- aj[!is.na(aj$cumulative_old) & !is.na(aj$cumulative_new) & abs(aj$cumulative_old - aj$cumulative_new) > 0.5, ]
+      add("mossos_value_differences", nrow(dd), paste(utils::head(sprintf("%s %s %d: %s vs %s", dd$territory_id, dd$offence_type_id, dd$year, dd$cumulative_old, dd$cumulative_new), 4), collapse = " | "))
+      if (has("mart_population_abp")) {
+        bo <- DBI::dbGetQuery(con, "SELECT territory_id, year, population FROM mart_population_abp")
+        bn <- DBI::dbGetQuery(con, "SELECT territory_id, year, population FROM mart_country_population WHERE country = 'ES' AND level = 'police_area'")
+        bj <- merge(bo, bn, by = c("territory_id", "year"), all = TRUE, suffixes = c("_old", "_new"))
+        add("mossos_population_differences", sum(is.na(bj$population_old) | is.na(bj$population_new) | abs(bj$population_old - bj$population_new) > 0.5))
+      }
     }
     for (lay in c("region", "province", "municipality")) {
       a <- if (file.exists(GPKG_SPAIN_OLD)) tryCatch(sf::st_read(GPKG_SPAIN_OLD, layer = lay, quiet = TRUE)$territory_id, error = function(e) character()) else character()
@@ -138,7 +160,8 @@ es_parity <- function(save = TRUE) {
       add(paste0("polygons_", lay, "_only_new"), length(setdiff(b, a)), paste(utils::head(setdiff(b, a), 5), collapse = ", "))
     }
     res <- do.call(rbind, out)
-    ok <- res$n[res$check %in% c("crime_only_in_old", "crime_only_in_new", "crime_value_differences", "crime_level_differences", "population_only_in_old", "population_only_in_new", "population_differences")]
+    ok <- res$n[res$check %in% c("crime_only_in_old", "crime_only_in_new", "crime_value_differences", "crime_level_differences", "population_only_in_old", "population_only_in_new", "population_differences",
+                                 "mossos_only_in_old", "mossos_only_in_new", "mossos_value_differences", "mossos_population_differences")]
     message("Spain parity (old Spanish tables vs shared country tables): ", if (all(ok == 0)) "IDENTICAL figures" else "DIFFERENCES found")
     for (i in seq_len(nrow(res))) message(sprintf("  %-32s %8s  %s", res$check[i], fmt_int(res$n[i]), substr(res$detail[i], 1, 140)))
     if (save) { f <- file.path(CONFIG$dir_reports, paste0("parity_es_", format(Sys.Date(), "%Y%m%d"), ".csv")); utils::write.csv(res, f, row.names = FALSE, fileEncoding = "UTF-8"); message("Saved: ", f) }
@@ -162,6 +185,7 @@ register_country(list(
   boundaries_attribution = "IGN, CartoBase ANE (CC BY 4.0)",
   not_published = c("Fewer than 20,000 inhabitants: the Ministry does not publish its figures", "Menos de 20.000 habitantes: el Ministerio no publica sus cifras"),
   not_published_key = "sp_no_data_small", not_published_legend_key = "sp_legend_small",   # translated in every language of the app
+  short_name = c("Ministry (municipalities > 20,000 inh.)", "Ministerio (municipios > 20.000 hab.)"), short_name_key = "sp_source_ministry",   # label of the source switch (R/72_es_mossos.R)
   notes_en = "Municipalities above 20,000 inhabitants and islands only (above 30,000 in 2019). The Ministry revises the previous year in each publication. The Mossos d'Esquadra and Ertzaintza figures are inside the regional totals.",
   default_region = "ES-13", zoom_widths = c(region = 11, province = 7),
   download = es_download, ingest = es_ingest, territory = es_territory, population = es_population

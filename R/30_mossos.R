@@ -155,6 +155,21 @@ abp_download <- function(days = 90) {
 
 GPKG_ABP <- "data/territory_abp.gpkg"
 
+# Municipality -> ABP by geometry: the point on the surface of each Catalan municipality (IGN boundaries,
+# data/territory_es.gpkg) inside the ABP polygons. Barcelona itself is left out (its districts are ABPs).
+abp_assign_spatially <- function(f_geo) {
+  gpkg <- if (exists("COUNTRY_MODULES") && !is.null(COUNTRY_MODULES$ES)) COUNTRY_MODULES$ES$gpkg else "data/territory_es.gpkg"
+  if (length(f_geo) == 0 || !file.exists(gpkg) || !"municipality" %in% tryCatch(sf::st_layers(gpkg)$name, error = function(e) character())) return(NULL)
+  g <- sf::st_make_valid(sf::st_read(f_geo[1], quiet = TRUE)); names(g)[names(g) != attr(g, "sf_column")] <- tolower(names(g)[names(g) != attr(g, "sf_column")])
+  mun <- sf::st_read(gpkg, layer = "municipality", quiet = TRUE); mun <- mun[!is.na(mun$region_id) & mun$region_id == "ES-09" & mun$territory_id != ID_BARCELONA, ]
+  if (nrow(mun) == 0) return(NULL)
+  pts <- suppressWarnings(sf::st_point_on_surface(sf::st_transform(sf::st_make_valid(mun), 25831))); g <- sf::st_transform(g, 25831)
+  hit <- suppressMessages(sf::st_intersects(pts, g)); i <- vapply(hit, function(h) if (length(h)) h[1] else NA_integer_, 1L)
+  # a municipality whose point falls in no polygon (coast, file edge): the nearest ABP
+  if (anyNA(i)) i[is.na(i)] <- suppressMessages(sf::st_nearest_feature(pts[is.na(i), ], g))
+  data.frame(abp_code = sprintf("%02d", as.integer(g$codi_abp_mossos[i])), ine_code = sub("^.*-", "", mun$territory_id), district_code = NA_character_, file = "spatial (IGN municipalities in ABP polygons)", stringsAsFactors = FALSE)
+}
+
 abp_save <- function(con) {
   src <- CONFIG$sources$mossos
   f_mun <- newest_first(list.files(src$dir_abp, "abp_municip(ios|alities)\\.csv$", full.names = TRUE))
@@ -170,6 +185,18 @@ abp_save <- function(con) {
     ine_code      = substr(sprintf("%06d", as.integer(m$codi_municipi)), 1, 5),   # 6 digits = INE + check digit
     district_code = ifelse(is.na(dis) | dis < 1 | dis > 90, NA, sprintf("%02d", dis)),
     file          = basename(f_mun[1])))
+  # Outside Barcelona the municipalities are assigned to the ABP polygon that contains them (IGN municipal
+  # boundaries of the Spain module), which cannot disagree with the map; the CSV codes are compared with that
+  # assignment and the agreement printed (100 % with the real files, 2026-11-06; the sandbox copies were
+  # synthetic). The Barcelona districts (34-43) come from the CSV. The CSV is the fallback when a file is missing.
+  spatial <- abp_assign_spatially(f_geo)
+  if (!is.null(spatial)) spatial <- spatial[!spatial$abp_code %in% tab$abp_code[!is.na(tab$district_code)], ]   # a district ABP holds its district only
+  if (!is.null(spatial)) {
+    csv <- tab[is.na(tab$district_code), ]; k <- match(spatial$ine_code, csv$ine_code); agree <- mean(spatial$abp_code == csv$abp_code[k], na.rm = TRUE)
+    message(sprintf("  municipality -> ABP: %d assigned by geometry; the CSV agrees for %.0f%% of them%s", nrow(spatial), 100 * agree,
+                    if (is.finite(agree) && agree < 0.9) " (the CSV codes do not follow the boundaries file: geometry wins)" else ""))
+    tab <- rbind(tab[!is.na(tab$district_code), ], spatial)
+  }
   DBI::dbWithTransaction(con, {
     DBI::dbExecute(con, "DELETE FROM ref_abp_municipality")
     DBI::dbAppendTable(con, "ref_abp_municipality", tab)
@@ -188,7 +215,8 @@ abp_save <- function(con) {
                       overwrite = TRUE)
   }
   mossos_abp_map(con)
-  message(sprintf("Police areas: %d ABP with %d municipalities%s", length(unique(tab$abp_code)), length(unique(tab$ine_code)),
+  message(sprintf("Police areas: %d ABP with %d municipalities%s%s", length(unique(tab$abp_code)), length(unique(tab$ine_code)),
+                  if (!is.null(spatial)) " (assigned by geometry)" else " (CSV assignment: unreliable outside Barcelona)",
                   if (length(f_geo) > 0) paste0("; boundaries in ", GPKG_ABP) else " (no boundaries)"))
   invisible(TRUE)
 }

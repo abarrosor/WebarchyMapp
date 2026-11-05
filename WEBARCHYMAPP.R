@@ -25,7 +25,7 @@ options_menu <- c(
   "Install or complete the R packages",
   "Test the automatic download (datos.madrid.es API)",
   "Update the district and neighbourhood boundaries (Madrid and Barcelona)",
-  "Update only Barcelona and Mossos sources (Spain is a country: option 14, code ES)",
+  "Update only the Barcelona sources (Spain and the Mossos are the country module: option 14, code ES)",
   "Schedule the automatic update (weekly, without opening RStudio)",
   "Remove the automatic update",
   "Check whether the automatic update is scheduled and how the last run went",
@@ -56,7 +56,7 @@ switch(as.character(choice),
   "13" = update_countries(),
   "14" = {
     message("Registered: ", paste(names(COUNTRY_MODULES), collapse = " "))
-    message("Cities: MAD (Madrid sources)  BCN (Barcelona and Mossos sources)")
+    message("Cities: MAD (Madrid sources)  BCN (Barcelona sources)")
     codes <- toupper(unlist(strsplit(trimws(readline("Codes separated by spaces (e.g. ES GBE FI, or MAD BCN): ")), "[ ,;]+")))
     codes <- codes[nzchar(codes)]
     if (length(codes) == 0) message("Nothing chosen.")

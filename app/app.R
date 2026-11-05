@@ -7,8 +7,9 @@
 #
 # Views (?view=<country code> / madrid / barcelona / countries / about, ?lang=xx):
 #   Country   - one view per country with data (Spain included), from the shared mart_country_*
-#               tables: recorded offences by region, province and municipality; in Catalonia
-#               also Mossos by police area (until phase 2 of Q-005 moves it into the contract)
+#               tables: recorded offences by region, province and municipality; a country may carry
+#               a second source (Spain: the Mossos d'Esquadra by police area in Catalonia) shown as
+#               a switch of source inside the territory it covers, never added to the first one
 #   Madrid    - calls to the Municipal Police (F1) by neighbourhood + police activity (F2)
 #   Barcelona - incidents handled by the City Police (F5) + Mossos crime by district (F4)
 # Figures of one country or city are never compared with another: they measure different things.
@@ -48,14 +49,12 @@ RAW <- lapply(CITY_SOURCES, function(x) list(
 MOSSOS  <- q("SELECT * FROM mart_mossos_bcn_month")          # Mossos, Barcelona by district
 MGROUPS <- q("SELECT * FROM mart_mossos_groups")
 MMETA   <- q("SELECT * FROM mart_mossos_meta")
-ABP     <- q("SELECT * FROM mart_mossos_abp_year")           # Mossos by police area, all Catalonia
-ABPPOP  <- q("SELECT * FROM mart_population_abp")
-ABPINFO <- q("SELECT * FROM mart_abp_info")
 ACT     <- q("SELECT * FROM mart_madrid_activity"); ACTMETA <- q("SELECT * FROM mart_madrid_activity_meta")
 ARR     <- q("SELECT * FROM mart_madrid_arrests");  ARRNAMES <- q("SELECT * FROM mart_madrid_arrest_motives")
 CCRIME  <- q("SELECT * FROM mart_country_crime")                         # every country, Spain included (R/70_countries.R)
 CPOP    <- q("SELECT * FROM mart_country_population")
-CMETA   <- q("SELECT * FROM mart_country_meta")
+CMETA   <- q("SELECT * FROM mart_country_meta")                          # one row per country and source ('main' + second sources)
+CINFO   <- q("SELECT * FROM mart_country_territory_info")                # a line of context about some territories (municipalities of a police area...)
 CRATES  <- q("SELECT * FROM mart_country_rates")                         # national rates (Eurostat; UNODC excluded by its terms) for the Countries table
 db_disconnect(con)
 
@@ -65,7 +64,6 @@ read_layer <- function(file, layer) {
   has <- tryCatch(layer %in% sf::st_layers(f)$name, error = function(e) FALSE); if (!has) return(NULL)
   tryCatch(sf::st_read(f, layer = layer, quiet = TRUE), error = function(e) NULL)
 }
-GEO_ABP      <- read_layer("data/territory_abp.gpkg", "abp")   # Mossos police areas (Catalonia)
 # Bounding box of every polygon (lon/lat), to know which territories are inside the map view
 polygon_boxes <- function(g) {
   if (is.null(g)) return(NULL)
@@ -76,22 +74,31 @@ name_of   <- setNames(TERRITORY$name, TERRITORY$territory_id)
 parent_of <- setNames(TERRITORY$parent_id, TERRITORY$territory_id)
 level_of  <- setNames(TERRITORY$level, TERRITORY$territory_id)
 HAS_MOSSOS <- has_rows(MOSSOS) && !is.null(MGROUPS)
-HAS_ABP    <- has_rows(ABP) && !is.null(ABPINFO)
 HAS_ACT    <- has_rows(ACT)
 HAS_ARR    <- has_rows(ARR) && !is.null(ARRNAMES)
 # A single-province region (Madrid, Asturias...) may have no province row in the source: the
 # province takes the figures of its region (it is the same territory)
 fill_single_provinces <- function(crime) {
+  if (!"source" %in% names(crime)) crime$source <- "main"
+  main <- crime[crime$source == "main", ]; crime <- crime[crime$source != "main", ]
   prov <- TERRITORY[TERRITORY$level == "province" & TERRITORY$territory_id %in% TERRITORY$territory_id[startsWith(TERRITORY$territory_id, paste0(crime$country[1], "-"))], ]
   n_prov <- table(prov$parent_id)
   single <- prov[prov$parent_id %in% names(n_prov)[n_prov == 1], ]
-  missing_prov <- single[!single$territory_id %in% crime$territory_id & single$parent_id %in% crime$territory_id, ]
+  missing_prov <- single[!single$territory_id %in% main$territory_id & single$parent_id %in% main$territory_id, ]
   extra <- do.call(rbind, lapply(seq_len(nrow(missing_prov)), function(i) {
-    r <- crime[crime$territory_id == missing_prov$parent_id[i], ]
+    r <- main[main$territory_id == missing_prov$parent_id[i], ]
     r$territory_id <- missing_prov$territory_id[i]; r$level <- "province"; r$name <- missing_prov$name[i]; r$parent_id <- missing_prov$parent_id[i]
     r
   }))
-  if (!is.null(extra)) rbind(crime, extra) else crime
+  rbind(main, extra, crime)
+}
+# Text of a source's metadata row: a translation key when the row names one that the app knows, else the local / English text
+meta_text <- function(m, what, lang, clang, default = NULL) {
+  k <- m[[paste0(what, "_key")]] %||% ""
+  if (nzchar(k) && !identical(TR(k, "en"), k)) return(TR(k, lang))
+  x <- if (lang == clang) m[[paste0(what, "_local")]] else NULL
+  if (is.null(x) || is.na(x) || !nzchar(x)) x <- m[[paste0(what, "_en")]]
+  if (is.null(x) || is.na(x) || !nzchar(x)) default else x
 }
 
 # --- Formats (depend on the language) ------------------------------------------------
@@ -120,6 +127,7 @@ count_label <- function(text, n, lang, note = NA) {
   tagList(text, span(class = "cnt", paste0("(", fmt_n(n, lang), ")")), if (!is.na(note %||% NA)) info(note))
 }
 kpi <- function(v, l) div(class = "kpi", div(class = "v", v), div(class = "l", l))
+lc <- function(x) paste0(tolower(substr(x, 1, 1)), substr(x, 2, nchar(x)))   # "Police areas (ABP)" -> "police areas (ABP)" inside a sentence
 
 # Rate compared with a reference: a label (much lower ... much higher than the reference
 # average), the position among the territories of the same level, and the % difference.
@@ -756,26 +764,26 @@ make_city <- function(key) {
 }
 
 # =============================================================================
-# Country view (Spain and the other countries): recorded crime by region,
-# province and municipality from each country's official source; in Catalonia
-# also Mossos by basic police area (F4). The functions below run inside one
-# environment per country (make_country), where CC, CB, POPM, GEO_*, SP_LEVELS...
-# are that country's. Spain keeps its own tables and texts.
+# Country view: recorded crime by region, province and municipality from each
+# country's official source. A country may carry a second source (Spain: the
+# Mossos d'Esquadra by police area) shown as a switch of source inside the
+# territory it covers. The functions below run inside one environment per
+# country (make_country), where CC, CB, CB_ALL, POPM, GEO_*, SP_LEVELS... are that country's.
 # =============================================================================
 
-# Offence types that can be chosen (no sensitive ones), totals first
-cb_types <- function(lang) {
-  if (!HAS_CB) return(character())
-  x <- CB_TYPE_TABLE
+# Offence types that can be chosen (no sensitive ones) of a type table, its aggregates first
+cb_types <- function(lang, tt = CB_TYPE_TABLE, aggregates = AGGREGATES) {
+  x <- tt
+  if (nrow(x) == 0) return(character())
   x$name <- if (lang == CLANG) x$name_local else x$name_en
-  pri <- match(x$offence_type_id, AGGREGATES)
+  pri <- match(x$offence_type_id, aggregates)
   x <- x[order(is.na(pri), pri, x$name), ]
   setNames(x$offence_type_id, x$name)
 }
 
-# Periods: full years (4th quarter) and the latest partial year, for a reference territory
-cb_periods <- function(ref_id, lang) {
-  d <- CB[CB$territory_id == ref_id & CB$offence_type_id == "total" & !is.na(CB$quarter), c("year", "quarter")]
+# Periods: full years (4th quarter) and the latest partial year, for a reference territory of a source's rows
+cb_periods <- function(ref_id, lang, d = CB) {
+  d <- d[d$territory_id == ref_id & d$offence_type_id == "total" & !is.na(d$quarter), c("year", "quarter")]
   if (nrow(d) == 0) return(character())
   last <- tapply(d$quarter, d$year, max); years <- as.integer(names(last))
   lbl <- ifelse(last == 4, sprintf(TR("sp_year", lang), years), sprintf(TR("sp_partial", lang), years, month_names(lang, TRUE)[last * 3]))
@@ -790,9 +798,19 @@ ui_country_controls <- function(lang) {
     radioButtons("sp_level", t("sp_level"), choiceNames = lapply(SP_LEVELS, function(l) LEVEL_LABEL(l, lang)), choiceValues = SP_LEVELS, selected = SP_LEVELS[length(SP_LEVELS)]),
     conditionalPanel("input.sp_level == 'municipality' && !input.sp_follow",
       selectInput("sp_region", LEVEL_LABEL("region", lang, col = TRUE), choices = SP_REGIONS, selected = DEFAULT_REGION, width = "100%"),
-      if (HAS_ABP && ABP_REGION %in% SP_REGIONS) conditionalPanel(sprintf("input.sp_region == '%s'", ABP_REGION),
-        radioButtons("sp_source", tagList(t("sp_source"), info(HTML(t("sp_source_help")))),
-                     choiceNames = list(t("sp_source_ministry"), t("sp_source_mossos")), choiceValues = c("ministry", "abp"), selected = "ministry"))),
+      # Second sources: a switch shown inside the territory each one covers (a region, or the whole country)
+      if (nrow(ALT_SOURCES) > 0) {
+        alts <- ALT_SOURCES[ALT_SOURCES$covers == CC | ALT_SOURCES$covers %in% SP_REGIONS, ]
+        if (nrow(alts) > 0) {
+          cond <- paste(ifelse(alts$covers == CC, "true", sprintf("input.sp_region == '%s'", alts$covers)), collapse = " || ")
+          help <- meta_text(alts[1, ], "help", lang, CLANG, default = t("sp_source_switch_help"))
+          conditionalPanel(cond,
+            radioButtons("sp_source", tagList(t("sp_source"), info(HTML(help))),
+                         choiceNames = c(list(meta_text(META, "short_name", lang, CLANG, default = LOC("source_name", lang))),
+                                         lapply(seq_len(nrow(alts)), function(i) meta_text(alts[i, ], "short_name", lang, CLANG, default = LOC("source_name", lang, alts[i, ])))),
+                         choiceValues = c("main", alts$source), selected = "main"))
+        }
+      }),
     uiOutput("sp_types_head"),
     checkboxGroupInput("sp_types", NULL, choices = character(0)),
     uiOutput("sp_types_summary"),
@@ -804,7 +822,7 @@ ui_country_controls <- function(lang) {
                                   grid = FALSE, force_edges = TRUE, width = "100%"),
     div(class = "facet", span(t("sp_territory"))),
     selectizeInput("sp_territory", NULL, choices = NULL, width = "100%"),
-    uiOutput("sp_abp_municipalities"),
+    uiOutput("sp_territory_info"),
     if (HAS_MAP)
       radioButtons("sp_shade", tagList(t("shade_by"), info(HTML(t("sp_shade_help")))), inline = TRUE,
                    choices = shade_options(lang, HAS_POPM), selected = shade_default(HAS_POPM)),
@@ -834,21 +852,30 @@ ui_country <- function(lang) {
 
 server_country <- function(input, output, session, lang) {
   t <- function(k, ...) TR(k, lang, ...)
-  is_abp <- reactive(HAS_ABP && !isTRUE(input$sp_follow) && identical(input$sp_level, "municipality") && identical(input$sp_region, ABP_REGION) && identical(input$sp_source, "abp"))
+  # The source shown: 'main', or a second source when the reader is at municipal level inside the territory it covers
+  src <- reactive({
+    s <- input$sp_source %||% "main"
+    if (s == "main" || isTRUE(input$sp_follow) || !identical(input$sp_level, "municipality") || !s %in% ALT_SOURCES$source) return("main")
+    cov <- ALT_SOURCES$covers[ALT_SOURCES$source == s][1]
+    if (cov == CC || identical(input$sp_region, cov)) s else "main"
+  })
+  alt <- reactive(src() != "main")
+  SM <- reactive(SRC_META[SRC_META$source == src(), ][1, ])                    # metadata row of the source shown
+  CBS <- reactive(if (alt()) CB_ALL[CB_ALL$source == src(), ] else CB)         # its rows
+  top_id <- reactive(if (alt()) SM()$covers else CC)                           # the territory everything is compared with
+  alt_level <- reactive(if (alt()) strsplit(SM()$levels, ";")[[1]][1] else NULL)
+  eff_level <- reactive(if (alt()) alt_level() else input$sp_level)            # the level listed and mapped
+  tt <- function(k, ...) TRS(k, lang, SM(), ...)                               # texts that depend on what the source counts
+  type_table <- reactive(if (alt()) TYPE_TABLE(src()) else CB_TYPE_TABLE)
+  aggregates <- reactive(AGGREGATES_OF(type_table()))
   visible_ids <- reactiveVal(NULL)     # territories inside the map view (NULL = all)
   auto_sel <- reactiveVal(NULL)        # last territory selected by the app itself (not by the user): no flight to it
-  gname <- if (HAS_ABP) local_name(MGROUPS, "group_id", lang) else c()
-  abp_types <- function() { g <- MGROUPS$group_id[!MGROUPS$group_id %in% c("sensitive", "unmapped")]; c(setNames("total", t("mossos_total")), setNames(g, gname[g])) }
   # Types as in the cities: a category (radio) and its types (checkboxes with counts).
   # All ticked = the official aggregate of the category (it also includes the sensitive
   # types that are never listed); a subset = the sum of the ticked types.
   type_tree <- reactive({
-    if (isTRUE(is_abp())) {
-      g <- MGROUPS$group_id[!MGROUPS$group_id %in% c("sensitive", "unmapped")]
-      return(list(blocks = c(total = t("mossos_total")), leaves = list(total = setNames(g, gname[g]))))
-    }
-    tt <- CB_TYPE_TABLE; nm <- if (lang == CLANG) tt$name_local else tt$name_en
-    aggregates <- AGGREGATES
+    tt <- type_table(); nm <- if (lang == CLANG) tt$name_local else tt$name_en
+    aggregates <- aggregates()
     # Leaf types: those directly inside an aggregate (a sub-type such as residential burglary,
     # already counted in burglary, is left out so that nothing is added twice)
     i <- which(tt$included_in %in% aggregates & !tt$offence_type_id %in% aggregates)
@@ -858,11 +885,11 @@ server_country <- function(input, output, session, lang) {
   types_ready <- reactiveVal(FALSE)
   pending_types <- reactiveVal(NULL)   # boxes to tick after a list change (click on a type not yet listed)
   listed_types <- reactiveVal(character(0))   # types currently listed (to tell "all ticked" from a partial choice)
+  listed_src <- reactiveVal("main")           # the source the list was built for: a change of source ticks everything again
   # Cumulative figure of each type for the reference territory in the period (for the counts)
   type_counts <- reactive({
     per <- period(); lv <- block_leaves(); if (length(lv) == 0) return(numeric())
-    if (isTRUE(is_abp())) { d <- ABP[ABP$territory_id == ABP_REGION & in_periods(ABP, per) & ABP$group_id %in% lv, ]; n <- tapply(d$cumulative, d$group_id, sum) }
-    else { d <- CB[CB$territory_id == CC & in_periods(CB, per) & CB$offence_type_id %in% lv, ]; n <- tapply(d$cumulative, d$offence_type_id, sum) }
+    d <- CBS(); d <- d[d$territory_id == top_id() & in_periods(d, per) & d$offence_type_id %in% lv, ]; n <- tapply(d$cumulative, d$offence_type_id, sum)
     n <- n[lv]; n[is.na(n)] <- 0; names(n) <- lv
     n
   })
@@ -872,10 +899,10 @@ server_country <- function(input, output, session, lang) {
     if (length(lv) == 0) { updateCheckboxGroupInput(session, "sp_types", choices = character(0), selected = character(0)); types_ready(FALSE); return() }
     ticked <- isolate(input$sp_types) %||% character(0); listed <- listed_types()
     # Everything ticked before (the official total) stays "everything" when the list changes with the period
-    all_before <- length(listed) == 0 || all(listed %in% ticked)
+    all_before <- length(listed) == 0 || all(listed %in% ticked) || !identical(listed_src(), src())
     sel <- unname(if (!is.null(pending_types()) && all(pending_types() %in% lv)) pending_types()
                   else if (!types_ready() || all_before || !any(ticked %in% lv)) lv else intersect(ticked, lv))
-    pending_types(NULL); listed_types(lv)
+    pending_types(NULL); listed_types(lv); listed_src(src())
     o <- order(-n)
     updateCheckboxGroupInput(session, "sp_types", selected = sel,
       choiceNames = unname(lapply(lv[o], function(x) count_label(names(lv)[match(x, lv)], n[[x]], lang))), choiceValues = unname(lv[o]))
@@ -908,13 +935,8 @@ server_country <- function(input, output, session, lang) {
     tr <- type_tree(); id <- input$sp_type_click; lv <- block_leaves()
     if (id %in% lv) updateCheckboxGroupInput(session, "sp_types", selected = id)
     else if (id == "total") updateCheckboxGroupInput(session, "sp_types", selected = unname(lv))
-    else { sub <- CB_TYPE_TABLE$offence_type_id[CB_TYPE_TABLE$included_in == id]; sub <- intersect(sub, lv); if (length(sub)) updateCheckboxGroupInput(session, "sp_types", selected = sub) }
+    else { ttab <- type_table(); sub <- ttab$offence_type_id[!is.na(ttab$included_in) & ttab$included_in == id]; sub <- intersect(sub, lv); if (length(sub)) updateCheckboxGroupInput(session, "sp_types", selected = sub) }
   })
-  abp_periods <- function() {
-    d <- unique(ABP[ABP$level == "region" & ABP$group_id == "total", c("year", "to_month")]); d <- d[order(-d$year), ]
-    lbl <- ifelse(d$to_month == 12, sprintf(t("sp_year"), d$year), sprintf(t("sp_partial"), d$year, month_names(lang, TRUE)[d$to_month]))
-    setNames(paste0(d$year, "|", ifelse(d$to_month == 12, 4, ceiling(d$to_month / 3)), "|", d$to_month), lbl)
-  }
   # Follow mode at municipality level: every municipality of Spain in view, whatever its region
   all_munis <- reactive(isTRUE(input$sp_follow) && identical(input$sp_level, "municipality") && !is.null(GEO_MUNI))
   # The region of any territory, climbing the parents (works for every country's identifiers)
@@ -924,13 +946,13 @@ server_country <- function(input, output, session, lang) {
     ifelse(!is.na(r) & unname(level_of[r]) == "region", r, NA)
   }
   ref_id <- reactive({
-    if (isTRUE(is_abp())) ABP_REGION
+    if (alt()) top_id()
     else if (all_munis()) { id <- input$sp_territory; if (!is.null(id) && isTRUE(unname(level_of[id]) == "municipality")) region_of(id) %||% CC else CC }
     else if (identical(input$sp_level, "municipality")) input$sp_region %||% CC else CC
   })
   ref_name <- function(id) { nm <- unname(name_of[id]); nm[is.na(nm)] <- id[is.na(nm)]; ifelse(id == CC, CNAME(lang), pretty_name(nm)) }
-  level_name <- function(level) if (level == "abp") t("sp_abp") else LEVEL_LABEL(level, lang, col = TRUE)
-  display_name <- function(ids, level) if (level == "abp") ABPINFO$name[match(ids, ABPINFO$territory_id)] else pretty_name(unname(name_of[ids]) %||% ids)
+  level_name <- function(level) LEVEL_LABEL(level, lang, col = TRUE)
+  display_name <- function(ids, level) pretty_name(unname(name_of[ids]) %||% ids)
 
   # INE population of every territory for a year (the most recent available up to that year)
   pop_year <- function(year) {
@@ -938,39 +960,24 @@ server_country <- function(input, output, session, lang) {
     y <- max(POPM$year[POPM$year <= year], min(POPM$year)); p <- POPM[POPM$year == y, ]
     list(year = y, pop = setNames(p$population, p$territory_id))
   }
-  pop_abp <- function(year) {
-    if (!has_rows(ABPPOP)) return(NULL)
-    y <- max(ABPPOP$year[ABPPOP$year <= year], min(ABPPOP$year)); p <- ABPPOP[ABPPOP$year == y, ]
-    pc <- POPM$population[POPM$territory_id == ABP_REGION & POPM$year == y]
-    list(year = y, pop = c(setNames(p$population, p$territory_id), if (length(pc)) setNames(pc, ABP_REGION)))
-  }
 
-  # Territories of the chosen level (or ABPs), types and periods
+  # Territories of the chosen level (or of the second source), types and periods
   observeEvent(list(input$sp_level, input$sp_region, input$sp_source, input$sp_follow), {
     req(input$sp_level)
-    if (isTRUE(is_abp())) {
-      a <- ABPINFO[order(ABPINFO$name), ]
-      sel <- if ("ES-09-ABP-34" %in% a$territory_id) "ES-09-ABP-34" else a$territory_id[1]; auto_sel(sel)
-      updateSelectizeInput(session, "sp_territory", choices = setNames(a$territory_id, a$name), selected = sel, server = FALSE)
-      per <- abp_periods(); full <- per[grepl("\\|12$", per)]
-      period_map(per); types_ready(FALSE)
-      shinyWidgets::updateSliderTextInput(session, "sp_period", choices = rev(names(per)), selected = rep(names(if (length(full)) full[1] else per[1]), 2))
-      return()
-    }
     types_ready(FALSE)
-    rows <- level_rows(input$sp_level, input$sp_region)
-    ids <- unique(rows$territory_id); nm <- display_name(ids, input$sp_level)
+    rows <- level_rows(eff_level(), input$sp_region)
+    ids <- unique(rows$territory_id); nm <- display_name(ids, eff_level())
     o <- order(nm)
     # Default: the most populated territory with data
-    p <- pop_year(max(CB$year)); best <- if (!is.null(p)) ids[which.max(unname(p$pop[ids]) %||% 0)] else ids[1]
+    p <- pop_year(max(CBS()$year)); best <- if (!is.null(p)) ids[which.max(unname(p$pop[ids]) %||% 0)] else ids[1]
     keep <- isolate(input$sp_territory)
     # When following the map, the list is written only by the map-view observer (what is in view)
-    if (!isTRUE(input$sp_follow) || !HAS_MAP) {
+    if (!isTRUE(input$sp_follow) || !HAS_MAP || alt()) {
       sel <- if (!is.null(keep) && keep %in% ids) keep else best %||% ids[1]; auto_sel(sel)
       updateSelectizeInput(session, "sp_territory", choices = setNames(ids[o], nm[o]), selected = sel, server = FALSE)
     }
     visible_ids(NULL)
-    per <- cb_periods(CC, lang); full <- per[grepl("\\|4$", per)]
+    per <- cb_periods(top_id(), lang, CBS()); full <- per[grepl("\\|4$", per)]
     cur <- isolate(input$sp_period)
     sel <- if (!is.null(cur) && all(cur %in% names(per))) cur else rep(names(if (length(full)) full[1] else per[1]), 2)
     if (!identical(period_map(), per)) { period_map(per); shinyWidgets::updateSliderTextInput(session, "sp_period", choices = rev(names(per)), selected = sel) }
@@ -978,14 +985,15 @@ server_country <- function(input, output, session, lang) {
   observeEvent(input$sp_click, updateSelectizeInput(session, "sp_territory", selected = input$sp_click))
 
   level_rows <- function(level, region) {
-    if (level == "municipality" && !all_munis()) CB[CB$level == "municipality" & startsWith(CB$territory_id, paste0(region, "-")), ] else CB[CB$level == level, ]
+    d <- CBS()
+    if (level == "municipality" && !all_munis()) d[d$level == "municipality" & startsWith(d$territory_id, paste0(region, "-")), ] else d[d$level == level, ]
   }
   # The slider selects a range of years (as the months in the cities). One year = the official
   # figure (January to the last quarter published); several years = their sum. A partial year is
   # only used on its own: inside a range it is left out.
   parse_period <- function(v) { p <- strsplit(v, "|", fixed = TRUE)[[1]]; list(year = as.integer(p[1]), quarter = as.integer(p[2]), to_month = if (length(p) >= 3) as.integer(p[3]) else as.integer(p[2]) * 3L) }
   period <- reactive({
-    pm <- period_map() %||% cb_periods(CC, lang); labels <- rev(names(pm))     # oldest first
+    pm <- period_map() %||% cb_periods(top_id(), lang, CBS()); labels <- rev(names(pm))     # oldest first
     sel <- input$sp_period %||% character(); i <- match(sel, labels); req(length(i) >= 1, !anyNA(i))
     chosen <- labels[seq(min(i), max(i))]
     ps <- lapply(unname(pm[chosen]), parse_period)
@@ -1006,7 +1014,7 @@ server_country <- function(input, output, session, lang) {
   })
   # Chips: latest full year, last five full years, every full year
   set_period <- function(n_years) {
-    pm <- period_map() %||% cb_periods(CC, lang); labels <- rev(names(pm))
+    pm <- period_map() %||% cb_periods(top_id(), lang, CBS()); labels <- rev(names(pm))
     full <- labels[!vapply(lapply(unname(pm[labels]), parse_period), function(q) q$to_month < 12, logical(1))]
     if (length(full) == 0) full <- labels
     to <- full[length(full)]; from <- full[max(1, length(full) - n_years + 1)]
@@ -1019,26 +1027,15 @@ server_country <- function(input, output, session, lang) {
   country_data <- reactive({
     req(input$sp_level); per <- period(); st <- sel_types(); type <- if (length(st$ids) == 0) "__none__" else st$ids
     sum_types <- function(d, keys) { if (length(type) == 1 && per$n == 1) return(d); d |> group_by(across(all_of(keys))) |> summarise(cumulative = sum(cumulative), .groups = "drop") |> as.data.frame() }
-    if (isTRUE(is_abp())) {
-      d <- ABP[ABP$group_id %in% type & in_periods(ABP, per), ]
-      d <- sum_types(d, c("territory_id", "level"))
-      p <- pop_abp(per$year)
-      d$population <- if (is.null(p)) NA else unname(p$pop[d$territory_id])
-      d$n <- apply_threshold(d$cumulative, MARTS$threshold)
-      d$name <- ifelse(d$level == "region", ref_name(ABP_REGION), display_name(d$territory_id, "abp"))
-      d$level[d$level == "abp"] <- "abp"
-      lvl <- "abp"
-    } else {
-      rows <- level_rows(input$sp_level, input$sp_region)
-      refs <- CB[CB$territory_id == CC | (CB$level == "region" & (all_munis() | CB$territory_id == ref_id())), ]
-      d <- rbind(rows, refs); d <- d[d$offence_type_id %in% type & in_periods(d, per), ]
-      d <- sum_types(d, c("territory_id", "level", "name", "parent_id"))
-      p <- pop_year(per$year)
-      d$population <- if (is.null(p)) NA else unname(p$pop[d$territory_id])
-      d$n <- apply_threshold(d$cumulative, MARTS$threshold)
-      d$name <- ifelse(d$territory_id == CC, CNAME(lang), ifelse(d$level == "region" & input$sp_level != "region", ref_name(d$territory_id), display_name(d$territory_id, input$sp_level)))
-      lvl <- input$sp_level
-    }
+    lvl <- eff_level(); d0 <- CBS()
+    rows <- level_rows(lvl, input$sp_region)
+    refs <- d0[d0$territory_id == top_id() | (d0$level == "region" & (all_munis() | d0$territory_id == ref_id())), ]
+    d <- rbind(rows, refs); d <- d[d$offence_type_id %in% type & in_periods(d, per), ]
+    d <- sum_types(d, c("territory_id", "level", "name", "parent_id"))
+    p <- pop_year(per$year)
+    d$population <- if (is.null(p)) NA else unname(p$pop[d$territory_id])
+    d$n <- apply_threshold(d$cumulative, MARTS$threshold)
+    d$name <- ifelse(d$territory_id == CC, CNAME(lang), ifelse(d$level == "region" & lvl != "region", ref_name(d$territory_id), display_name(d$territory_id, lvl)))
     d$rate <- ifelse(is.na(d$n) | is.na(d$population), NA, 1000 * d$n / d$population / per$n)   # yearly average over a range
     if (lvl == "municipality" && all_munis()) {          # each municipality against its own region
       ref <- d$rate[match(region_of(d$territory_id), d$territory_id)]
@@ -1047,19 +1044,21 @@ server_country <- function(input, output, session, lang) {
       ref <- d$rate[d$territory_id == ref_id()]
       d$ratio <- if (length(ref) == 1 && !is.na(ref)) d$rate / ref else rep(NA_real_, nrow(d))
     }
-    list(d = d, level = lvl, ref_id = ref_id(), ref_name = ref_name(ref_id()), per = per, pop_year = p$year, abp = isTRUE(is_abp()), types = st,
-         x_ref = t("sp_x_country", if (ref_id() == CC) CNAME(lang) else tolower(LEVEL_LABEL("region", lang, col = TRUE))),
-         vs_ref = t("sp_vs_country", if (ref_id() == CC) CNAME(lang) else tolower(LEVEL_LABEL("region", lang, col = TRUE))))
+    list(d = d, level = lvl, ref_id = ref_id(), ref_name = ref_name(ref_id()), per = per, pop_year = p$year, alt = alt(), src = SM(), types = st,
+         x_ref = t("sp_x_country", if (ref_id() == CC) CNAME(lang) else lc(LEVEL_LABEL("region", lang, col = TRUE))),
+         vs_ref = t("sp_vs_country", if (ref_id() == CC) CNAME(lang) else lc(LEVEL_LABEL("region", lang, col = TRUE))))
   })
 
-  output$sp_abp_municipalities <- renderUI({
-    req(isTRUE(is_abp()), input$sp_territory)
-    i <- ABPINFO[ABPINFO$territory_id == input$sp_territory, ]; if (nrow(i) == 0) return(NULL)
-    div(class = "note mb-2", if (isTRUE(i$barcelona_district)) t("sp_abp_district") else tagList(tags$b(t("sp_abp_n", i$n_municipalities)), " ", i$municipalities))
+  # A line of context about the chosen territory, when a module gave one (the municipalities of a police area...)
+  output$sp_territory_info <- renderUI({
+    req(input$sp_territory); if (!has_rows(CINFO)) return(NULL)
+    i <- CINFO[CINFO$country == CC & CINFO$territory_id == input$sp_territory, ]; if (nrow(i) == 0) return(NULL)
+    x <- if (lang == CLANG && !is.na(i$info_local[1]) && nzchar(i$info_local[1])) i$info_local[1] else i$info_en[1]
+    div(class = "note mb-2", x)
   })
   output$sp_title <- renderUI({
     x <- country_data()
-    h5(class = "mt-1 mb-2", tags$b(t(if (x$abp) "sp_title_mossos" else "sp_title")), " · ", x$types$label, " · ", period_text(), " · ",
+    h5(class = "mt-1 mb-2", tags$b(tt("sp_title")), " · ", x$types$label, " · ", period_text(), " · ",
        if (x$level %in% c("region", "province") || all_munis()) CNAME(lang) else x$ref_name)
   })
   output$sp_profile <- renderUI({
@@ -1070,11 +1069,11 @@ server_country <- function(input, output, session, lang) {
       h4(f$name),
       div(class = "sub", x$types$label, " · ", period_text(), if (!is.na(f$population)) paste0(" · ", fmt_n(f$population, lang), " ", tolower(t("sp_col_pop")))),
       div(class = "kpis",
-          kpi(if (is.na(f$n)) t("less_than", MARTS$threshold) else fmt_n(f$n, lang), t("sp_k_n")),
+          kpi(if (is.na(f$n)) t("less_than", MARTS$threshold) else fmt_n(f$n, lang), tt("sp_k_n")),
           kpi(if (is.na(f$rate)) "—" else fmt_r(f$rate, lang), t("sp_k_rate")),
           if (id != x$ref_id) kpi(if (is.na(f$ratio)) "—" else sprintf(t("times"), fmt_r(f$ratio, lang)), x$vs_ref)),
       if (id != x$ref_id) comparison_block(f$rate, x$d$rate[x$d$territory_id == x$ref_id][1], x$d$rate[x$d$level == x$level], x$ref_name,
-                                           paste(t("sp_k_n"), t("sp_k_rate")), tolower(if (x$level == "abp") t("sp_abp") else LEVEL_LABEL(x$level, lang)), lang),
+                                           paste(tt("sp_k_n"), t("sp_k_rate")), lc(LEVEL_LABEL(x$level, lang)), lang),
       if (x$per$n == 1 && x$per$to_month < 12) div(class = "alert alert-secondary small py-1", t("sp_partial_note", month_names(lang, TRUE)[x$per$to_month])),
       if (x$per$n > 1) div(class = "alert alert-secondary small py-1", t("sp_range_note", x$per$n, x$per$year), if (x$per$dropped_partial) paste0(" ", t("sp_range_dropped"))))
   })
@@ -1082,12 +1081,11 @@ server_country <- function(input, output, session, lang) {
   # Breakdown of the chosen territory by offence type (same period), with the reference rate alongside
   output$sp_breakdown <- renderUI({
     x <- country_data(); id <- input$sp_territory; req(id); per <- x$per
-    if (x$abp) return(breakdown_abp(id, per))
-    d <- CB[CB$territory_id %in% c(id, x$ref_id) & in_periods(CB, per) & !CB$sensitive, ]
+    d <- CBS(); d <- d[d$territory_id %in% c(id, x$ref_id) & in_periods(d, per) & !d$sensitive, ]
     if (per$n > 1) d <- d |> group_by(territory_id, offence_type_id) |> summarise(cumulative = sum(cumulative), .groups = "drop") |> as.data.frame()
     if (nrow(d[d$territory_id == id, ]) == 0) return(NULL)
     p <- pop_year(per$year); pop <- function(i) if (is.null(p)) NA else unname(p$pop[i])
-    types <- cb_types(lang); aggregates <- AGGREGATES
+    types <- cb_types(lang, type_table(), aggregates()); aggregates <- aggregates()
     m <- d[d$territory_id == id & !d$offence_type_id %in% aggregates & !is.na(d$cumulative), ]; m <- m[order(-m$cumulative), ]
     row <- function(type, strong = FALSE) {
       n_t <- apply_threshold(d$cumulative[d$territory_id == id & d$offence_type_id == type][1], MARTS$threshold)
@@ -1099,31 +1097,12 @@ server_country <- function(input, output, session, lang) {
               tags$td(class = "text-end", if (is.na(rate_t)) "—" else fmt_r(rate_t, lang)),
               tags$td(class = "text-end text-muted", if (is.na(rate_r)) "—" else fmt_r(rate_r, lang)))
     }
-    tagList(h6(class = "mt-2 mb-1", t("sp_breakdown"), info(t("sp_breakdown_note"))),
+    note <- if (x$alt) meta_text(x$src, "breakdown_note", lang, CLANG, default = t("sp_breakdown_note")) else t("sp_breakdown_note")
+    tagList(h6(class = "mt-2 mb-1", t("sp_breakdown"), info(note)),
       div(class = "table-sp", style = "max-height:none", tags$table(class = "table table-sm",
-        tags$thead(tags$tr(tags$th(t("sp_col_type")), tags$th(class = "text-end", t("sp_col_n")), tags$th(class = "text-end", t("sp_col_rate")), tags$th(class = "text-end", x$ref_name))),
+        tags$thead(tags$tr(tags$th(t("sp_col_type")), tags$th(class = "text-end", tt("sp_col_n")), tags$th(class = "text-end", t("sp_col_rate")), tags$th(class = "text-end", x$ref_name))),
         tags$tbody(lapply(m$offence_type_id, row), if (any(d$territory_id == id & d$offence_type_id == "total")) row("total", TRUE)))))
   })
-  breakdown_abp <- function(id, per) {
-    d <- ABP[ABP$territory_id %in% c(id, ABP_REGION) & in_periods(ABP, per), ]
-    if (per$n > 1) d <- d |> group_by(territory_id, group_id) |> summarise(cumulative = sum(cumulative), .groups = "drop") |> as.data.frame()
-    if (!any(d$territory_id == id)) return(NULL)
-    p <- pop_abp(per$year); pop <- function(i) if (is.null(p)) NA else unname(p$pop[i])
-    m <- d[d$territory_id == id & d$group_id != "total", ]; m <- m[order(-m$cumulative), ]
-    row <- function(g, strong = FALSE) {
-      n_t <- apply_threshold(d$cumulative[d$territory_id == id & d$group_id == g][1], MARTS$threshold); n_r <- d$cumulative[d$territory_id == ABP_REGION & d$group_id == g][1]
-      rate_t <- if (is.na(n_t)) NA else 1000 * n_t / pop(id) / per$n; rate_r <- if (is.na(n_r)) NA else 1000 * n_r / pop(ABP_REGION) / per$n
-      tags$tr(class = if (g %in% sel_types()$ids) "sel" else if (strong) "ref",
-              tags$td(tags$a(onclick = sprintf("Shiny.setInputValue('sp_type_click', '%s', {priority: 'event'})", g), if (g == "total") t("mossos_total") else gname[[g]])),
-              tags$td(class = "text-end", if (is.na(n_t)) t("less_than", MARTS$threshold) else fmt_n(n_t, lang)),
-              tags$td(class = "text-end", if (is.na(rate_t)) "—" else fmt_r(rate_t, lang)),
-              tags$td(class = "text-end text-muted", if (is.na(rate_r)) "—" else fmt_r(rate_r, lang)))
-    }
-    tagList(h6(class = "mt-2 mb-1", t("sp_breakdown"), info(t("sp_breakdown_mossos_note"))),
-      div(class = "table-sp", style = "max-height:none", tags$table(class = "table table-sm",
-        tags$thead(tags$tr(tags$th(t("sp_col_type")), tags$th(class = "text-end", t("sp_col_n")), tags$th(class = "text-end", t("sp_col_rate")), tags$th(class = "text-end", ref_name(ABP_REGION)))),
-        tags$tbody(lapply(m$group_id, row), row("total", TRUE)))))
-  }
 
   output$sp_evol_head <- renderUI({
     x <- country_data(); id <- input$sp_territory; req(id)
@@ -1135,15 +1114,9 @@ server_country <- function(input, output, session, lang) {
   output$sp_evol <- renderPlot({
     x <- country_data(); id <- input$sp_territory; req(id)
     ids <- unique(c(id, x$ref_id)); type <- x$types$ids
-    if (x$abp) {
-      d <- ABP[ABP$territory_id %in% ids & ABP$group_id %in% type & ABP$to_month == 12, ]; req(nrow(d) > 0)
-      d <- d |> group_by(territory_id, year) |> summarise(cumulative = sum(cumulative), .groups = "drop") |> as.data.frame()
-      d$pop <- vapply(seq_len(nrow(d)), function(i) { p <- pop_abp(d$year[i]); if (is.null(p)) NA_real_ else unname(p$pop[d$territory_id[i]]) }, 1)
-    } else {
-      d <- CB[CB$territory_id %in% ids & CB$offence_type_id %in% type & CB$quarter == 4, ]; req(nrow(d) > 0)
-      d <- d |> group_by(territory_id, year) |> summarise(cumulative = sum(cumulative), .groups = "drop") |> as.data.frame()
-      d$pop <- vapply(seq_len(nrow(d)), function(i) { p <- pop_year(d$year[i]); if (is.null(p)) NA_real_ else unname(p$pop[d$territory_id[i]]) }, 1)
-    }
+    d <- CBS(); d <- d[d$territory_id %in% ids & d$offence_type_id %in% type & d$quarter == 4, ]; req(nrow(d) > 0)
+    d <- d |> group_by(territory_id, year) |> summarise(cumulative = sum(cumulative), .groups = "drop") |> as.data.frame()
+    d$pop <- vapply(seq_len(nrow(d)), function(i) { p <- pop_year(d$year[i]); if (is.null(p)) NA_real_ else unname(p$pop[d$territory_id[i]]) }, 1)
     d$rate <- 1000 * apply_threshold(d$cumulative, MARTS$threshold) / d$pop
     years <- sort(unique(d$year))
     m <- d$rate[d$territory_id == id][match(years, d$year[d$territory_id == id])]
@@ -1169,7 +1142,7 @@ server_country <- function(input, output, session, lang) {
       cell(if (is.na(r$rate)) "—" else fmt_r(r$rate, lang)), cell(if (is.na(r$ratio) || r$territory_id == x$ref_id) "—" else sprintf(t("times"), fmt_r(r$ratio, lang))))
     if (nrow(main) == 0) return(p(class = "note", t("sp_no_data")))
     tags$table(class = "table table-sm",
-      tags$thead(tags$tr(tags$th(level_name(x$level)), tags$th(class = "text-end", t("sp_col_pop")), tags$th(class = "text-end", t("sp_col_n")),
+      tags$thead(tags$tr(tags$th(level_name(x$level)), tags$th(class = "text-end", t("sp_col_pop")), tags$th(class = "text-end", tt("sp_col_n")),
                          tags$th(class = "text-end", t("sp_col_rate")), tags$th(class = "text-end", x$x_ref))),
       tags$tbody(lapply(seq_len(nrow(refs)), function(i) row(refs[i, ], "ref")),
                  lapply(seq_len(nrow(main)), function(i) row(main[i, ], if (identical(main$territory_id[i], input$sp_territory)) "sel", link = TRUE))))
@@ -1180,7 +1153,7 @@ server_country <- function(input, output, session, lang) {
     active_geo <- function(x) {
       # Following the map: every municipality of Spain with data (> 20,000 inh.), drawn once;
       # the smaller ones are not drawn (too many to redraw on every pan)
-      if (x$level == "municipality" && all_munis()) GEO_MUNI_DATA else switch(x$level, abp = GEO_ABP, region = GEO_REGION, province = GEO_PROVINCE, GEO_MUNI[GEO_MUNI$region_id == x$ref_id, ])
+      if (x$level == "municipality" && all_munis()) GEO_MUNI_DATA else if (x$level == "municipality") GEO_MUNI[GEO_MUNI$region_id == x$ref_id, ] else GEO_LEVEL(x$level)
     }
     output$sp_map <- renderLeaflet({
       x <- isolate(country_data()); g <- active_geo(x); req(!is.null(g), nrow(g) > 0)
@@ -1188,7 +1161,7 @@ server_country <- function(input, output, session, lang) {
       rg <- if (x$ref_id != CC) x$ref_id else DEFAULT_REGION
       bb <- sf::st_bbox(if (x$level == "municipality" && all_munis()) GEO_MUNI[GEO_MUNI$region_id == rg, ] else g)
       m <- leaflet(options = leafletOptions(minZoom = 2, zoomSnap = 0.5, zoomDelta = 0.5)) |>
-        addTiles(attribution = paste(ATTRIBUTION_OSM, "·", t("boundaries_by", BOUNDARIES_ATTR))) |>
+        addTiles(attribution = paste(ATTRIBUTION_OSM, "·", BOUNDARIES_TEXT_OF(lang, x$src))) |>
         fitBounds(bb[["xmin"]], bb[["ymin"]], bb[["xmax"]], bb[["ymax"]])
       isolate(layer_country(m, x, input$sp_shade %||% shade_default(HAS_POPM), input$sp_territory))
     })
@@ -1258,7 +1231,7 @@ server_country <- function(input, output, session, lang) {
     })
     observeEvent(input$sp_map_shape_click, {
       id <- input$sp_map_shape_click$id
-      if (!is.null(id) && id %in% c(CB$territory_id, ABP$territory_id)) updateSelectizeInput(session, "sp_territory", selected = id)
+      if (!is.null(id) && id %in% CB_ALL$territory_id) updateSelectizeInput(session, "sp_territory", selected = id)
     })
     # Centre the map on the territory the user chose (map click, table link or dropdown);
     # selections made by the app itself (default, parent after zooming out...) do not move the map
@@ -1298,7 +1271,7 @@ server_country <- function(input, output, session, lang) {
       sc <- quintile_scale(v[!is.na(v)], shade, lang)
       fill <- ifelse(with_data, ifelse(is.na(v), SUPPRESSED, sc$pal(v)), NO_DATA); opac <- ifelse(with_data, 0.75, 0.55)
       map <- map |> addLegend("bottomright", pal = sc$pal, values = v[with_data], layerId = "sp_legend",
-        title = HTML(paste0(t(if (shade == "n") "sp_legend_number" else "sp_legend_rate"), "<br><small>", htmltools::htmlEscape(title), "</small>")),
+        title = HTML(paste0(tt(if (shade == "n") "sp_legend_number" else "sp_legend_rate"), "<br><small>", htmltools::htmlEscape(title), "</small>")),
         labFormat = sc$format, na.label = t("less_than", MARTS$threshold), opacity = 0.8)
     }
     if (any(!with_data) || (x$level == "municipality" && all_munis()))
@@ -1306,7 +1279,7 @@ server_country <- function(input, output, session, lang) {
     map <- map |> addPolygons(data = g, layerId = ~territory_id, group = "areas", color = ifelse(with_data, "#475569", "#94a3b8"),
                               weight = ifelse(with_data, 0.9, 0.5), opacity = 0.9, fillColor = fill, fillOpacity = opac, label = lbl,
                               labelOptions = LABEL_OPTIONS, highlightOptions = highlightOptions(weight = 3, bringToFront = TRUE))
-    if (x$level %in% c("municipality", "abp") && !is.null(GEO_REGION))
+    if (!x$level %in% c("region", "province") && !is.null(GEO_REGION))
       map <- map |> addPolylines(data = if (all_munis()) GEO_REGION else GEO_REGION[GEO_REGION$territory_id == x$ref_id, ],
                                  group = "outline", color = "#1f2933", weight = 2, options = pathOptions(interactive = FALSE))
     if (!is.null(sel) && nzchar(sel) && sel %in% g$territory_id)
@@ -1314,13 +1287,11 @@ server_country <- function(input, output, session, lang) {
     map
   }
 
-  output$sp_foot <- renderUI(if (isTRUE(is_abp())) t("sp_source_mossos_text") else paste(SOURCE_TEXT(lang), if (HAS_MAP) BOUNDARIES_TEXT(lang) else ""))
+  output$sp_foot <- renderUI(paste(SOURCE_TEXT(lang, SM()), if (HAS_MAP) BOUNDARIES_TEXT_OF(lang, SM()) else ""))
   output$sp_notes <- renderUI({
     x <- country_data()
-    if (x$abp) return(div(class = "note mt-2", p(HTML(t("sp_mossos_note"))), p(t("sp_sensitive_mossos")),
-                          if (!is.null(MMETA)) p(t("mossos_source", fmt_month(MMETA$first_month, lang), fmt_month(MMETA$last_month, lang))),
-                          if (!is.null(x$pop_year)) p(t("sp_mossos_pop_note", x$pop_year))))
-    div(class = "note mt-2", p(HTML(t("sp_note"))), p(t("sp_sensitive")), if (is.null(x$pop_year)) p(NO_POP_TEXT(lang)) else p(POP_NOTE(lang, x$pop_year)))
+    note <- if (x$alt) meta_text(x$src, "notes", lang, CLANG, default = t("sp_note")) else t("sp_note")
+    div(class = "note mt-2", p(HTML(note)), p(t("sp_sensitive")), if (is.null(x$pop_year)) p(NO_POP_TEXT(lang)) else p(POP_NOTE(lang, x$pop_year, x$src)))
   })
 }
 
@@ -1334,37 +1305,45 @@ make_country <- function(cc) {
   pop <- if (has_rows(CPOP)) CPOP[CPOP$country == cc, ] else NULL
   if (!has_rows(crime)) return(NULL)
   crime <- fill_single_provinces(crime)
-  meta <- if (has_rows(CMETA) && cc %in% CMETA$country) CMETA[CMETA$country == cc, ][1, ] else NULL
-  if (is.null(meta)) return(NULL)
+  if (!has_rows(CMETA) || !cc %in% CMETA$country) return(NULL)
+  if (!"source" %in% names(CMETA)) CMETA$source <- "main"
+  src_meta <- CMETA[CMETA$country == cc, ]; meta <- src_meta[src_meta$source == "main", ][1, ]
+  if (nrow(src_meta[src_meta$source == "main", ]) == 0) return(NULL)
   e <- new.env(parent = app_env)
-  e$CC <- cc; e$CB <- crime; e$POPM <- pop; e$HAS_CB <- TRUE; e$HAS_POPM <- has_rows(pop)
+  e$CC <- cc; e$CB_ALL <- crime; e$CB <- crime[crime$source == "main", ]; e$POPM <- pop; e$HAS_CB <- nrow(e$CB) > 0; e$HAS_POPM <- has_rows(pop)
+  if (!e$HAS_CB) return(NULL)
+  e$META <- meta; e$SRC_META <- src_meta
+  # Second sources with data (a regional police...): each one covers a territory (a region id or the country)
+  e$ALT_SOURCES <- src_meta[src_meta$source != "main" & src_meta$source %in% crime$source, ]
   e$CLANG <- meta$lang %||% "en"
   # Country name: local name in the local language, a translated name (country_<cc> key) elsewhere, English as the fallback
   e$CNAME <- function(lang) {
     if (lang == e$CLANG && nzchar(meta$name_local %||% "")) return(meta$name_local)
     k <- paste0("country_", cc); tx <- TR(k, lang); if (!identical(tx, k)) tx else meta$name_en %||% cc }
-  # Mossos d'Esquadra by police area: a second source of one country, still read from its own tables
-  # until phase 2 of Q-005 adds a `source` to the shared contract (the one remaining country-specific line)
-  e$HAS_ABP <- cc == "ES" && HAS_ABP; e$ABP_REGION <- if (e$HAS_ABP) "ES-09" else "none"
   f <- paste0("data/territory_", tolower(cc), ".gpkg")
-  e$GEO_MUNI <- read_layer(f, "municipality"); e$GEO_PROVINCE <- read_layer(f, "province"); e$GEO_REGION <- read_layer(f, "region"); e$GEO_ABP <- if (e$HAS_ABP) GEO_ABP else NULL
+  e$GEO_MUNI <- read_layer(f, "municipality"); e$GEO_PROVINCE <- read_layer(f, "province"); e$GEO_REGION <- read_layer(f, "region")
+  # Layers of the second sources' levels (police_area...), by level name
+  alt_levels <- unique(unlist(strsplit(e$ALT_SOURCES$levels %||% character(), ";")))
+  e$GEO_EXTRA <- setNames(lapply(alt_levels, function(l) read_layer(f, l)), alt_levels)
+  e$GEO_LEVEL <- function(l) switch(l, region = e$GEO_REGION, province = e$GEO_PROVINCE, municipality = e$GEO_MUNI, e$GEO_EXTRA[[l]])
   e$HAS_MAP <- !is.null(e$GEO_REGION) || !is.null(e$GEO_MUNI)
-  e$BOXES <- list(region = polygon_boxes(e$GEO_REGION), province = polygon_boxes(e$GEO_PROVINCE), municipality = polygon_boxes(e$GEO_MUNI), abp = polygon_boxes(e$GEO_ABP))
-  e$GEO_MUNI_DATA <- if (!is.null(e$GEO_MUNI)) e$GEO_MUNI[e$GEO_MUNI$territory_id %in% crime$territory_id, ] else NULL
+  e$BOXES <- c(list(region = polygon_boxes(e$GEO_REGION), province = polygon_boxes(e$GEO_PROVINCE), municipality = polygon_boxes(e$GEO_MUNI)), lapply(e$GEO_EXTRA, polygon_boxes))
+  e$GEO_MUNI_DATA <- if (!is.null(e$GEO_MUNI)) e$GEO_MUNI[e$GEO_MUNI$territory_id %in% e$CB$territory_id, ] else NULL
   # Levels with data (and, when there is a map, with boundaries)
-  lv <- intersect(c("region", "province", "municipality"), unique(crime$level))
+  lv <- intersect(c("region", "province", "municipality"), unique(e$CB$level))
   if (e$HAS_MAP) lv <- lv[vapply(lv, function(l) !is.null(e[[switch(l, region = "GEO_REGION", province = "GEO_PROVINCE", "GEO_MUNI")]]), logical(1))]
-  if (length(lv) == 0) lv <- intersect(c("region", "province", "municipality"), unique(crime$level))
+  if (length(lv) == 0) lv <- intersect(c("region", "province", "municipality"), unique(e$CB$level))
   if (length(lv) == 0) return(NULL)
   e$SP_LEVELS <- lv
-  r <- TERRITORY[TERRITORY$level == "region" & TERRITORY$territory_id %in% crime$territory_id, ]
+  r <- TERRITORY[TERRITORY$level == "region" & TERRITORY$territory_id %in% e$CB$territory_id, ]
   e$SP_REGIONS <- setNames(r$territory_id, pretty_name(r$name))[order(r$name)]
   e$DEFAULT_REGION <- if (nzchar(meta$default_region %||% "") && meta$default_region %in% e$SP_REGIONS) meta$default_region else e$SP_REGIONS[1]
-  e$CB_TYPE_TABLE <- unique(crime[!crime$sensitive, c("offence_type_id", "included_in", "name_local", "name_en")])
-  e$AGGREGATES <- unique(c("total", e$CB_TYPE_TABLE$included_in[!is.na(e$CB_TYPE_TABLE$included_in)]))
-  e$AGGREGATES <- e$AGGREGATES[e$AGGREGATES %in% e$CB_TYPE_TABLE$offence_type_id]
-  # Level labels: the module's English / local labels; other languages through the lvl_* keys
-  split_labels <- function(col) if (!is.null(meta[[col]])) setNames(strsplit(paste0(meta[[col]], ";"), ";")[[1]], strsplit(meta$levels %||% "", ";")[[1]]) else c()
+  # Offence types of a source (no sensitive ones) and its aggregates (total first)
+  e$TYPE_TABLE <- function(src = "main") { d <- e$CB_ALL[e$CB_ALL$source == src, ]; unique(d[!d$sensitive, c("offence_type_id", "included_in", "name_local", "name_en")]) }
+  e$AGGREGATES_OF <- function(tt) { a <- unique(c("total", tt$included_in[!is.na(tt$included_in)])); a[a %in% tt$offence_type_id] }
+  e$CB_TYPE_TABLE <- e$TYPE_TABLE("main"); e$AGGREGATES <- e$AGGREGATES_OF(e$CB_TYPE_TABLE)
+  # Level labels: the English / local labels of every source of the country; other languages through the lvl_* keys
+  split_labels <- function(col) { out <- c(); for (i in seq_len(nrow(src_meta))) { m <- src_meta[i, ]; if (!is.null(m[[col]]) && nzchar(m$levels %||% "")) out <- c(out, setNames(strsplit(paste0(m[[col]], ";"), ";")[[1]], strsplit(m$levels, ";")[[1]])) }; out[!duplicated(names(out))] }
   labels_en <- split_labels("level_labels_en"); labels_local <- split_labels("level_labels_local")
   single_en <- split_labels("level_singular_en"); single_local <- split_labels("level_singular_local")
   e$LEVEL_LABEL <- function(level, lang, col = FALSE) {
@@ -1382,9 +1361,13 @@ make_country <- function(cc) {
   e$ZOOM_WIDTHS <- c(region = if (!is.na(meta$zoom_region %||% NA)) meta$zoom_region else 0.65 * w, province = if (!is.na(meta$zoom_province %||% NA)) meta$zoom_province else 0.4 * w)
   e$BOUNDARIES_ATTR <- if (nzchar(meta$boundaries_attribution %||% "")) meta$boundaries_attribution else "see About the data"
   e$BOUNDARIES_TEXT <- function(lang) TR("boundaries_by", lang, e$BOUNDARIES_ATTR)
-  loc <- function(what, lang) { x <- if (lang == e$CLANG) meta[[paste0(what, "_local")]] else NULL; if (is.null(x) || is.na(x) || !nzchar(x)) meta[[what]] %||% "" else x }
-  e$SOURCE_TEXT <- function(lang) TR("sp_source_generic", lang, loc("source", lang), loc("publisher", lang), if (nzchar(meta$population_source %||% "")) loc("population_source", lang) else "—")
-  e$POP_NOTE <- function(lang, year) TR("sp_note_pop_generic", lang, loc("population_source", lang), year)
+  loc <- function(what, lang, m = meta) { x <- if (lang == e$CLANG) m[[paste0(what, "_local")]] else NULL; if (is.null(x) || is.na(x) || !nzchar(x)) m[[what]] %||% "" else x }
+  e$LOC <- loc
+  # Source line of the sidebar and the population note, for the main source or a second one (m = its metadata row)
+  e$SOURCE_TEXT <- function(lang, m = meta) { k <- m$source_text_key %||% ""; if (nzchar(k) && !identical(TR(k, "en"), k)) return(TR(k, lang))
+    TR("sp_source_generic", lang, loc("source_name", lang, m), loc("publisher", lang, m), if (nzchar(m$population_source %||% "")) loc("population_source", lang, m) else "—") }
+  e$POP_NOTE <- function(lang, year, m = meta) TR("sp_note_pop_generic", lang, loc("population_source", lang, m), year)
+  e$BOUNDARIES_TEXT_OF <- function(lang, m) TR("boundaries_by", lang, if (nzchar(m$boundaries_attribution %||% "")) m$boundaries_attribution else e$BOUNDARIES_ATTR)
   e$NO_POP_TEXT <- function(lang) TR("sp_no_pop_generic", lang)
   # "Not published" texts: a translation key when the module names one (every language), else its English / local text
   has_key <- function(k) nzchar(k %||% "") && !identical(TR(k, "en"), k)
@@ -1394,22 +1377,26 @@ make_country <- function(cc) {
   e$NOT_PUBLISHED_LEGEND <- function(lang) if (has_key(meta$not_published_legend_key)) TR(meta$not_published_legend_key, lang) else TR("sp_legend_not_published", lang)
   # Countries that count something other than recorded offences (complaints, reported cases): the title,
   # the KPI noun and the legends use the module's words in English and in the local language
-  mlab <- function(what, lang) { x <- meta[[paste0(what, if (lang == e$CLANG) "_local" else "_en")]]
+  mlab <- function(what, lang, m = meta) { x <- m[[paste0(what, if (lang == e$CLANG) "_local" else "_en")]]
     if (lang != "en" && lang != e$CLANG) {   # other languages: the translated measure kind (msr_<kind>_title / _noun), else English
-      kind <- meta$measure_kind %||% ""; k <- paste0("msr_", kind, if (what == "count_noun") "_noun" else "_title")
-      tx <- if (nzchar(kind)) TR(k, lang) else k; x <- if (!identical(tx, k)) tx else meta[[paste0(what, "_en")]] }
+      kind <- m$measure_kind %||% ""; k <- paste0("msr_", kind, if (what == "count_noun") "_noun" else "_title")
+      tx <- if (nzchar(kind)) TR(k, lang) else k; x <- if (!identical(tx, k)) tx else m[[paste0(what, "_en")]] }
     if (is.null(x) || is.na(x) || !nzchar(x)) NULL else x }
   cap1 <- function(x) paste0(toupper(substr(x, 1, 1)), substr(x, 2, nchar(x)))
-  e$TR <- function(k, lang, ...) {
-    if (!is.null(mlab("count_noun", lang))) {
-      noun <- mlab("count_noun", lang)
+  # Texts that depend on what the source counts: the title, the KPI noun, the legends and the count column.
+  # m = the metadata row of the source shown (the main one by default; the server passes the active one)
+  e$TRS <- function(k, lang, m = meta, ...) {
+    if (k == "sp_title") { tk <- m$title_key %||% ""; if (nzchar(tk) && !identical(TR(tk, "en"), tk)) return(TR(tk, lang)) }
+    if (!is.null(mlab("count_noun", lang, m))) {
+      noun <- mlab("count_noun", lang, m)
       if (k == "sp_k_n") return(noun)
       if (k == "sp_legend_rate") return(paste(cap1(noun), TR("sp_k_rate", lang)))
       if (k == "sp_legend_number" || k == "sp_col_n") return(cap1(noun))
-      if (k == "sp_title" && !is.null(mlab("measure_title", lang))) return(mlab("measure_title", lang))
+      if (k == "sp_title" && !is.null(mlab("measure_title", lang, m))) return(mlab("measure_title", lang, m))
     }
     TR(k, lang, ...)
   }
+  e$TR <- function(k, lang, ...) e$TRS(k, lang, meta, ...)
   for (fn in COUNTRY_FUNCTIONS) { g <- get(fn, envir = app_env); environment(g) <- e; assign(fn, g, envir = e) }
   e
 }
@@ -1475,19 +1462,22 @@ ui_about <- function(lang, cities) {
   meta_of <- function(city) if (!is.null(cities[[city]])) RAW[[city]]$meta else NULL
   mc <- meta_of("madrid"); mb <- meta_of("barcelona")
   rows <- list(
-    if (HAS_ABP || HAS_MOSSOS) list(t("about_src_mossos"), t("about_mossos_measures"), t("about_mossos_territory"), if (!is.null(MMETA)) months(c(MMETA$first_month, MMETA$last_month)) else "", t("about_mossos_licence"), MMETA$url %||% NA),
+    if (HAS_MOSSOS && !any(CMETA$source == "mossos")) list(t("about_src_mossos"), t("about_mossos_measures"), t("about_mossos_territory"), if (!is.null(MMETA)) months(c(MMETA$first_month, MMETA$last_month)) else "", t("about_mossos_licence"), MMETA$url %||% NA),
     if (!is.null(mc)) list(t("about_src_calls"), t("about_calls_measures"), t("about_madrid_territory"), months(c(mc$first_month, mc$last_month)), mc$licence, mc$url),
     if (!is.null(mc) && HAS_ACT && !is.null(ACTMETA)) list(t("about_src_act"), t("about_act_measures"), t("about_act_territory"), months(c(ACTMETA$first_month, ACTMETA$last_month)), ACTMETA$licence, ACTMETA$url),
     if (!is.null(mb)) list(t("about_src_bcn"), t("about_bcn_measures"), t("about_bcn_territory"), months(c(mb$first_month, mb$last_month)), mb$licence, mb$url)
   )
   # One row per country (the first one is DEFAULT_COUNTRY): source, measure and notes, levels, period, licence, population and boundaries
-  rows <- c(lapply(names(COUNTRIES), function(cc) { m <- CMETA[CMETA$country == cc, ][1, ]; e <- COUNTRIES[[cc]]
-    per <- if (!is.null(m$first_period) && !is.na(m$first_period)) sprintf("%d – %d (%s)", m$first_period %/% 10, m$last_period %/% 10, month_names(lang, TRUE)[(m$last_period %% 10) * 3]) else ""
-    lvls <- paste(vapply(e$SP_LEVELS, function(l) e$LEVEL_LABEL(l, lang), ""), collapse = ", ")
-    cname <- e$CNAME(lang)
-    list(paste0(m$source, " (", cname, ")"), paste0(m$measure, if (nzchar(m$notes_en %||% "")) paste0(" ", m$notes_en) else ""), paste0(cname, ": ", lvls), per,
-         paste0(m$licence, if (nzchar(m$population_source %||% "")) paste0(" · ", t("about_pop_from", m$population_source)) else "",
-                if (nzchar(m$boundaries_attribution %||% "")) paste0(" · ", t("boundaries_by", m$boundaries_attribution)) else ""), m$url) }), rows)
+  # One row per country and source (main source first, then its second sources)
+  rows <- c(unlist(lapply(names(COUNTRIES), function(cc) { e <- COUNTRIES[[cc]]; ms <- e$SRC_META[e$SRC_META$source == "main" | e$SRC_META$source %in% e$ALT_SOURCES$source, ]
+    lapply(seq_len(nrow(ms)), function(i) { m <- ms[i, ]
+      per <- if (!is.null(m$first_period) && !is.na(m$first_period)) sprintf("%d – %d (%s)", m$first_period %/% 10, m$last_period %/% 10, month_names(lang, TRUE)[(m$last_period %% 10) * 3]) else ""
+      lv <- if (m$source == "main") e$SP_LEVELS else strsplit(m$levels, ";")[[1]]
+      lvls <- paste(vapply(lv, function(l) e$LEVEL_LABEL(l, lang), ""), collapse = ", ")
+      cname <- e$CNAME(lang)
+      list(paste0(m$source_name, " (", cname, ")"), paste0(m$measure, if (nzchar(m$notes_en %||% "")) paste0(" ", m$notes_en) else ""), paste0(cname, ": ", lvls), per,
+           paste0(m$licence, if (nzchar(m$population_source %||% "")) paste0(" · ", t("about_pop_from", m$population_source)) else "",
+                  if (nzchar(m$boundaries_attribution %||% "")) paste0(" · ", t("boundaries_by", m$boundaries_attribution)) else ""), m$url) }) }), recursive = FALSE), rows)
   rows <- Filter(Negate(is.null), rows)
   table <- tags$table(class = "table table-sm",
     tags$thead(tags$tr(lapply(c("about_col_source", "about_col_measures", "about_col_territory", "about_col_period", "about_col_licence"), function(k) tags$th(t(k))))),

@@ -20,20 +20,23 @@ check_countries <- function(only = NULL, save = TRUE) {
 country_checks <- function(con, only = NULL) {
   need <- c("stg_country_crime", "ref_country_population", "ref_country_offence_types", "dim_territory")
   if (!all(need %in% DBI::dbListTables(con))) { message("Country tables not created yet."); return(invisible(data.frame())) }
-  codes <- DBI::dbGetQuery(con, "SELECT DISTINCT country FROM stg_country_crime ORDER BY 1")$country
-  if (!is.null(only)) codes <- intersect(codes, only)
+  pairs <- DBI::dbGetQuery(con, "SELECT DISTINCT country, source FROM stg_country_crime ORDER BY 1, 2")
+  if (!is.null(only)) pairs <- pairs[pairs$country %in% only, ]
   rows <- list()
   add <- function(cc, check, severity, n, detail = "") rows[[length(rows) + 1]] <<- data.frame(country = cc, check = check, severity = severity, n = as.integer(n), detail = detail, stringsAsFactors = FALSE)
   q <- function(sql, ...) DBI::dbGetQuery(con, sprintf(sql, ...))
-  for (cc in codes) {
-    m <- COUNTRY_MODULES[[cc]]; ccq <- DBI::dbQuoteString(con, cc)
-    crime <- q("SELECT territory_id, level, offence_code, year, quarter, cumulative FROM stg_country_crime WHERE country = %s", ccq)
+  # One pass per country and source ('ES', then 'ES/mossos'): a second source has its own types and levels
+  for (i in seq_len(nrow(pairs))) {
+    cc0 <- pairs$country[i]; sid <- pairs$source[i]; m0 <- COUNTRY_MODULES[[cc0]]; ccq <- DBI::dbQuoteString(con, cc0); sq <- DBI::dbQuoteString(con, sid)
+    cc <- if (sid == "main") cc0 else paste0(cc0, "/", sid)
+    m <- if (sid == "main") m0 else { s <- m0$sources[[sid]]; if (is.null(s)) NULL else list(levels = s$levels, gpkg = m0$gpkg, financial_year = m0$financial_year) }
+    crime <- q("SELECT territory_id, level, offence_code, year, quarter, cumulative FROM stg_country_crime WHERE country = %s AND source = %s", ccq, sq)
     pop   <- q("SELECT territory_id, level, year, population FROM ref_country_population WHERE country = %s", ccq)
-    types <- q("SELECT source_code, offence_type_id, included_in FROM ref_country_offence_types WHERE country = %s", ccq)
+    types <- q("SELECT source_code, offence_type_id, included_in FROM ref_country_offence_types WHERE country = %s AND source = %s", ccq, sq)
     terr  <- q("SELECT territory_id, level, parent_id, name FROM dim_territory WHERE country = %s", ccq)
     # 1. Levels declared by the module vs levels with data
     if (!is.null(m)) { miss <- setdiff(m$levels, unique(crime$level)); if (length(miss)) add(cc, "levels_without_data", "warning", length(miss), paste(miss, collapse = ", ")) }
-    extra <- setdiff(unique(crime$level), c("country", m$levels %||% unique(crime$level))); if (length(extra)) add(cc, "levels_not_declared", "warning", length(extra), paste(extra, collapse = ", "))
+    extra <- setdiff(unique(crime$level), c("country", if (sid != "main") "region", m$levels %||% unique(crime$level))); if (length(extra)) add(cc, "levels_not_declared", "warning", length(extra), paste(extra, collapse = ", "))
     # 2. Duplicate keys
     dup <- sum(duplicated(crime[, c("territory_id", "offence_code", "year", "quarter")])); if (dup) add(cc, "duplicate_keys", "error", dup)
     # 3. Territories with data but no row in dim_territory (the app shows the id instead of a name)
@@ -67,7 +70,12 @@ country_checks <- function(con, only = NULL) {
       if (bad) add(cc, "regions_vs_country", "info", bad, "regions do not add up to the national figure (unallocated cases, or the national row comes from another table)")
     }
     # 9. Population: years, zeros, coverage of the territories with data, sum of municipalities vs region
-    if (nrow(pop)) {
+    #    (the country's population is checked once, with its main source; a second source only its own coverage)
+    if (nrow(pop) && sid != "main") {
+      for (lv in setdiff(unique(crime$level), c("country", "region"))) {
+        ids <- unique(crime$territory_id[crime$level == lv]); nop <- setdiff(ids, unique(pop$territory_id)); if (length(nop)) add(cc, paste0("no_population_", lv), if (length(nop) > 0.5 * length(ids)) "warning" else "info", length(nop), paste(utils::head(nop, 4), collapse = ", "))
+      }
+    } else if (nrow(pop)) {
       z <- sum(pop$population <= 0, na.rm = TRUE); if (z) add(cc, "population_not_positive", "info", z, "zero population (uninhabited or discontinued units): no rate for them")
       cy <- range(crime$year); py <- range(pop$year)
       if (py[2] < cy[2] - 1) add(cc, "population_years_behind", "warning", cy[2] - py[2], sprintf("population to %d, crime to %d (the app uses the latest population year)", py[2], cy[2]))
@@ -101,9 +109,9 @@ country_checks <- function(con, only = NULL) {
     if (last >= now && !isTRUE(m$financial_year)) add(cc, "future_or_current_quarter_complete", "warning", 1, sprintf("last period %dQ%d (today is %dQ%d); unreported months read as zeros?", last %/% 10, last %% 10, now %/% 10, now %% 10))
   }
   out <- if (length(rows)) do.call(rbind, rows) else data.frame(country = character(), check = character(), severity = character(), n = integer(), detail = character())
-  if (nrow(out) == 0) { message("Country checks: nothing to report for ", paste(codes, collapse = ", ")); return(invisible(out)) }
+  if (nrow(out) == 0) { message("Country checks: nothing to report for ", paste(unique(pairs$country), collapse = ", ")); return(invisible(out)) }
   out <- out[order(match(out$severity, c("error", "warning", "info")), out$country, out$check), ]
   message("Country checks (", sum(out$severity == "error"), " errors, ", sum(out$severity == "warning"), " warnings, ", sum(out$severity == "info"), " notes)")
-  for (i in seq_len(nrow(out))) message(sprintf("  [%s] %-4s %-38s %6s  %s", c(error = "!!", warning = "! ", info = "i ")[out$severity[i]], out$country[i], out$check[i], fmt_int(out$n[i]), substr(out$detail[i], 1, 110)))
+  for (i in seq_len(nrow(out))) message(sprintf("  [%s] %-9s %-38s %6s  %s", c(error = "!!", warning = "! ", info = "i ")[out$severity[i]], out$country[i], out$check[i], fmt_int(out$n[i]), substr(out$detail[i], 1, 110)))
   invisible(out)
 }

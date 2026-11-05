@@ -53,8 +53,9 @@ madrid_steps <- function(con, download = TRUE) {
   attempt("Activity not loaded", madrid_activity_ingest(con))
 }
 
-# Steps for Barcelona and the Mossos d'Esquadra. (The Crime Balance, the INE population and the
-# IGN boundaries are the Spain country module, R/71_es.R, run by country_steps() like every country.)
+# Steps for Barcelona. (The Crime Balance, the INE population and the IGN boundaries are the Spain
+# country module, R/71_es.R, and the Mossos d'Esquadra its second source, R/72_es_mossos.R: both run
+# in country_steps() like every country.)
 other_steps <- function(con, download = TRUE) {
   fetch <- function(label, expr) if (download) tryCatch(expr, error = function(e)
     message("Download not available (", label, "): ", conditionMessage(e)))
@@ -68,12 +69,6 @@ other_steps <- function(con, download = TRUE) {
   attempt("Barcelona register not loaded", bcn_census_ingest(con))
   fetch("Barcelona incidents", bcn_incidents_download())
   attempt("Barcelona incidents not loaded", bcn_incidents_ingest(con))
-
-  step("Mossos d'Esquadra (F4)")
-  fetch("Mossos", mossos_download())
-  attempt("Mossos not loaded", mossos_ingest(con))
-  fetch("Mossos police areas", abp_download())
-  attempt("Police areas (ABP) not saved", abp_save(con))
 }
 
 update_other_sources <- function(download = TRUE) {
