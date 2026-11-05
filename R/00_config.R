@@ -49,21 +49,17 @@ CONFIG <- list(
     # "Municipalities above 20,000 inhabitants and islands": the whole of
     # Spain with regions, provinces and municipalities. See R/crime_balance.R.
     crime_balance = list(
-      portal  = "https://estadisticasdecriminalidad.ses.mir.es",
-      from    = 2019,                       # first year downloaded
+      from    = 2019,                       # first year downloaded (URLs: reference/es_sources.csv)
       dir_raw = "data/raw/country_es/crime_balance"
     ),
     # Official population of every Spanish municipality by year (INE table 29005)
     ine_population = list(
-      urls    = "https://www.ine.es/jaxiT3/files/t/csv_bdsc/29005.csv",
       dir_raw = "data/raw/country_es/ine_population"
     ),
     # Municipal boundaries of Spain (IGN CartoBase ANE 1:3,000,000, CC BY 4.0),
     # from the copy kept by the open-source mapSpain project on GitHub.
     # "_x" = mainland and Balearic Islands, "_y" = Canary Islands.
     municipal_boundaries = list(
-      urls    = c("https://github.com/rOpenSpain/mapSpain/raw/sianedata/dist/se89_3_admin_muni_a_x.gpkg",
-                  "https://github.com/rOpenSpain/mapSpain/raw/sianedata/dist/se89_3_admin_muni_a_y.gpkg"),
       dir_raw = "data/raw/country_es/municipal_boundaries"
     ),
 

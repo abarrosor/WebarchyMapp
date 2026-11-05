@@ -13,7 +13,7 @@
 #
 # How: for each quarter its index page is read, the municipalities table is
 # located (its number changes by year) and the CSV is requested. It is saved as
-# data/raw/crime_balance/crime_balance_municipalities_YYYYQn.csv and never
+# data/raw/country_es/crime_balance/crime_balance_municipalities_YYYYQn.csv and never
 # downloaded again. A CSV can also be placed by hand in that folder (downloaded
 # from the portal with "Download > CSV separated by ;").
 #
@@ -22,7 +22,10 @@
 #   - Until ~2023: without code ("-Municipio de Madrid"). The code is looked up
 #     by name within its province using the files that do carry it.
 #   - Offence types: two schemes (until 2021 and since 2022). Equivalences in
-#     reference/crime_balance_types.csv.
+#     reference/es_offence_types.csv (source_code = key of the published label).
+#
+# Spain is a country module (R/71_es.R): these readers fill the Spanish tables and the
+# module copies the result into the shared stg_country_crime.
 
 CB_QUARTER_END <- c(MARZO = 1L, JUNIO = 2L, SEPTIEMBRE = 3L, DICIEMBRE = 4L)
 
@@ -55,13 +58,13 @@ cb_period <- function(x) {
   data.frame(year = year, quarter = unname(CB_QUARTER_END[mon]))
 }
 
-cb_provinces <- function() read_reference("ine_provinces.csv")
+cb_provinces <- function() es_provinces()
 
 # --- Download ---------------------------------------------------------------------
 
 # Locate the municipalities table in the index page of a quarter.
 # Past years live under DatosBalanceAnt, the current year under DatosBalanceAct.
-cb_find_table <- function(year, quarter, portal = CONFIG$sources$crime_balance$portal) {
+cb_find_table <- function(year, quarter, portal = es_source("crime_balance_portal")) {
   html <- NULL
   for (folder in c("DatosBalanceAnt", "DatosBalanceAct")) {
     url <- sprintf("%s/sec/dynPx/inebase/index.htm?type=pcaxis&path=/%s/%d%d/&file=pcaxis", portal, folder, year, quarter)
@@ -233,14 +236,14 @@ cb_geographies <- function(geos, dict, ref) {
 }
 
 # Initial dictionary: INE province and region names, plus municipalities spelt
-# differently in old files (reference/crime_balance_municipality_aliases.csv)
+# differently in old files (reference/es_municipality_aliases.csv)
 cb_dictionary <- function(ref) {
   al <- ref[!is.na(ref$region_alias) & nzchar(ref$region_alias), ]
   rg <- rbind(data.frame(k = cb_key(ref$region_name), v = ref$region_code),
               data.frame(k = cb_key(al$region_alias), v = al$region_code))
   rg <- rg[nzchar(rg$k) & !duplicated(rg$k), ]
-  alias_path <- file.path(CONFIG$dir_ref, "crime_balance_municipality_aliases.csv")
-  eq <- if (file.exists(alias_path)) read_reference("crime_balance_municipality_aliases.csv") else
+  alias_path <- file.path(CONFIG$dir_ref, "es_municipality_aliases.csv")
+  eq <- if (file.exists(alias_path)) read_reference("es_municipality_aliases.csv") else
     data.frame(source_name = character(), ine_code = character())
   eq <- eq[!is.na(eq$ine_code) & nchar(eq$ine_code) == 5, ]
   list(mun    = stats::setNames(eq$ine_code, paste(substr(eq$ine_code, 1, 2), cb_key(eq$source_name))),
@@ -306,10 +309,10 @@ crime_balance_init <- function(con) {
       geography VARCHAR, level VARCHAR, territory_id VARCHAR, name VARCHAR,
       offence_type_source VARCHAR, offence_type_key VARCHAR, year INTEGER, quarter INTEGER, value DOUBLE,
       pub_year INTEGER, pub_quarter INTEGER, file VARCHAR)")
-  types <- read_reference("crime_balance_types.csv", bool_cols = "sensitive")
-  types$offence_type_key <- cb_type_key(types$source_text)
+  types <- read_reference("es_offence_types.csv", bool_cols = "sensitive")   # shared file of the Spain module (source_code = cb_type_key(source_text))
+  types$offence_type_key <- types$source_code; types$name_es <- types$name_local
   if (anyDuplicated(types$offence_type_key))
-    stop("reference/crime_balance_types.csv has repeated types: ", toString(unique(types$source_text[duplicated(types$offence_type_key)])))
+    stop("reference/es_offence_types.csv has repeated types: ", toString(unique(types$source_text[duplicated(types$offence_type_key)])))
   DBI::dbWriteTable(con, "ref_crime_balance_types", as.data.frame(
     types[, c("offence_type_key", "offence_type_id", "included_in", "sensitive", "name_es", "name_en")]), overwrite = TRUE)
   # One row per territory x type x period, with the figure of the MOST RECENT
@@ -339,7 +342,7 @@ crime_balance_ingest <- function(con, force = FALSE) {
   done <- logged_hashes(con, "crime_balance")
   has_rows <- DBI::dbGetQuery(con, "SELECT count(*) AS n FROM stg_crime_balance")$n > 0
   # If this code or the territory references change, everything is reloaded
-  pieces <- c("R/20_crime_balance.R", file.path(CONFIG$dir_ref, c("ine_provinces.csv", "crime_balance_municipality_aliases.csv")))
+  pieces <- c("R/20_crime_balance.R", file.path(CONFIG$dir_ref, c("es_provinces.csv", "es_municipality_aliases.csv")))
   pieces <- pieces[file.exists(pieces)]
   signature <- digest::digest(paste(vapply(pieces, sha256_file, ""), collapse = ""), algo = "sha256")
   signature_ok <- signature %in% logged_hashes(con, "crime_balance_process")

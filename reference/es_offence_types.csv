@@ -1,0 +1,21 @@
+source_code,source_text,offence_type_id,name_local,name_en,included_in,sensitive,note
+CRIMINALIDAD CONVENCIONAL,CRIMINALIDAD CONVENCIONAL,conventional_total,Criminalidad convencional (total),Conventional crime (total),total,no,Published since 2022
+HOMICIDIOS DOLOSOS Y ASESINATOS CONSUMADOS,Homicidios dolosos y asesinatos consumados,homicides_completed,Homicidios y asesinatos consumados,Completed homicides and murders,conventional_total,yes,
+HOMICIDIOS DOLOSOS Y ASESINATOS EN GRADO TENTATIVA,Homicidios dolosos y asesinatos en grado tentativa,homicides_attempted,Homicidios y asesinatos en tentativa,Attempted homicides and murders,conventional_total,yes,
+DELITOS GRAVES Y MENOS GRAVES DE LESIONES Y RIÑA TUMULTUARIA,Delitos graves y menos graves de lesiones y riña tumultuaria,assault_brawl,Lesiones y riña tumultuaria,Assault and brawls,conventional_total,no,
+SECUESTRO,Secuestro,kidnapping,Secuestro,Kidnapping,conventional_total,yes,
+DELITOS CONTRA LA LIBERTAD SEXUAL,Delitos contra la libertad sexual,sexual_offences,Delitos contra la libertad sexual,Sexual offences,conventional_total,yes,Published until 2021 as 'libertad e indemnidad sexual'
+AGRESION SEXUAL CON PENETRACION,Agresión sexual con penetración,rape,Agresión sexual con penetración,Rape,sexual_offences,yes,
+RESTO DE DELITOS CONTRA LA LIBERTAD SEXUAL,Resto de delitos contra la libertad sexual,sexual_offences_other,Resto de delitos contra la libertad sexual,Other sexual offences,sexual_offences,yes,
+ROBOS CON VIOLENCIA E INTIMIDACION,Robos con violencia e intimidación,robbery_violence,Robos con violencia o intimidación,Robbery with violence or intimidation,conventional_total,no,
+ROBOS CON FUERZA EN DOMICILIOS ESTABLECIMIENTOS Y OTRAS INSTALACIONES,"Robos con fuerza en domicilios, establecimientos y otras instalaciones",burglary,Robos con fuerza,Burglary,conventional_total,no,"Homes, premises and other facilities"
+ROBOS CON FUERZA EN DOMICILIOS,Robos con fuerza en domicilios,burglary_homes,Robos con fuerza en domicilios,Residential burglary,burglary,no,
+HURTOS,Hurtos,theft,Hurtos,Theft,conventional_total,no,
+SUSTRACCIONES DE VEHICULOS,Sustracciones de vehículos,vehicle_theft,Sustracción de vehículos,Vehicle theft,conventional_total,no,
+TRAFICO DE DROGAS,Tráfico de drogas,drug_trafficking,Tráfico de drogas,Drug trafficking,conventional_total,no,
+RESTO DE CRIMINALIDAD CONVENCIONAL,Resto de criminalidad convencional,conventional_other,Resto de criminalidad convencional,Other conventional crime,conventional_total,no,Published since 2022
+RESTO DE INFRACCIONES PENALES,Resto de infracciones penales,other_offences,Resto de infracciones penales,Other criminal offences,total,no,"Published until 2021; includes cybercrime, not comparable with conventional_other"
+CIBERCRIMINALIDAD INFRACCIONES PENALES COMETIDAS EN POR MEDIO CIBER,CIBERCRIMINALIDAD (infracciones penales cometidas en/por medio ciber),cyber_total,Cibercriminalidad (total),Cybercrime (total),total,no,Published since 2022
+ESTAFAS INFORMATICAS,Estafas informáticas,cyber_fraud,Estafas informáticas,Online fraud,cyber_total,no,Published since 2022
+OTROS CIBERDELITOS,Otros ciberdelitos,cyber_other,Otros ciberdelitos,Other cybercrime,cyber_total,no,Published since 2022
+TOTAL INFRACCIONES PENALES,TOTAL INFRACCIONES PENALES,total,Total de infracciones penales,Total criminal offences,,no,

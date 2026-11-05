@@ -15,7 +15,7 @@ ine_population_download <- function(days = 30) {
     message("= INE population downloaded less than ", days, " days ago (", basename(previous[1]), ")")
     return(invisible(previous[1]))
   }
-  download_versioned(src$urls, src$dir_raw)
+  download_versioned(es_source("ine_population"), src$dir_raw)
 }
 
 ine_population_read <- function(path) {
@@ -25,7 +25,7 @@ ine_population_read <- function(path) {
   missing <- setdiff(c("MUNICIPIOS", "SEXO", "PERIODO", "TOTAL"), names(df))
   if (length(missing) > 0) stop(basename(path), ": missing columns ", toString(missing), " (has the INE table changed?)")
   df <- df[normalize_text(df$SEXO) == "TOTAL" & grepl("^[0-9]{5}\\s", df$MUNICIPIOS), ]
-  ref <- read_reference("ine_provinces.csv")
+  ref <- read_reference("es_provinces.csv")
   code <- substr(df$MUNICIPIOS, 1, 5)
   prov <- substr(code, 1, 2)
   region <- ref$region_code[match(prov, ref$province_code)]

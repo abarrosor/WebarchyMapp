@@ -53,23 +53,11 @@ madrid_steps <- function(con, download = TRUE) {
   attempt("Activity not loaded", madrid_activity_ingest(con))
 }
 
-# Steps for Spain, Catalonia and Barcelona
-other_steps <- function(con, download = TRUE, force_crime_balance = FALSE) {
+# Steps for Barcelona and the Mossos d'Esquadra. (The Crime Balance, the INE population and the
+# IGN boundaries are the Spain country module, R/71_es.R, run by country_steps() like every country.)
+other_steps <- function(con, download = TRUE) {
   fetch <- function(label, expr) if (download) tryCatch(expr, error = function(e)
     message("Download not available (", label, "): ", conditionMessage(e)))
-
-  step("Crime Balance (Ministry of the Interior, F3)")
-  fetch("Ministry of the Interior", crime_balance_download())
-  attempt("Crime Balance not loaded", crime_balance_ingest(con, force = force_crime_balance))
-
-  step("Population by municipality (INE)")
-  fetch("INE", ine_population_download())
-  attempt("INE population not loaded", ine_population_ingest(con))
-
-  step("Municipal boundaries (IGN) for the Spain map")
-  fetch("municipal boundaries", municipal_boundaries_download())
-  if (municipal_boundaries_pending()) attempt("Boundaries not saved", municipal_boundaries_save())
-  else if (file.exists(GPKG_SPAIN)) message("= Boundaries up to date (", GPKG_SPAIN, ")")
 
   step("Barcelona: neighbourhoods, register and city police incidents (F5)")
   if (city_neighbourhood_count(con, ID_BARCELONA) == 0 || !file.exists(GPKG_BARCELONA)) {
@@ -88,9 +76,9 @@ other_steps <- function(con, download = TRUE, force_crime_balance = FALSE) {
   attempt("Police areas (ABP) not saved", abp_save(con))
 }
 
-update_other_sources <- function(download = TRUE, force = FALSE) {
+update_other_sources <- function(download = TRUE) {
   with_db(function(con) {
-    other_steps(con, download, force_crime_balance = force)
+    other_steps(con, download)
     step("Tables for the app")
     build_marts(con)
     data_status(con)
@@ -171,7 +159,7 @@ data_status <- function(con = NULL) {
   line(isTRUE(f3$n > 0) && isTRUE(f3$unmapped_types == 0) && isTRUE(f3$unknown_terr == 0), "Crime Balance (F3):",
        if (is.null(f3) || f3$n == 0) "not loaded" else
          paste0(f3$n, " quarters (", qtr(f3$from_q), " to ", qtr(f3$to_q), "), ", fmt_int(f3m), " municipalities in the app tables",
-                if (f3$unmapped_types > 0) paste0("; ", f3$unmapped_types, " type(s) without equivalence (reference/crime_balance_types.csv)") else "",
+                if (f3$unmapped_types > 0) paste0("; ", f3$unmapped_types, " type(s) without equivalence (reference/es_offence_types.csv)") else "",
                 if (f3$unknown_terr > 0) paste0("; ", f3$unknown_terr, " unidentified territory(ies) (see reports/quality_crime_balance)") else ""))
   n_geo <- tryCatch(nrow(sf::st_read(GPKG_SPAIN, layer = "municipality", quiet = TRUE)), error = function(e) 0L)
   line(n_geo > 0, "Spain map:", if (n_geo == 0) "no municipal boundaries (the Spain tab works without a map)" else

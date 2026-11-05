@@ -12,10 +12,10 @@
 # `official_code`. All codes are text.
 
 # Country / region / province / municipality rows for a city. Region and
-# province names are the official INE names (reference/ine_provinces.csv).
+# province names are the official INE names (reference/es_provinces.csv).
 upper_levels <- function(municipality_id, city_name) {
   p <- strsplit(municipality_id, "-")[[1]]          # ES, 13, 28, 28079
-  ref <- read_reference("ine_provinces.csv")
+  ref <- read_reference("es_provinces.csv")
   region_name <- ref$region_name[match(p[2], ref$region_code)][1] %||% p[2]
   province_name <- ref$province_name[match(p[3], ref$province_code)][1] %||% p[3]
   data.frame(

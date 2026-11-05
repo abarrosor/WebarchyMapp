@@ -179,7 +179,6 @@ sp_col_n,Offences,Delitos,Delictes,Delitos,Délits,Reati,Straftaten,Crimes,犯�
 sp_col_rate,"Per 1,000 inh.",Por 1.000 hab.,Per 1.000 hab.,Por 1.000 hab.,Pour 1 000 hab.,Per 1.000 ab.,Je 1.000 Einw.,Por 1.000 hab.,每千人,"1,000人あたり","1,000명당"
 sp_x_region,× region,× comunidad,× comunitat,× comunidade,× communauté,× comunità,× Region,× comunidade,× 自治区,× 自治州,× 자치지방
 sp_x_spain,× Spain,× España,× Espanya,× España,× Espagne,× Spagna,× Spanien,× Espanha,× 西班牙,× スペイン,× 스페인
-sp_spain,Spain,España,Espanya,España,Espagne,Spagna,Spanien,Espanha,西班牙,スペイン,스페인
 sp_map,Map,Mapa,Mapa,Mapa,Carte,Mappa,Karte,Mapa,地图,地図,지도
 sp_table,Table,Tabla,Taula,Táboa,Tableau,Tabella,Tabelle,Tabela,表格,表,표
 sp_breakdown,By type of offence,Por tipo de delito,Per tipus de delicte,Por tipo de delito,Par type de délit,Per tipo di reato,Nach Art der Straftat,Por tipo de crime,按犯罪类型,犯罪の種類別,범죄 유형별
@@ -323,6 +322,8 @@ lvl_communes,Communes,Comunas,Comunes,Comunas,Communes,Comuni,Gemeinden,Comunas,
 lvl_commune,Commune,Comuna,Comuna,Comuna,Commune,Comune,Gemeinde,Comuna,市镇,コミューン,코뮌
 lvl_voivodeships,Voivodeships,Voivodatos,Voivodats,Voivodatos,Voïvodies,Voivodati,Woiwodschaften,Voivodias,省,県,주
 lvl_voivodeship,Voivodeship,Voivodato,Voivodat,Voivodato,Voïvodie,Voivodato,Woiwodschaft,Voivodia,省,県,주
+lvl_autonomouscommunities,Autonomous communities,Comunidades autónomas,Comunitats autònomes,Comunidades autónomas,Communautés autonomes,Comunità autonome,Autonome Gemeinschaften,Comunidades autónomas,自治区,自治州,자치지방
+lvl_autonomouscommunity,Autonomous community,Comunidad autónoma,Comunitat autònoma,Comunidade autónoma,Communauté autonome,Comunità autonoma,Autonome Gemeinschaft,Comunidade autónoma,自治区,自治州,자치지방
 country_ES,Spain,España,Espanya,España,Espagne,Spagna,Spanien,Espanha,西班牙,スペイン,스페인
 country_AR,Argentina,Argentina,Argentina,Arxentina,Argentine,Argentina,Argentinien,Argentina,阿根廷,アルゼンチン,아르헨티나
 country_BR,Brazil,Brasil,Brasil,Brasil,Brésil,Brasile,Brasilien,Brasil,巴西,ブラジル,브라질

@@ -13,8 +13,13 @@
 # `level_labels`: for each level c(English plural, local plural[, English singular, local singular]).
 # Offence codes are mapped to the project's offence types in
 # reference/<cc>_offence_types.csv (source_code, offence_type_id, name_local, name_en,
-# included_in, sensitive). The marts built here (mart_country_*) are what the app reads;
-# Spain is added to them from its own tables so that the app treats every country alike.
+# included_in, sensitive). The marts built here (mart_country_*) are what the app reads.
+# Spain is one more module (R/71_es.R): the app treats every country alike.
+#
+# Optional fields of a module: population_source, boundaries_attribution, measure_labels (kind, title,
+# noun), source$name_local, source$publisher_local, population_source_local, not_published (English, local) or not_published_key / not_published_legend_key (translation
+# keys when the texts exist in every language), notes_en, default_region, zoom_widths (c(region, province):
+# view width in degrees under which the map changes level; else proportional to the country).
 #
 # Rules (the same as for Spain): raw files are never modified or deleted; sensitive types
 # only count inside totals; figures of different countries are never added or compared;
@@ -254,10 +259,6 @@ tidyr_pivot_longer <- function(df, cols) {   # without depending on tidyr
 
 country_marts <- function(con) {
   has <- function(tb) tb %in% DBI::dbListTables(con)
-  es_crime <- if (has("mart_crime_balance")) "
-    SELECT 'ES' AS country, territory_id, level, name, parent_id, offence_type_id, included_in, sensitive,
-           name_es AS name_local, name_en, year, quarter, cumulative, quarterly
-    FROM mart_crime_balance" else NULL
   other_crime <- "
     SELECT s.country, s.territory_id, s.level, coalesce(t.name, s.territory_id) AS name, t.parent_id,
            o.offence_type_id, o.included_in, o.sensitive, o.name_local, o.name_en,
@@ -273,11 +274,9 @@ country_marts <- function(con) {
   # Several source codes may map to one offence type: add them up
   other_crime <- paste0("SELECT country, territory_id, level, name, parent_id, offence_type_id, included_in, sensitive, name_local, name_en, year, quarter,
                                 sum(cumulative) AS cumulative, sum(quarterly) AS quarterly FROM (", other_crime, ") GROUP BY ALL")
-  DBI::dbExecute(con, paste0("CREATE OR REPLACE TABLE mart_country_crime AS ", paste(c(es_crime, other_crime), collapse = " UNION ALL "), " ORDER BY country, territory_id, offence_type_id, year, quarter"))
-
-  es_pop <- if (has("mart_population_municipal")) "SELECT 'ES' AS country, level, territory_id, year, population::DOUBLE AS population FROM mart_population_municipal" else NULL
-  DBI::dbExecute(con, paste0("CREATE OR REPLACE TABLE mart_country_population AS ",
-                             paste(c(es_pop, "SELECT country, level, territory_id, year, population FROM ref_country_population WHERE population > 0"), collapse = " UNION ALL "), " ORDER BY ALL"))   # uninhabited communes / empty NUTS codes: no rate
+  DBI::dbExecute(con, paste0("CREATE OR REPLACE TABLE mart_country_crime AS ", other_crime, " ORDER BY country, territory_id, offence_type_id, year, quarter"))
+  DBI::dbExecute(con, "CREATE OR REPLACE TABLE mart_country_population AS
+                       SELECT country, level, territory_id, year, population FROM ref_country_population WHERE population > 0 ORDER BY ALL")   # uninhabited communes / empty NUTS codes: no rate
 
   # One row per country with data: names, levels, source and population metadata for the app
   rows <- lapply(COUNTRY_MODULES, function(m) data.frame(
@@ -287,12 +286,17 @@ country_marts <- function(con) {
     level_singular_en = paste(vapply(m$levels, function(l) { x <- m$level_labels[[l]]; if (length(x) >= 3) x[3] else x[1] }, ""), collapse = ";"),
     level_singular_local = paste(vapply(m$levels, function(l) { x <- m$level_labels[[l]]; if (length(x) >= 4) x[4] else if (length(x) >= 3) x[3] else x[2] }, ""), collapse = ";"),
     source = m$source$name, publisher = m$source$publisher, url = m$source$url, licence = m$source$licence, measure = m$source$measure,
-    population_source = m$population_source %||% "", boundaries_attribution = m$boundaries_attribution %||% "",
+    # the same names in the country's language, when the module gives them (shown in the sidebar in that language)
+    source_local = m$source$name_local %||% m$source$name, publisher_local = m$source$publisher_local %||% m$source$publisher,
+    population_source = m$population_source %||% "", population_source_local = m$population_source_local %||% m$population_source %||% "",
+    boundaries_attribution = m$boundaries_attribution %||% "",
     not_published_en = m$not_published[1] %||% "", not_published_local = m$not_published[2] %||% "",
     # What is counted, when it is not "recorded offences" (complaints, reported cases...): title and noun, English and local
     measure_kind = m$measure_labels$kind %||% "",
     measure_title_en = m$measure_labels$title[1] %||% "", measure_title_local = m$measure_labels$title[2] %||% "",
     count_noun_en = m$measure_labels$noun[1] %||% "", count_noun_local = m$measure_labels$noun[2] %||% "",
+    not_published_key = m$not_published_key %||% "", not_published_legend_key = m$not_published_legend_key %||% "",
+    zoom_region = unname(m$zoom_widths["region"]) %||% NA_real_, zoom_province = unname(m$zoom_widths["province"]) %||% NA_real_,
     notes_en = m$notes_en %||% "", default_region = m$default_region %||% "", stringsAsFactors = FALSE))
   meta <- if (length(rows) > 0) do.call(rbind, rows) else data.frame()
   loaded <- DBI::dbGetQuery(con, "SELECT country, min(year * 10 + quarter) AS first_period, max(year * 10 + quarter) AS last_period, count(*) AS rows FROM stg_country_crime GROUP BY 1")
@@ -340,15 +344,21 @@ country_steps <- function(con, download = TRUE, only = NULL, force = !is.null(on
   invisible(TRUE)
 }
 
+# `only` takes the country codes (Spain is ES), plus two city pseudo-codes until the city framework
+# exists (phase 3 of Q-005): MAD (Madrid: calls, register, activity) and BCN (Barcelona and Mossos).
 update_countries <- function(download = TRUE, only = NULL, force = !is.null(only)) {
   with_db(function(con) {
-    country_steps(con, download, only, force)
+    spain <- intersect(only, CITY_CODES); others <- setdiff(only, CITY_CODES)
+    if ("MAD" %in% spain) madrid_steps(con, download)
+    if ("BCN" %in% spain) other_steps(con, download)
+    if (is.null(only) || length(others)) country_steps(con, download, if (is.null(only)) NULL else others, force)
     if (is.null(only) && exists("eurostat_rates_update", mode = "function")) eurostat_rates_update(con, download)
     step("Tables for the app")
     build_marts(con)
-    country_status(con)
+    if (length(spain)) data_status(con) else country_status(con)   # data_status covers the cities and ends with the countries
   })
 }
+CITY_CODES <- c("MAD", "BCN")
 
 country_status <- function(con) {
   if (!"stg_country_crime" %in% DBI::dbListTables(con)) return(invisible(NULL))
@@ -356,7 +366,7 @@ country_status <- function(con) {
     SELECT c.country, count(DISTINCT c.territory_id) AS territories, min(c.year) AS from_y, max(c.year * 10 + c.quarter) AS to_p,
            (SELECT count(*) FROM ref_country_population p WHERE p.country = c.country) AS pop_rows
     FROM stg_country_crime c GROUP BY 1 ORDER BY 1")
-  message("Other countries")
+  message("Countries")
   for (m in COUNTRY_MODULES) {
     r <- x[x$country == m$code, ]
     if (nrow(r) == 0) message("[!!] ", m$name_en, ": no data loaded yet")

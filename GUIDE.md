@@ -32,14 +32,14 @@ Every figure is shown with its source, what it measures and its limitations. Dif
 | 5 | Install or complete the R packages |
 | 6 | Test the datos.madrid.es API |
 | 7 | Download the official boundaries again and reload districts and neighbourhoods |
-| 8 | Update only Spain, Barcelona and Mossos (not the Madrid sources) |
+| 8 | Update only the Barcelona and Mossos sources (Spain itself is a country module: option 14 with the code `ES`) |
 | 9 | Schedule the automatic weekly update (Windows Task Scheduler; runs `Rscript` without opening RStudio) |
 | 10 | Remove the automatic update |
 | 11 | Check whether the update is scheduled and how the last run went (`reports/update_*.log`) |
 | 12 | Rebuild the database from scratch from `data/raw/` (originals untouched) |
-| 13 | **Update only the other countries** (the *Country* menu of the app) and the Eurostat tables; option 1 includes them. A country whose raw and reference files did not change since its last load is kept as it is (Canada alone parses 50 GB); to reload one after a code fix: option 14, or `update_countries(only = "CA")` in the console |
-| 14 | **Reload some countries**: asks for the codes (`GBE GBS FI`, separated by spaces, no quotes) and reloads them even if their files did not change. Use it after a fix to one module |
-| 15 | **Check the consistency of the other countries' data**: duplicates, territories without name, cumulative figures that decrease, parts above the total, population coverage, polygons without territory, quarters in the future. Prints the findings and saves `reports/country_checks_<date>.csv`. Read-only |
+| 13 | **Update every country** (the *Country* menu of the app, Spain included) and the Eurostat tables; option 1 includes them. A country whose raw and reference files did not change since its last load is kept as it is (Canada alone parses 50 GB); to reload one after a code fix: option 14, or `update_countries(only = "CA")` in the console |
+| 14 | **Reload some countries**: asks for the codes (`GBE GBS FI`, separated by spaces, no quotes) and reloads them even if their files did not change. Use it after a fix to one module. Spain is the code `ES` (Crime Balance, INE population, IGN boundaries). Two codes stand for the city sources until they become modules of their own: `MAD` (Madrid: calls, register, activity) and `BCN` (Barcelona and Mossos). With a city code the status shown at the end is the full one (option 4) |
+| 15 | **Check the consistency of the countries' data** (Spain included): duplicates, territories without name, cumulative figures that decrease, parts above the total, population coverage, polygons without territory, quarters in the future. Prints the findings and saves `reports/country_checks_<date>.csv`. Read-only |
 
 The same actions exist as scripts in `scripts/` and `scripts/maintenance/`.
 
@@ -80,7 +80,7 @@ The data status (option 4) says when a source has **types without equivalence**.
 |---|---|
 | Madrid calls | `reference/madrid_call_types.csv` |
 | Madrid arrest motives | `reference/madrid_arrest_motives.csv` |
-| Crime Balance types | `reference/crime_balance_types.csv` (municipality name aliases in `crime_balance_municipality_aliases.csv`) |
+| Crime Balance types (Spain) | `reference/es_offence_types.csv` (`source_code` is the normalised key of the published label, `source_text` the label; municipality name aliases in `es_municipality_aliases.csv`, provinces and regions in `es_provinces.csv`, URLs in `es_sources.csv`) |
 | Mossos offence types / groups / police areas | `reference/mossos_types.csv`, `mossos_groups.csv`, `mossos_abp.csv` |
 | Barcelona incident types | `reference/bcn_incident_types.csv` |
 
@@ -90,7 +90,9 @@ Quality reports of every load are in `reports/quality_<source>_*.csv`.
 
 ```
 WEBARCHYMAPP.R              the menu
-R/                      the code, one file per source (00_config.R has every URL and folder)
+R/                      the code: one file per country module (R/71_es.R is Spain; R/7x, R/8x, R/9x the others),
+                        the Spanish readers it uses (R/20_, 21_, 22_), the city sources (R/10_, 11_, 30_, 31_);
+                        00_config.R has the folders, reference/<cc>_sources.csv the URLs of each country
 app/                    the Shiny app (app.R, i18n.R, translations.csv)
 reference/              editable equivalence tables
 scripts/                entry points and maintenance scripts
@@ -109,7 +111,7 @@ reports/                quality reports and update logs
 
 ## 8. Adding a country
 
-Each country is one R file (`R/7x_<cc>.R` or `R/8x_<cc>.R`) that registers itself with `register_country()` and one reference table `reference/<cc>_offence_types.csv` (source category -> offence type, English and local names, parent aggregate, sensitive flag). The file provides four functions: `download()`, `territory(con)`, `ingest(con)` and `population(con)`; the framework in `R/70_countries.R` does the rest (shared tables, marts, status). Use `R/71_fr.R` (France) as the model and `reference/eurostat_regions_countries.csv` to add a European country that only has Eurostat regional data. Rules: official sources with an open licence, no registration, raw files never modified, sensitive offences only inside totals, and never a comparison between countries.
+Each country, Spain included (`R/71_es.R`), is one R file (`R/7x_<cc>.R`, `R/8x_<cc>.R`, `R/9x_<cc>.R`) that registers itself with `register_country()` and one reference table `reference/<cc>_offence_types.csv` (source category -> offence type, English and local names, parent aggregate, sensitive flag). The file provides four functions: `download()`, `territory(con)`, `ingest(con)` and `population(con)`; the framework in `R/70_countries.R` does the rest (shared tables, marts, status). Use `R/71_fr.R` (France) as the model and `reference/eurostat_regions_countries.csv` to add a European country that only has Eurostat regional data. Rules: official sources with an open licence, no registration, raw files never modified, sensitive offences only inside totals, and never a comparison between countries.
 
 Countries whose module could not be tested against the real files (the first download happens on your computer) print a clear message naming the file and its header when the structure differs from what was documented; run `<cc>_inspect()` (e.g. `fr_inspect()`) to see the headers and adjust the column patterns at the top of the module.
 

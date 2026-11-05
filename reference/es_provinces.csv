@@ -1,0 +1,53 @@
+province_code,province_name,region_code,region_name,region_alias
+01,Araba/Álava,16,País Vasco,Euskadi
+02,Albacete,08,Castilla - La Mancha,
+03,Alicante/Alacant,10,Comunitat Valenciana,Comunidad Valenciana
+04,Almería,01,Andalucía,
+05,Ávila,07,Castilla y León,
+06,Badajoz,11,Extremadura,
+07,"Balears, Illes",04,"Balears, Illes",Islas Baleares
+08,Barcelona,09,Cataluña,Catalunya
+09,Burgos,07,Castilla y León,
+10,Cáceres,11,Extremadura,
+11,Cádiz,01,Andalucía,
+12,Castellón/Castelló,10,Comunitat Valenciana,Comunidad Valenciana
+13,Ciudad Real,08,Castilla - La Mancha,
+14,Córdoba,01,Andalucía,
+15,"Coruña, A",12,Galicia,
+16,Cuenca,08,Castilla - La Mancha,
+17,Girona,09,Cataluña,Catalunya
+18,Granada,01,Andalucía,
+19,Guadalajara,08,Castilla - La Mancha,
+20,Gipuzkoa,16,País Vasco,Euskadi
+21,Huelva,01,Andalucía,
+22,Huesca,02,Aragón,
+23,Jaén,01,Andalucía,
+24,León,07,Castilla y León,
+25,Lleida,09,Cataluña,Catalunya
+26,"Rioja, La",17,"Rioja, La",
+27,Lugo,12,Galicia,
+28,Madrid,13,"Madrid, Comunidad de",Comunidad de Madrid
+29,Málaga,01,Andalucía,
+30,Murcia,14,"Murcia, Región de",
+31,Navarra,15,"Navarra, Comunidad Foral de",
+32,Ourense,12,Galicia,
+33,Asturias,03,"Asturias, Principado de",
+34,Palencia,07,Castilla y León,
+35,"Palmas, Las",05,Canarias,
+36,Pontevedra,12,Galicia,
+37,Salamanca,07,Castilla y León,
+38,Santa Cruz de Tenerife,05,Canarias,
+39,Cantabria,06,Cantabria,
+40,Segovia,07,Castilla y León,
+41,Sevilla,01,Andalucía,
+42,Soria,07,Castilla y León,
+43,Tarragona,09,Cataluña,Catalunya
+44,Teruel,02,Aragón,
+45,Toledo,08,Castilla - La Mancha,
+46,Valencia/València,10,Comunitat Valenciana,Comunidad Valenciana
+47,Valladolid,07,Castilla y León,
+48,Bizkaia,16,País Vasco,Euskadi
+49,Zamora,07,Castilla y León,
+50,Zaragoza,02,Aragón,
+51,Ceuta,18,Ceuta,Ciudad Autónoma de Ceuta
+52,Melilla,19,Melilla,Ciudad Autónoma de Melilla

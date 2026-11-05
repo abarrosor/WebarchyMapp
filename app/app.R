@@ -5,12 +5,14 @@
 # range of months, with the same function as the data process (R/50_marts.R).
 # Everything is loaded into memory at start-up and the database is closed.
 #
-# Views (?view=spain / madrid / barcelona, ?lang=xx):
-#   Spain     - Crime Balance of the Ministry of the Interior by region, province
-#               and municipality (> 20,000 inh.); in Catalonia also Mossos by police area
+# Views (?view=<country code> / madrid / barcelona / countries / about, ?lang=xx):
+#   Country   - one view per country with data (Spain included), from the shared mart_country_*
+#               tables: recorded offences by region, province and municipality; in Catalonia
+#               also Mossos by police area (until phase 2 of Q-005 moves it into the contract)
 #   Madrid    - calls to the Municipal Police (F1) by neighbourhood + police activity (F2)
 #   Barcelona - incidents handled by the City Police (F5) + Mossos crime by district (F4)
-# Figures of one city are never compared with the other: they measure different things.
+# Figures of one country or city are never compared with another: they measure different things.
+DEFAULT_COUNTRY <- "ES"   # the country the app opens with and the first one in the Country menu
 
 missing <- setdiff(c("shiny", "bslib", "leaflet", "shinyWidgets", "dplyr", "sf", "DBI", "duckdb"), rownames(installed.packages()))
 if (length(missing) > 0) stop("Missing packages: ", paste(missing, collapse = ", "), ". Run option 5 in WEBARCHYMAPP.R and reopen the app.", call. = FALSE)
@@ -43,8 +45,6 @@ CITY_SOURCES <- list(
 RAW <- lapply(CITY_SOURCES, function(x) list(
   base = q(paste("SELECT * FROM", x$base)), meta = q(paste("SELECT * FROM", x$meta)), types = q(paste("SELECT * FROM", x$types))))
 
-CB      <- q("SELECT * FROM mart_crime_balance")             # Ministry Crime Balance (all Spain)
-POPM    <- q("SELECT * FROM mart_population_municipal")      # INE population by year and level
 MOSSOS  <- q("SELECT * FROM mart_mossos_bcn_month")          # Mossos, Barcelona by district
 MGROUPS <- q("SELECT * FROM mart_mossos_groups")
 MMETA   <- q("SELECT * FROM mart_mossos_meta")
@@ -53,8 +53,8 @@ ABPPOP  <- q("SELECT * FROM mart_population_abp")
 ABPINFO <- q("SELECT * FROM mart_abp_info")
 ACT     <- q("SELECT * FROM mart_madrid_activity"); ACTMETA <- q("SELECT * FROM mart_madrid_activity_meta")
 ARR     <- q("SELECT * FROM mart_madrid_arrests");  ARRNAMES <- q("SELECT * FROM mart_madrid_arrest_motives")
-CCRIME  <- q("SELECT * FROM mart_country_crime WHERE country <> 'ES'")   # other countries (R/70_countries.R)
-CPOP    <- q("SELECT * FROM mart_country_population WHERE country <> 'ES'")
+CCRIME  <- q("SELECT * FROM mart_country_crime")                         # every country, Spain included (R/70_countries.R)
+CPOP    <- q("SELECT * FROM mart_country_population")
 CMETA   <- q("SELECT * FROM mart_country_meta")
 CRATES  <- q("SELECT * FROM mart_country_rates")                         # national rates (Eurostat; UNODC excluded by its terms) for the Countries table
 db_disconnect(con)
@@ -65,44 +65,33 @@ read_layer <- function(file, layer) {
   has <- tryCatch(layer %in% sf::st_layers(f)$name, error = function(e) FALSE); if (!has) return(NULL)
   tryCatch(sf::st_read(f, layer = layer, quiet = TRUE), error = function(e) NULL)
 }
-GEO_MUNI     <- read_layer("data/territory_spain.gpkg", "municipality")
-GEO_PROVINCE <- read_layer("data/territory_spain.gpkg", "province")
-GEO_REGION   <- read_layer("data/territory_spain.gpkg", "region")
-GEO_ABP      <- read_layer("data/territory_abp.gpkg", "abp")
+GEO_ABP      <- read_layer("data/territory_abp.gpkg", "abp")   # Mossos police areas (Catalonia)
 # Bounding box of every polygon (lon/lat), to know which territories are inside the map view
 polygon_boxes <- function(g) {
   if (is.null(g)) return(NULL)
   b <- t(vapply(sf::st_geometry(g), function(x) as.numeric(sf::st_bbox(x)), numeric(4)))
   data.frame(territory_id = g$territory_id, xmin = b[, 1], ymin = b[, 2], xmax = b[, 3], ymax = b[, 4])
 }
-BOXES <- list(region = polygon_boxes(GEO_REGION), province = polygon_boxes(GEO_PROVINCE), municipality = polygon_boxes(GEO_MUNI), abp = polygon_boxes(GEO_ABP))
-
 name_of   <- setNames(TERRITORY$name, TERRITORY$territory_id)
 parent_of <- setNames(TERRITORY$parent_id, TERRITORY$territory_id)
 level_of  <- setNames(TERRITORY$level, TERRITORY$territory_id)
-HAS_CB     <- has_rows(CB)
 HAS_MOSSOS <- has_rows(MOSSOS) && !is.null(MGROUPS)
-HAS_POPM   <- has_rows(POPM)
 HAS_ABP    <- has_rows(ABP) && !is.null(ABPINFO)
 HAS_ACT    <- has_rows(ACT)
 HAS_ARR    <- has_rows(ARR) && !is.null(ARRNAMES)
-# Municipalities with Crime Balance data (> 20,000 inh.): what is drawn when following the map
-GEO_MUNI_DATA <- if (!is.null(GEO_MUNI) && HAS_CB) GEO_MUNI[GEO_MUNI$territory_id %in% CB$territory_id, ] else GEO_MUNI
-
-# Single-province regions have no province row in the Crime Balance: their
-# province takes the figures of the region (same territory)
-if (HAS_CB) {
-  prov <- TERRITORY[TERRITORY$level == "province", ]
+# A single-province region (Madrid, Asturias...) may have no province row in the source: the
+# province takes the figures of its region (it is the same territory)
+fill_single_provinces <- function(crime) {
+  prov <- TERRITORY[TERRITORY$level == "province" & TERRITORY$territory_id %in% TERRITORY$territory_id[startsWith(TERRITORY$territory_id, paste0(crime$country[1], "-"))], ]
   n_prov <- table(prov$parent_id)
   single <- prov[prov$parent_id %in% names(n_prov)[n_prov == 1], ]
-  missing_prov <- single[!single$territory_id %in% CB$territory_id, ]
+  missing_prov <- single[!single$territory_id %in% crime$territory_id & single$parent_id %in% crime$territory_id, ]
   extra <- do.call(rbind, lapply(seq_len(nrow(missing_prov)), function(i) {
-    r <- CB[CB$territory_id == missing_prov$parent_id[i], ]
-    if (nrow(r) == 0) return(NULL)
+    r <- crime[crime$territory_id == missing_prov$parent_id[i], ]
     r$territory_id <- missing_prov$territory_id[i]; r$level <- "province"; r$name <- missing_prov$name[i]; r$parent_id <- missing_prov$parent_id[i]
     r
   }))
-  if (!is.null(extra)) CB <- rbind(CB, extra)
+  if (!is.null(extra)) rbind(crime, extra) else crime
 }
 
 # --- Formats (depend on the language) ------------------------------------------------
@@ -158,7 +147,7 @@ comparison_block <- function(rate, ref_rate, rates_all, ref_label, unit_label, g
 # --- Styles -----------------------------------------------------------------------
 CSS <- "
   .bslib-page-navbar .bslib-sidebar-layout > .main { padding: 0; }
-  .tab-pane[data-value='stats'], .tab-pane[data-value='spain'] { padding: 1rem 1.25rem !important; }
+  .tab-pane[data-value='stats'] { padding: 1rem 1.25rem !important; }
   #map { height: 100% !important; min-height: 420px; }
   .bslib-sidebar-layout > .sidebar > .sidebar-content { padding: .75rem .85rem; gap: .5rem; }
   .sidebar .form-group, .sidebar .shiny-input-container { margin-bottom: .25rem; }
@@ -580,7 +569,6 @@ server_city <- function(input, output, session, lang) {
 # --- Map layers --------------------------------------------------------------------
 PALETTE <- c("#eff3ff", "#bdd7e7", "#6baed6", "#3182bd", "#08519c")   # one hue, no reds
 ATTRIBUTION_OSM <- "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a>"
-ATTRIBUTION_IGN <- "<a href=\"https://www.ign.es\">IGN</a> CartoBase ANE CC BY 4.0"
 
 shade_options <- function(lang, has_rates = TRUE) {
   op <- c(rate = TR("shade_rate", lang), n = TR("shade_number", lang))
@@ -794,7 +782,7 @@ cb_periods <- function(ref_id, lang) {
   rev(setNames(paste0(years, "|", last), lbl))
 }
 
-ui_spain_controls <- function(lang) {
+ui_country_controls <- function(lang) {
   t <- function(k, ...) TR(k, lang, ...)
   per <- cb_periods(CC, lang); full <- per[grepl("\\|4$", per)]
   tagList(
@@ -825,12 +813,12 @@ ui_spain_controls <- function(lang) {
   )
 }
 
-ui_spain <- function(lang) {
+ui_country <- function(lang) {
   t <- function(k, ...) TR(k, lang, ...)
   bslib::page_navbar(
     title = paste(t("app_title"), "·", CNAME(lang)), lang = lang, theme = bslib::bs_theme(version = 5), id = "nav",
     header = tags$head(tags$style(HTML(CSS)), tags$script(HTML(JS))),
-    sidebar = bslib::sidebar(width = 340, open = "desktop", ui_spain_controls(lang)),
+    sidebar = bslib::sidebar(width = 340, open = "desktop", ui_country_controls(lang)),
     bslib::nav_panel(CNAME(lang), value = CC,
       uiOutput("sp_title"),
       bslib::layout_columns(col_widths = c(5, 7), fill = FALSE,
@@ -844,7 +832,7 @@ ui_spain <- function(lang) {
   )
 }
 
-server_spain <- function(input, output, session, lang) {
+server_country <- function(input, output, session, lang) {
   t <- function(k, ...) TR(k, lang, ...)
   is_abp <- reactive(HAS_ABP && !isTRUE(input$sp_follow) && identical(input$sp_level, "municipality") && identical(input$sp_region, ABP_REGION) && identical(input$sp_source, "abp"))
   visible_ids <- reactiveVal(NULL)     # territories inside the map view (NULL = all)
@@ -1028,7 +1016,7 @@ server_spain <- function(input, output, session, lang) {
   observeEvent(input$sp_view_five,   { set_period(5); session$sendCustomMessage("chip", "sp_view_five") })
   observeEvent(input$sp_view_all,    { set_period(99); session$sendCustomMessage("chip", "sp_view_all") })
 
-  spain_data <- reactive({
+  country_data <- reactive({
     req(input$sp_level); per <- period(); st <- sel_types(); type <- if (length(st$ids) == 0) "__none__" else st$ids
     sum_types <- function(d, keys) { if (length(type) == 1 && per$n == 1) return(d); d |> group_by(across(all_of(keys))) |> summarise(cumulative = sum(cumulative), .groups = "drop") |> as.data.frame() }
     if (isTRUE(is_abp())) {
@@ -1070,12 +1058,12 @@ server_spain <- function(input, output, session, lang) {
     div(class = "note mb-2", if (isTRUE(i$barcelona_district)) t("sp_abp_district") else tagList(tags$b(t("sp_abp_n", i$n_municipalities)), " ", i$municipalities))
   })
   output$sp_title <- renderUI({
-    x <- spain_data()
+    x <- country_data()
     h5(class = "mt-1 mb-2", tags$b(t(if (x$abp) "sp_title_mossos" else "sp_title")), " · ", x$types$label, " · ", period_text(), " · ",
        if (x$level %in% c("region", "province") || all_munis()) CNAME(lang) else x$ref_name)
   })
   output$sp_profile <- renderUI({
-    x <- spain_data(); id <- input$sp_territory; req(id)
+    x <- country_data(); id <- input$sp_territory; req(id)
     f <- x$d[x$d$territory_id == id, ]
     if (nrow(f) == 0) return(div(class = "profile", h4(display_name(id, x$level) %||% id), p(class = "note", t("sp_no_data"))))
     div(class = "profile",
@@ -1093,7 +1081,7 @@ server_spain <- function(input, output, session, lang) {
 
   # Breakdown of the chosen territory by offence type (same period), with the reference rate alongside
   output$sp_breakdown <- renderUI({
-    x <- spain_data(); id <- input$sp_territory; req(id); per <- x$per
+    x <- country_data(); id <- input$sp_territory; req(id); per <- x$per
     if (x$abp) return(breakdown_abp(id, per))
     d <- CB[CB$territory_id %in% c(id, x$ref_id) & in_periods(CB, per) & !CB$sensitive, ]
     if (per$n > 1) d <- d |> group_by(territory_id, offence_type_id) |> summarise(cumulative = sum(cumulative), .groups = "drop") |> as.data.frame()
@@ -1138,14 +1126,14 @@ server_spain <- function(input, output, session, lang) {
   }
 
   output$sp_evol_head <- renderUI({
-    x <- spain_data(); id <- input$sp_territory; req(id)
+    x <- country_data(); id <- input$sp_territory; req(id)
     nm <- x$d$name[x$d$territory_id == id][1] %||% display_name(id, x$level) %||% id
     tagList(h6(class = "mt-2 mb-0", t("sp_evolution"), " · ", x$types$label),
             div(class = "note", span(style = "display:inline-block;width:10px;height:10px;background:#3182bd;margin-right:4px"), nm,
                 if (id != x$ref_id) tagList(span(style = "color:#475569;margin:0 4px 0 12px", HTML("- &#9679; -")), x$ref_name)))
   })
   output$sp_evol <- renderPlot({
-    x <- spain_data(); id <- input$sp_territory; req(id)
+    x <- country_data(); id <- input$sp_territory; req(id)
     ids <- unique(c(id, x$ref_id)); type <- x$types$ids
     if (x$abp) {
       d <- ABP[ABP$territory_id %in% ids & ABP$group_id %in% type & ABP$to_month == 12, ]; req(nrow(d) > 0)
@@ -1167,7 +1155,7 @@ server_spain <- function(input, output, session, lang) {
   }, res = 96)
 
   output$sp_table <- renderUI({
-    x <- spain_data(); d <- x$d
+    x <- country_data(); d <- x$d
     refs <- d[d$territory_id == CC | (d$level == "region" & x$level != "region" & d$territory_id == x$ref_id), ]
     refs <- refs[order(refs$territory_id != CC), ]
     if (x$level == "region") refs <- refs[refs$territory_id == CC, ]
@@ -1195,14 +1183,14 @@ server_spain <- function(input, output, session, lang) {
       if (x$level == "municipality" && all_munis()) GEO_MUNI_DATA else switch(x$level, abp = GEO_ABP, region = GEO_REGION, province = GEO_PROVINCE, GEO_MUNI[GEO_MUNI$region_id == x$ref_id, ])
     }
     output$sp_map <- renderLeaflet({
-      x <- isolate(spain_data()); g <- active_geo(x); req(!is.null(g), nrow(g) > 0)
+      x <- isolate(country_data()); g <- active_geo(x); req(!is.null(g), nrow(g) > 0)
       # First view: the default region, even when every municipality of Spain is drawn
       rg <- if (x$ref_id != CC) x$ref_id else DEFAULT_REGION
       bb <- sf::st_bbox(if (x$level == "municipality" && all_munis()) GEO_MUNI[GEO_MUNI$region_id == rg, ] else g)
       m <- leaflet(options = leafletOptions(minZoom = 2, zoomSnap = 0.5, zoomDelta = 0.5)) |>
         addTiles(attribution = paste(ATTRIBUTION_OSM, "·", t("boundaries_by", BOUNDARIES_ATTR))) |>
         fitBounds(bb[["xmin"]], bb[["ymin"]], bb[["xmax"]], bb[["ymax"]])
-      isolate(layer_spain(m, x, input$sp_shade %||% shade_default(HAS_POPM), input$sp_territory))
+      isolate(layer_country(m, x, input$sp_shade %||% shade_default(HAS_POPM), input$sp_territory))
     })
     # --- Follow the map (switch "sp_follow"): the level follows the zoom, the region
     #     follows the map centre, and the territory list and table only show what is in view ---
@@ -1229,9 +1217,9 @@ server_spain <- function(input, output, session, lang) {
     }
     prev_level <- reactiveVal(NULL)
     flown_at <- reactiveVal(Sys.time() - 100)   # when the app last moved the map itself: zoom events right after it are ignored
-    observeEvent(list(spain_data(), input$sp_shade, input$sp_territory), {
-      x <- spain_data(); g <- active_geo(x); req(!is.null(g))
-      m <- layer_spain(leafletProxy("sp_map"), x, input$sp_shade %||% shade_default(HAS_POPM), input$sp_territory)
+    observeEvent(list(country_data(), input$sp_shade, input$sp_territory), {
+      x <- country_data(); g <- active_geo(x); req(!is.null(g))
+      m <- layer_country(leafletProxy("sp_map"), x, input$sp_shade %||% shade_default(HAS_POPM), input$sp_territory)
       key <- paste(x$level, if (all_munis()) "all" else x$ref_id)
       if (!identical(prev_level(), key)) {
         if (!is.null(prev_level()) && manual_change(x)) { flown_at(Sys.time()); bb <- sf::st_bbox(g); m |> flyToBounds(bb[["xmin"]], bb[["ymin"]], bb[["xmax"]], bb[["ymax"]]) }
@@ -1245,8 +1233,8 @@ server_spain <- function(input, output, session, lang) {
       if (!identical(lvl, input$sp_level)) updateRadioButtons(session, "sp_level", selected = lvl)
     })
     bounds <- debounce(reactive(input$sp_map_bounds), 500)
-    observeEvent(list(bounds(), spain_data()), {
-      b <- bounds(); x <- spain_data(); req(b, isTRUE(input$sp_follow))
+    observeEvent(list(bounds(), country_data()), {
+      b <- bounds(); x <- country_data(); req(b, isTRUE(input$sp_follow))
       bx <- BOXES[[x$level]]; req(bx)
       inside <- bx$territory_id[bx$xmax >= b$west & bx$xmin <= b$east & bx$ymax >= b$south & bx$ymin <= b$north]
       if (isTRUE(getOption("webarchymapp.debug"))) message("bounds ", paste(round(unlist(b[c("west","east","south","north")]), 2), collapse = " "), " level ", x$level, " inside ", length(inside))
@@ -1277,7 +1265,7 @@ server_spain <- function(input, output, session, lang) {
     observeEvent(input$sp_territory, {
       id <- input$sp_territory; req(nzchar(id %||% ""))
       if (identical(id, auto_sel())) { auto_sel(NULL); return() }
-      x <- spain_data(); bx <- BOXES[[x$level]]; i <- match(id, bx$territory_id); req(!is.na(i))
+      x <- country_data(); bx <- BOXES[[x$level]]; i <- match(id, bx$territory_id); req(!is.na(i))
       cap <- switch(x$level, region = 7, province = 8, 10)                 # do not zoom in further than this
       z <- max(input$sp_map_zoom %||% cap, cap)
       flown_at(Sys.time())
@@ -1285,7 +1273,7 @@ server_spain <- function(input, output, session, lang) {
     }, ignoreInit = TRUE)
   }
 
-  layer_spain <- function(map, x, shade, sel) {
+  layer_country <- function(map, x, shade, sel) {
     d <- x$d; g <- active_geo(x)
     map <- map |> clearGroup("areas") |> clearGroup("sel_area") |> clearGroup("outline") |> clearGroup("bg") |> removeControl("sp_legend") |> removeControl("sp_legend_nodata")
     if (is.null(g) || nrow(g) == 0) return(map)
@@ -1328,7 +1316,7 @@ server_spain <- function(input, output, session, lang) {
 
   output$sp_foot <- renderUI(if (isTRUE(is_abp())) t("sp_source_mossos_text") else paste(SOURCE_TEXT(lang), if (HAS_MAP) BOUNDARIES_TEXT(lang) else ""))
   output$sp_notes <- renderUI({
-    x <- spain_data()
+    x <- country_data()
     if (x$abp) return(div(class = "note mt-2", p(HTML(t("sp_mossos_note"))), p(t("sp_sensitive_mossos")),
                           if (!is.null(MMETA)) p(t("mossos_source", fmt_month(MMETA$first_month, lang), fmt_month(MMETA$last_month, lang))),
                           if (!is.null(x$pop_year)) p(t("sp_mossos_pop_note", x$pop_year))))
@@ -1337,29 +1325,29 @@ server_spain <- function(input, output, session, lang) {
 }
 
 
-COUNTRY_FUNCTIONS <- c("cb_types", "cb_periods", "ui_spain_controls", "ui_spain", "server_spain")
+COUNTRY_FUNCTIONS <- c("cb_types", "cb_periods", "ui_country_controls", "ui_country", "server_country")
 
 # Prepare the environment of a country (NULL if it has no data)
 make_country <- function(cc) {
   app_env <- environment(make_country)
-  if (cc == "ES") { crime <- CB; pop <- POPM } else {
-    crime <- if (has_rows(CCRIME)) CCRIME[CCRIME$country == cc, ] else NULL
-    pop <- if (has_rows(CPOP)) CPOP[CPOP$country == cc, ] else NULL
-  }
+  crime <- if (has_rows(CCRIME)) CCRIME[CCRIME$country == cc, ] else NULL
+  pop <- if (has_rows(CPOP)) CPOP[CPOP$country == cc, ] else NULL
   if (!has_rows(crime)) return(NULL)
-  if (!"name_local" %in% names(crime)) crime$name_local <- crime$name_es
+  crime <- fill_single_provinces(crime)
   meta <- if (has_rows(CMETA) && cc %in% CMETA$country) CMETA[CMETA$country == cc, ][1, ] else NULL
+  if (is.null(meta)) return(NULL)
   e <- new.env(parent = app_env)
   e$CC <- cc; e$CB <- crime; e$POPM <- pop; e$HAS_CB <- TRUE; e$HAS_POPM <- has_rows(pop)
-  e$CLANG <- if (cc == "ES") "es" else meta$lang %||% "en"
+  e$CLANG <- meta$lang %||% "en"
   # Country name: local name in the local language, a translated name (country_<cc> key) elsewhere, English as the fallback
-  e$CNAME <- if (cc == "ES") function(lang) TR("sp_spain", lang) else function(lang) {
+  e$CNAME <- function(lang) {
     if (lang == e$CLANG && nzchar(meta$name_local %||% "")) return(meta$name_local)
     k <- paste0("country_", cc); tx <- TR(k, lang); if (!identical(tx, k)) tx else meta$name_en %||% cc }
-  e$HAS_ABP <- cc == "ES" && HAS_ABP; e$ABP_REGION <- if (cc == "ES") "ES-09" else "none"
-  # Boundaries: Spain's files, or data/territory_<cc>.gpkg for the other countries
-  if (cc == "ES") { e$GEO_MUNI <- GEO_MUNI; e$GEO_PROVINCE <- GEO_PROVINCE; e$GEO_REGION <- GEO_REGION; e$GEO_ABP <- GEO_ABP }
-  else { f <- paste0("data/territory_", tolower(cc), ".gpkg"); e$GEO_MUNI <- read_layer(f, "municipality"); e$GEO_PROVINCE <- read_layer(f, "province"); e$GEO_REGION <- read_layer(f, "region"); e$GEO_ABP <- NULL }
+  # Mossos d'Esquadra by police area: a second source of one country, still read from its own tables
+  # until phase 2 of Q-005 adds a `source` to the shared contract (the one remaining country-specific line)
+  e$HAS_ABP <- cc == "ES" && HAS_ABP; e$ABP_REGION <- if (e$HAS_ABP) "ES-09" else "none"
+  f <- paste0("data/territory_", tolower(cc), ".gpkg")
+  e$GEO_MUNI <- read_layer(f, "municipality"); e$GEO_PROVINCE <- read_layer(f, "province"); e$GEO_REGION <- read_layer(f, "region"); e$GEO_ABP <- if (e$HAS_ABP) GEO_ABP else NULL
   e$HAS_MAP <- !is.null(e$GEO_REGION) || !is.null(e$GEO_MUNI)
   e$BOXES <- list(region = polygon_boxes(e$GEO_REGION), province = polygon_boxes(e$GEO_PROVINCE), municipality = polygon_boxes(e$GEO_MUNI), abp = polygon_boxes(e$GEO_ABP))
   e$GEO_MUNI_DATA <- if (!is.null(e$GEO_MUNI)) e$GEO_MUNI[e$GEO_MUNI$territory_id %in% crime$territory_id, ] else NULL
@@ -1371,16 +1359,15 @@ make_country <- function(cc) {
   e$SP_LEVELS <- lv
   r <- TERRITORY[TERRITORY$level == "region" & TERRITORY$territory_id %in% crime$territory_id, ]
   e$SP_REGIONS <- setNames(r$territory_id, pretty_name(r$name))[order(r$name)]
-  e$DEFAULT_REGION <- if (cc == "ES" && "ES-13" %in% e$SP_REGIONS) "ES-13" else if (!is.null(meta) && nzchar(meta$default_region %||% "") && meta$default_region %in% e$SP_REGIONS) meta$default_region else e$SP_REGIONS[1]
+  e$DEFAULT_REGION <- if (nzchar(meta$default_region %||% "") && meta$default_region %in% e$SP_REGIONS) meta$default_region else e$SP_REGIONS[1]
   e$CB_TYPE_TABLE <- unique(crime[!crime$sensitive, c("offence_type_id", "included_in", "name_local", "name_en")])
   e$AGGREGATES <- unique(c("total", e$CB_TYPE_TABLE$included_in[!is.na(e$CB_TYPE_TABLE$included_in)]))
   e$AGGREGATES <- e$AGGREGATES[e$AGGREGATES %in% e$CB_TYPE_TABLE$offence_type_id]
-  # Level labels: Spain's translated ones; otherwise the module's English / local labels
-  split_labels <- function(col) if (!is.null(meta) && !is.null(meta[[col]])) setNames(strsplit(paste0(meta[[col]], ";"), ";")[[1]], strsplit(meta$levels %||% "", ";")[[1]]) else c()
+  # Level labels: the module's English / local labels; other languages through the lvl_* keys
+  split_labels <- function(col) if (!is.null(meta[[col]])) setNames(strsplit(paste0(meta[[col]], ";"), ";")[[1]], strsplit(meta$levels %||% "", ";")[[1]]) else c()
   labels_en <- split_labels("level_labels_en"); labels_local <- split_labels("level_labels_local")
   single_en <- split_labels("level_singular_en"); single_local <- split_labels("level_singular_local")
   e$LEVEL_LABEL <- function(level, lang, col = FALSE) {
-    if (cc == "ES") return(TR(paste0(if (col) "sp_col_" else "sp_level_", level), lang))
     pick <- function(v) { x <- v[level]; if (is.null(x) || is.na(x) || !nzchar(x)) NA else unname(x) }
     x <- if (col) { if (lang == e$CLANG) pick(single_local) %||% pick(single_en) else pick(single_en) } else NA
     if (is.na(x)) x <- if (lang == e$CLANG) pick(labels_local) else pick(labels_en)
@@ -1389,28 +1376,32 @@ make_country <- function(cc) {
     if (!is.na(x) && lang != "en" && lang != e$CLANG) { k <- paste0("lvl_", gsub("[^a-z]", "", tolower(sub("\\s*\\(.*$", "", x)))); tx <- TR(k, lang); if (!identical(tx, k)) x <- tx }
     if (is.na(x) || !nzchar(x)) TR(paste0(if (col) "sp_col_" else "sp_level_", level), lang) else unname(x)
   }
-  # Width of the view (degrees of longitude) under which the level changes: Spain's tuned values,
-  # otherwise proportional to the country's width
-  if (cc == "ES") e$ZOOM_WIDTHS <- c(region = 11, province = 7)
-  else { g <- e$GEO_REGION %||% e$GEO_MUNI; w <- if (is.null(g)) 10 else { b <- sf::st_bbox(g); min(as.numeric(b["xmax"] - b["xmin"]), 60) }; e$ZOOM_WIDTHS <- c(region = 0.65 * w, province = 0.4 * w) }
-  e$BOUNDARIES_ATTR <- if (cc == "ES") ATTRIBUTION_IGN else if (!is.null(meta) && nzchar(meta$boundaries_attribution %||% "")) meta$boundaries_attribution else "see About the data"
-  e$BOUNDARIES_TEXT <- function(lang) if (cc == "ES") TR("sp_source_map", lang) else TR("boundaries_by", lang, e$BOUNDARIES_ATTR)
-  e$SOURCE_TEXT <- function(lang) if (cc == "ES") TR("sp_source_text", lang) else TR("sp_source_generic", lang, meta$source %||% "", meta$publisher %||% "", meta$population_source %||% "—")
-  e$POP_NOTE <- function(lang, year) if (cc == "ES") TR("sp_note_pop", lang, year) else TR("sp_note_pop_generic", lang, meta$population_source %||% "", year)
-  e$NO_POP_TEXT <- function(lang) if (cc == "ES") TR("sp_no_pop", lang) else TR("sp_no_pop_generic", lang)
-  np <- function(lang) { x <- if (!is.null(meta) && lang == e$CLANG) meta$not_published_local else meta$not_published_en %||% ""; if (is.null(x) || is.na(x) || !nzchar(x)) TR("sp_not_published", lang) else x }
-  e$NOT_PUBLISHED <- if (cc == "ES") function(lang) TR("sp_no_data_small", lang) else np
-  e$NOT_PUBLISHED_LEGEND <- if (cc == "ES") function(lang) TR("sp_legend_small", lang) else function(lang) TR("sp_legend_not_published", lang)
+  # Width of the view (degrees of longitude) under which the level changes: the module's values when
+  # it gives them (zoom_widths), otherwise proportional to the country's width
+  g <- e$GEO_REGION %||% e$GEO_MUNI; w <- if (is.null(g)) 10 else { b <- sf::st_bbox(g); min(as.numeric(b["xmax"] - b["xmin"]), 60) }
+  e$ZOOM_WIDTHS <- c(region = if (!is.na(meta$zoom_region %||% NA)) meta$zoom_region else 0.65 * w, province = if (!is.na(meta$zoom_province %||% NA)) meta$zoom_province else 0.4 * w)
+  e$BOUNDARIES_ATTR <- if (nzchar(meta$boundaries_attribution %||% "")) meta$boundaries_attribution else "see About the data"
+  e$BOUNDARIES_TEXT <- function(lang) TR("boundaries_by", lang, e$BOUNDARIES_ATTR)
+  loc <- function(what, lang) { x <- if (lang == e$CLANG) meta[[paste0(what, "_local")]] else NULL; if (is.null(x) || is.na(x) || !nzchar(x)) meta[[what]] %||% "" else x }
+  e$SOURCE_TEXT <- function(lang) TR("sp_source_generic", lang, loc("source", lang), loc("publisher", lang), if (nzchar(meta$population_source %||% "")) loc("population_source", lang) else "—")
+  e$POP_NOTE <- function(lang, year) TR("sp_note_pop_generic", lang, loc("population_source", lang), year)
+  e$NO_POP_TEXT <- function(lang) TR("sp_no_pop_generic", lang)
+  # "Not published" texts: a translation key when the module names one (every language), else its English / local text
+  has_key <- function(k) nzchar(k %||% "") && !identical(TR(k, "en"), k)
+  np <- function(lang) { if (has_key(meta$not_published_key)) return(TR(meta$not_published_key, lang))
+    x <- if (lang == e$CLANG) meta$not_published_local else meta$not_published_en %||% ""; if (is.null(x) || is.na(x) || !nzchar(x)) TR("sp_not_published", lang) else x }
+  e$NOT_PUBLISHED <- np
+  e$NOT_PUBLISHED_LEGEND <- function(lang) if (has_key(meta$not_published_legend_key)) TR(meta$not_published_legend_key, lang) else TR("sp_legend_not_published", lang)
   # Countries that count something other than recorded offences (complaints, reported cases): the title,
   # the KPI noun and the legends use the module's words in English and in the local language
-  mlab <- function(what, lang) { if (is.null(meta)) return(NULL); x <- meta[[paste0(what, if (lang == e$CLANG) "_local" else "_en")]]
+  mlab <- function(what, lang) { x <- meta[[paste0(what, if (lang == e$CLANG) "_local" else "_en")]]
     if (lang != "en" && lang != e$CLANG) {   # other languages: the translated measure kind (msr_<kind>_title / _noun), else English
       kind <- meta$measure_kind %||% ""; k <- paste0("msr_", kind, if (what == "count_noun") "_noun" else "_title")
       tx <- if (nzchar(kind)) TR(k, lang) else k; x <- if (!identical(tx, k)) tx else meta[[paste0(what, "_en")]] }
     if (is.null(x) || is.na(x) || !nzchar(x)) NULL else x }
   cap1 <- function(x) paste0(toupper(substr(x, 1, 1)), substr(x, 2, nchar(x)))
   e$TR <- function(k, lang, ...) {
-    if (cc != "ES" && !is.null(mlab("count_noun", lang))) {
+    if (!is.null(mlab("count_noun", lang))) {
       noun <- mlab("count_noun", lang)
       if (k == "sp_k_n") return(noun)
       if (k == "sp_legend_rate") return(paste(cap1(noun), TR("sp_k_rate", lang)))
@@ -1483,22 +1474,20 @@ ui_about <- function(lang, cities) {
   months <- function(m) if (is.null(m) || all(is.na(m))) "" else { d <- as.Date(m); paste(fmt_month(min(d), lang), "–", fmt_month(max(d), lang)) }
   meta_of <- function(city) if (!is.null(cities[[city]])) RAW[[city]]$meta else NULL
   mc <- meta_of("madrid"); mb <- meta_of("barcelona")
-  cb_period <- if (HAS_CB) { last <- CB[which.max(CB$year * 10 + CB$quarter), ]; sprintf("%d – %d (%s)", min(CB$year), last$year, month_names(lang, TRUE)[last$quarter * 3]) }
   rows <- list(
-    if (HAS_CB) list(t("about_src_cb"), t("about_cb_measures"), t("about_cb_territory", length(unique(CB$territory_id[CB$level == "municipality"]))), cb_period, t("about_cb_licence"), "https://estadisticasdecriminalidad.ses.mir.es"),
     if (HAS_ABP || HAS_MOSSOS) list(t("about_src_mossos"), t("about_mossos_measures"), t("about_mossos_territory"), if (!is.null(MMETA)) months(c(MMETA$first_month, MMETA$last_month)) else "", t("about_mossos_licence"), MMETA$url %||% NA),
     if (!is.null(mc)) list(t("about_src_calls"), t("about_calls_measures"), t("about_madrid_territory"), months(c(mc$first_month, mc$last_month)), mc$licence, mc$url),
     if (!is.null(mc) && HAS_ACT && !is.null(ACTMETA)) list(t("about_src_act"), t("about_act_measures"), t("about_act_territory"), months(c(ACTMETA$first_month, ACTMETA$last_month)), ACTMETA$licence, ACTMETA$url),
-    if (!is.null(mb)) list(t("about_src_bcn"), t("about_bcn_measures"), t("about_bcn_territory"), months(c(mb$first_month, mb$last_month)), mb$licence, mb$url),
-    list(t("about_src_ine"), t("about_ine_measures"), t("about_ine_territory"), if (HAS_POPM) paste(min(POPM$year), "–", max(POPM$year)) else "", t("about_ine_licence"), "https://www.ine.es"),
-    list(t("about_src_geo"), t("about_geo_measures"), t("about_geo_territory"), "", t("about_geo_licence"), "https://www.ign.es")
+    if (!is.null(mb)) list(t("about_src_bcn"), t("about_bcn_measures"), t("about_bcn_territory"), months(c(mb$first_month, mb$last_month)), mb$licence, mb$url)
   )
-  if (has_rows(CMETA)) rows <- c(rows, lapply(setdiff(CMETA$country, "ES"), function(cc) { m <- CMETA[CMETA$country == cc, ][1, ]; e <- COUNTRIES[[cc]]
+  # One row per country (the first one is DEFAULT_COUNTRY): source, measure and notes, levels, period, licence, population and boundaries
+  rows <- c(lapply(names(COUNTRIES), function(cc) { m <- CMETA[CMETA$country == cc, ][1, ]; e <- COUNTRIES[[cc]]
     per <- if (!is.null(m$first_period) && !is.na(m$first_period)) sprintf("%d – %d (%s)", m$first_period %/% 10, m$last_period %/% 10, month_names(lang, TRUE)[(m$last_period %% 10) * 3]) else ""
-    lvls <- if (!is.null(e)) paste(vapply(e$SP_LEVELS, function(l) e$LEVEL_LABEL(l, lang), ""), collapse = ", ") else ""
-    cname <- if (!is.null(e)) e$CNAME(lang) else m$name_en
+    lvls <- paste(vapply(e$SP_LEVELS, function(l) e$LEVEL_LABEL(l, lang), ""), collapse = ", ")
+    cname <- e$CNAME(lang)
     list(paste0(m$source, " (", cname, ")"), paste0(m$measure, if (nzchar(m$notes_en %||% "")) paste0(" ", m$notes_en) else ""), paste0(cname, ": ", lvls), per,
-         paste0(m$licence, if (nzchar(m$population_source %||% "")) paste0(" · ", t("about_pop_from", m$population_source)) else ""), m$url) }))
+         paste0(m$licence, if (nzchar(m$population_source %||% "")) paste0(" · ", t("about_pop_from", m$population_source)) else "",
+                if (nzchar(m$boundaries_attribution %||% "")) paste0(" · ", t("boundaries_by", m$boundaries_attribution)) else ""), m$url) }), rows)
   rows <- Filter(Negate(is.null), rows)
   table <- tags$table(class = "table table-sm",
     tags$thead(tags$tr(lapply(c("about_col_source", "about_col_measures", "about_col_territory", "about_col_period", "about_col_licence"), function(k) tags$th(t(k))))),
@@ -1514,7 +1503,7 @@ ui_about <- function(lang, cities) {
       p(t("about_intro_1")), p(t("about_intro_2")),
       h2(t("about_h_sources")), table,
       h2(t("about_h_rules")), tags$ul(lapply(c(t("about_rule_1"), t("about_rule_2"), t("about_rule_3", MARTS$threshold, MARTS$threshold), t("about_rule_4"), t("about_rule_5"), t("about_rule_6")), function(x) tags$li(HTML(x)))),
-      h2(t("about_h_why")), tags$ul(lapply(c(t("about_why_1"), t("about_why_2"), if (!is.null(mb)) t("about_why_bcn"), t("about_why_3"), t("about_why_4"), t("about_why_5"), t("about_why_6"), t("about_why_7", first_calls, if (HAS_CB) min(CB$year) else NA), t("about_why_8"), if (length(COUNTRIES) > 1 || has_rows(CRATES)) t("about_why_countries")), function(x) tags$li(HTML(x)))),
+      h2(t("about_h_why")), tags$ul(lapply(c(t("about_why_1"), t("about_why_2"), if (!is.null(mb)) t("about_why_bcn"), t("about_why_3"), t("about_why_4"), t("about_why_5"), t("about_why_6"), t("about_why_7", first_calls, if (!is.null(COUNTRIES[[DEFAULT_COUNTRY]])) min(COUNTRIES[[DEFAULT_COUNTRY]]$CB$year) else NA), t("about_why_8"), if (length(COUNTRIES) > 1 || has_rows(CRATES)) t("about_why_countries")), function(x) tags$li(HTML(x)))),
       h2(t("about_h_limits")), tags$ul(lapply(c(t("about_limit_1"), t("about_limit_2"), t("about_limit_3"), t("about_limit_4")), function(x) tags$li(x))),
       p(class = "upd", t("about_updated", MARTS$threshold)))),
     !!!nav_switcher("about", lang, cities)
@@ -1522,9 +1511,9 @@ ui_about <- function(lang, cities) {
 }
 
 # =============================================================================
-# Countries: Spain first, then the others by English name (only those with data loaded)
+# Countries: DEFAULT_COUNTRY first, then the others by English name (only those with data loaded)
 COUNTRIES <- list()
-country_codes <- c(if (HAS_CB) "ES", if (has_rows(CMETA)) setdiff(CMETA$country[order(CMETA$name_en)], "ES"))
+country_codes <- if (has_rows(CMETA)) c(intersect(DEFAULT_COUNTRY, CMETA$country), setdiff(CMETA$country[order(CMETA$name_en)], DEFAULT_COUNTRY)) else character()
 for (cc in country_codes) { e <- make_country(cc); if (!is.null(e)) COUNTRIES[[cc]] <- e }
 CITIES <- Filter(Negate(is.null), setNames(lapply(names(CITY_SOURCES), make_city), names(CITY_SOURCES)))
 VIEWS_AVAILABLE <- c(names(COUNTRIES), names(CITIES), if (has_rows(CRATES)) "countries", "about")
@@ -1532,7 +1521,7 @@ if (length(VIEWS_AVAILABLE) == 1) stop("The app tables are missing. Run option 1
 
 ui <- function(req) {
   lang <- lang_from_url(req$QUERY_STRING); view <- view_from_url(req$QUERY_STRING, VIEWS_AVAILABLE)
-  if (view %in% names(COUNTRIES)) COUNTRIES[[view]]$ui_spain(lang)
+  if (view %in% names(COUNTRIES)) COUNTRIES[[view]]$ui_country(lang)
   else if (view == "about") ui_about(lang, CITIES)
   else if (view == "countries") ui_countries(lang)
   else CITIES[[view]]$ui_city(lang)
@@ -1540,7 +1529,7 @@ ui <- function(req) {
 server <- function(input, output, session) {
   qs <- isolate(session$clientData$url_search)
   lang <- lang_from_url(qs); view <- view_from_url(qs, VIEWS_AVAILABLE)
-  if (view %in% names(COUNTRIES)) COUNTRIES[[view]]$server_spain(input, output, session, lang)
+  if (view %in% names(COUNTRIES)) COUNTRIES[[view]]$server_country(input, output, session, lang)
   else if (view == "countries") server_countries(input, output, session, lang)
   else if (view != "about") CITIES[[view]]$server_city(input, output, session, lang)
 }

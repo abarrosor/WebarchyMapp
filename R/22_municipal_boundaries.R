@@ -5,16 +5,18 @@
 # municipality with its INE code (id_ine) and history (fecha_alta, fecha_baja).
 # Two files: "_x" (mainland, Balearic Islands, Ceuta, Melilla) and "_y" (Canary Islands).
 #
-# Output: data/territory_spain.gpkg with layers "municipality", "province" and
-# "region" (provinces and regions are unions of their municipalities), in WGS84,
-# with the project identifiers (ES-13-28-28079, ES-13-28, ES-13).
+# Output: data/territory_es.gpkg (written by the Spain module, R/71_es.R, through the
+# shared save_country_gpkg()) with layers "municipality", "province" and "region"
+# (provinces and regions are unions of their municipalities), in WGS84, with the
+# project identifiers (ES-13-28-28079, ES-13-28, ES-13).
 
-GPKG_SPAIN <- "data/territory_spain.gpkg"
+GPKG_SPAIN <- "data/territory_es.gpkg"
+GPKG_SPAIN_OLD <- "data/territory_spain.gpkg"   # file of the previous layout, compared by es_parity() and removed in the clean-up
 
 municipal_boundaries_download <- function(days = 365) {
   src <- CONFIG$sources$municipal_boundaries
   out <- character()
-  for (u in src$urls) {
+  for (u in c(es_source("ign_boundaries_mainland"), es_source("ign_boundaries_canary"))) {
     name <- basename(u)
     previous <- newest_first(list.files(src$dir_raw, paste0(name, "$"), full.names = TRUE))
     # Boundaries change very little: checked once a year
@@ -37,7 +39,7 @@ municipal_boundaries_files <- function() {
 municipal_boundaries_build <- function() {
   files <- municipal_boundaries_files()
   if (length(files) == 0) stop("No boundary file in ", CONFIG$sources$municipal_boundaries$dir_raw)
-  ref <- read_reference("ine_provinces.csv")
+  ref <- read_reference("es_provinces.csv")
   parts <- lapply(files, function(f) {
     m <- sf::st_read(f, quiet = TRUE)
     missing <- setdiff(c("id_ine", "rotulo", "fecha_baja"), names(m))
