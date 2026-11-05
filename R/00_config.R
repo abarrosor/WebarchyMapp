@@ -109,6 +109,9 @@ CONFIG <- list(
 #   data/raw/shared/{gisco, geoboundaries, natural_earth, eurostat}
 CONFIG$shared <- list(gisco = "data/raw/shared/gisco", geoboundaries = "data/raw/shared/geoboundaries", natural_earth = "data/raw/shared/natural_earth", eurostat = "data/raw/shared/eurostat")
 
+# GDAL refuses GeoJSON features above 200 MB by default ("GeoJSON object too complex/large"): no limit
+Sys.setenv(OGR_GEOJSON_MAX_OBJ_SIZE = "0")
+
 # Shared open sources used by the country modules (R/70_countries.R and R/7x_*.R)
 CONFIG$gisco <- list(base = "https://gisco-services.ec.europa.eu/distribution/v2", nuts_year = 2024, lau_year = 2023)
 CONFIG$eurostat <- list(base = "https://ec.europa.eu/eurostat/api/dissemination/sdmx/3.0/data/dataflow/ESTAT")

@@ -223,12 +223,16 @@ natural_earth_admin1 <- function(iso2) {
 # --- Population denominators --------------------------------------------------------------
 
 # Eurostat: population on 1 January by NUTS3 (demo_r_pjangrp3) through the dissemination API (no key)
+# Population on 1 January by NUTS 0-3 for one country (geo, year, value), from the shared Eurostat
+# demo_r_pjangrp3 JSON-stat file that the Eurostat-regional module downloads (R/92_eurostat_regions.R);
+# downloaded here when missing. (The SDMX 3.0 TSV filter used before answered HTTP 400.)
 eurostat_population_nuts3 <- function(cc, since = 2015) {
-  dir <- CONFIG$shared$eurostat
-  url <- sprintf("%s/demo_r_pjangrp3/1.0/*.*.*.*.%s?format=TSV&compressed=false&c[sex]=T&c[age]=TOTAL&c[unit]=NR&c[geo]=%s&c[TIME_PERIOD]=ge:%d",
-                 CONFIG$eurostat$base, cc, cc, since)
-  f <- download_versioned(url, dir, name = sprintf("demo_r_pjangrp3_%s.tsv", cc))
-  parse_eurostat_tsv(f)
+  if (!exists("er_population")) stop("R/92_eurostat_regions.R not loaded")
+  if (is.na(er_file(paste0(EUROSTAT_REGIONS$population, "_T.json")))) er_download()
+  p <- er_population(); geo <- if (cc == "GR") "EL" else cc
+  p <- p[p$cntr == geo & p$year >= since & !grepl("Z$", p$geo), c("geo", "year", "value")]
+  if (geo != cc) p$geo <- sub(paste0("^", geo), cc, p$geo)
+  p
 }
 # Eurostat TSV (dimensions in the first column separated by commas, years as columns)
 parse_eurostat_tsv <- function(f) {
@@ -273,7 +277,7 @@ country_marts <- function(con) {
 
   es_pop <- if (has("mart_population_municipal")) "SELECT 'ES' AS country, level, territory_id, year, population::DOUBLE AS population FROM mart_population_municipal" else NULL
   DBI::dbExecute(con, paste0("CREATE OR REPLACE TABLE mart_country_population AS ",
-                             paste(c(es_pop, "SELECT country, level, territory_id, year, population FROM ref_country_population"), collapse = " UNION ALL "), " ORDER BY ALL"))
+                             paste(c(es_pop, "SELECT country, level, territory_id, year, population FROM ref_country_population WHERE population > 0"), collapse = " UNION ALL "), " ORDER BY ALL"))   # uninhabited communes / empty NUTS codes: no rate
 
   # One row per country with data: names, levels, source and population metadata for the app
   rows <- lapply(COUNTRY_MODULES, function(m) data.frame(

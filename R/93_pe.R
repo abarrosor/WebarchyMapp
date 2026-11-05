@@ -321,16 +321,33 @@ pe_population <- function(con) {
                   population = suppressWarnings(as.numeric(gsub("[^0-9.]", "", d[[col$ind_pop]]))), stringsAsFactors = FALSE)
   p <- p[!is.na(p$ambito) & !is.na(p$year) & !is.na(p$population) & p$population > 0, ]
   p <- p[!duplicated(p[, c("ambito", "ubigeo", "year")]), ]
-  dist <- p[p$ambito == 3, ]; dist$ubigeo <- pe_pad(dist$ubigeo, 6); dist <- dist[!is.na(dist$ubigeo), ]
-  prov <- p[p$ambito == 2, ]; prov$ubigeo <- pe_pad(prov$ubigeo, 4); prov <- prov[!is.na(prov$ubigeo), ]
+  # Ubigeo of each ámbito, whatever its spelling: "1"/"15"/"1501"/"150000" -> departamento "15"; "101"/"150100" -> provincia "0101"/"1501"
+  norm <- function(code, width) { d <- gsub("\\D", "", code); d[!nzchar(d)] <- NA
+    five <- !is.na(d) & nchar(d) == 5; d[five] <- paste0("0", d[five])            # a 6-digit ubigeo that lost its leading zero ("10500" = 010500 = provincia 0105)
+    short <- !is.na(d) & nchar(d) < width; d[short] <- formatC(as.integer(d[short]), width = width, flag = "0", format = "d")
+    long <- !is.na(d) & nchar(d) > width & (grepl(paste0("0{", 6 - width, "}$"), d) | (width == 2 & nchar(d) == 4)); d[long] <- substr(d[long], 1, width)   # 1501/1599 (Lima split) -> 15
+    d[!is.na(d) & nchar(d) != width] <- NA; d }
+  dist <- p[p$ambito == 3, ]; dist$ubigeo <- norm(dist$ubigeo, 6); dist <- dist[!is.na(dist$ubigeo), ]
+  prov <- p[p$ambito == 2, ]; prov$ubigeo <- norm(prov$ubigeo, 4); prov <- prov[!is.na(prov$ubigeo), ]
+  dep  <- p[p$ambito == 1, ]; dep$ubigeo <- norm(dep$ubigeo, 2); dep <- dep[!is.na(dep$ubigeo), ]   # 1501 Lima Metropolitana + 1599 Región Lima -> 15
   nat  <- p[p$ambito == 0, ]
   deps <- pe_departamentos()
+  regions <- if (nrow(dep)) dep |> dplyr::group_by(ubigeo, year) |> dplyr::summarise(population = sum(population), .groups = "drop") |>
+                              dplyr::transmute(country = "PE", territory_id = paste0("PE-", ubigeo), level = "region", year, population)
+             else prov |> dplyr::group_by(dep = substr(ubigeo, 1, 2), year) |> dplyr::summarise(population = sum(population), .groups = "drop") |>
+                              dplyr::transmute(country = "PE", territory_id = paste0("PE-", dep), level = "region", year, population)
   out <- dplyr::bind_rows(
     data.frame(country = "PE", territory_id = pe_ids(dist$ubigeo), level = "municipality", year = dist$year, population = dist$population),
     data.frame(country = "PE", territory_id = pe_prov_ids(prov$ubigeo), level = "province", year = prov$year, population = prov$population),
-    prov |> dplyr::group_by(dep = substr(ubigeo, 1, 2), year) |> dplyr::summarise(population = sum(population), .groups = "drop") |>
-      dplyr::transmute(country = "PE", territory_id = paste0("PE-", dep), level = "region", year, population),
+    regions,
     if (nrow(nat)) data.frame(country = "PE", territory_id = "PE", level = "country", year = nat$year, population = nat$population) else NULL)
+  message(sprintf("  population rows by ámbito: national %d, departamentos %d, provincias %d, distritos %d", nrow(nat), nrow(dep), nrow(prov), nrow(dist)))
+  known <- DBI::dbGetQuery(con, "SELECT territory_id, level FROM dim_territory WHERE country = 'PE'")
+  for (lv in c("region", "province", "municipality")) {
+    ids <- unique(out$territory_id[out$level == lv]); k <- known$territory_id[known$level == lv]
+    message(sprintf("    %s: %d with population, %d of the %d territories matched (e.g. population ids %s; raw codes %s)", lv, length(ids), sum(k %in% ids), length(k),
+                    paste(utils::head(ids, 2), collapse = ", "), paste(utils::head(unique(p$ubigeo[p$ambito == c(region = 1, province = 2, municipality = 3)[[lv]]]), 3), collapse = ", ")))
+  }
   out <- out[substr(out$territory_id, 4, 5) %in% c(deps$department_code, "") | out$level == "country", ]
   out <- out[!duplicated(out[, c("territory_id", "year")]), ]
   if (nrow(out) == 0) stop("No population rows recognised in ", basename(f), " (run pe_inspect())")

@@ -49,25 +49,38 @@ mx_direct_url <- function(url) {
 }
 
 # Best effort: the current "Municipal-Delitos" link on the SESNSP open-data page
-mx_find_link <- function(page_url) {
+# Links of the SESNSP page: the municipal "Delitos" files (not "Víctimas", not the "Tablero dinámico"
+# dashboards). `which` = "current" (the current-year cut, e.g. "Enero - septiembre 2026") or "series"
+# (the 2015 - <last year> file). Returns NA when the page has no such link.
+mx_find_link <- function(page_url, which = "current") {
   html <- get_text(page_url); if (is.null(html)) return(NA_character_)
   anchors <- regmatches(html, gregexpr("<a[^>]+href=\"[^\"]+\"[^>]*>.*?</a>", html, perl = TRUE))[[1]]
   hrefs <- sub(".*href=\"([^\"]+)\".*", "\\1", anchors)
-  text <- gsub("<[^>]+>", " ", anchors)
-  is_hit <- grepl("Municipal[-_ ]?Delitos", hrefs, ignore.case = TRUE) | (grepl("municipal", anchors, ignore.case = TRUE) & grepl("delitos|drive\\.google|sharepoint", anchors, ignore.case = TRUE))
-  # The page offers the whole series (2015 onwards) and sometimes a current-year cut: prefer the series
-  if (!any(is_hit)) return(NA_character_)
-  cand <- which(is_hit); full <- cand[grepl("2015", paste(text[cand], hrefs[cand]))]
-  if (length(cand) > 1) message("  SESNSP page: ", length(cand), " municipal links (", paste(trimws(gsub("\\s+", " ", text[cand])), collapse = " | "), ")", if (length(full)) "; taking the 2015 series" else "")
-  u <- gsub("&amp;", "&", hrefs[if (length(full)) full[1] else cand[1]])
+  text <- tolower(gsub("&nbsp;", " ", gsub("<[^>]+>", " ", anchors))); text <- gsub("&[a-z]+;", "", text)
+  muni <- (grepl("Municipal[-_ ]?Delitos", hrefs, ignore.case = TRUE) | (grepl("municipal", text) & grepl("delitos", text))) & !grepl("v.?ctimas|tablero", text)
+  if (!any(muni)) return(NA_character_)
+  cand <- which(muni)
+  series <- cand[grepl("2015\\s*-", text[cand]) | grepl("2015[-_]20[0-9]{2}", hrefs[cand])]
+  current <- cand[grepl("enero", text[cand]) | grepl("20(2[6-9]|[3-9][0-9])", sub(".*2015.*", "", text[cand]))]
+  pick <- if (which == "series") series else setdiff(current, series)
+  if (!length(pick)) { if (which == "series") return(NA_character_); pick <- setdiff(cand, series); if (!length(pick)) return(NA_character_) }
+  message("  SESNSP page (", which, "): ", trimws(gsub("\\s+", " ", text[pick[1]])))
+  u <- gsub("&amp;", "&", hrefs[pick[1]])
   if (grepl("^/", u)) u <- paste0("https://www.gob.mx", u)
   u
 }
 
-mx_file <- function(what = "municipal") {
-  f <- newest_first(list.files(COUNTRY_MODULES$MX$dir_raw, paste0("_mx_", what, "_delitos\\.(zip|csv)$"), full.names = TRUE))
-  if (length(f) == 0) NA_character_ else f[1]
+# Newest version of the SESNSP file(s) of a kind. Since 2026 the SESNSP splits the municipal series in two
+# zips, "Municipal-Delitos-2015-2025" and the current year: both are kept, as
+# <date>_mx_municipal_delitos.zip (current year) and <date>_mx_municipal_delitos_<suffix>.zip (series,
+# e.g. _2015_2025); the newest version of each is read and the rows are stacked.
+mx_files <- function(what = "municipal") {
+  f <- list.files(COUNTRY_MODULES$MX$dir_raw, paste0("_mx_", what, "_delitos(_[0-9A-Za-z_-]+)?\\.(zip|csv)$"), full.names = TRUE)
+  if (length(f) == 0) return(character())
+  key <- sub("^[0-9]{8}_", "", basename(f))
+  unname(unlist(lapply(split(f, key), function(x) newest_first(x)[1])))
 }
+mx_file <- function(what = "municipal") { f <- mx_files(what); if (length(f) == 0) NA_character_ else newest_first(f)[1] }
 
 # Download (never kept when the server answered with an HTML page instead of the file)
 mx_fetch <- function(url, name) {
@@ -83,18 +96,19 @@ mx_fetch <- function(url, name) {
 }
 
 mx_download <- function(days = 25) {
-  for (what in c("municipal", "estatal")) {
-    prev <- mx_file(what)
+  for (what in c("municipal", "municipal_series", "estatal")) {
+    prev <- if (what == "municipal_series") { x <- mx_files("municipal"); x <- x[grepl("_delitos_", basename(x))]; if (length(x)) newest_first(x)[1] else NA_character_ } else mx_file(what)
+    if (what == "municipal_series" && is.na(mx_source_url(what)) && is.na(mx_source_url("page"))) next
     if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < days) { message("= MX ", what, " file downloaded less than ", days, " days ago"); next }
     url <- mx_source_url(what)                      # an explicit link in reference/mx_sources.csv wins over the scrape
     if (!is.na(url)) message("  ", what, " link from reference/mx_sources.csv: ", url)
-    if (is.na(url) && what == "municipal" && !is.na(page <- mx_source_url("page"))) {
-      url <- mx_find_link(page)
-      if (!is.na(url)) message("  SESNSP page: current municipal link ", url) else message("  no 'Municipal-Delitos' link found on ", page)
+    if (is.na(url) && what %in% c("municipal", "municipal_series") && !is.na(page <- mx_source_url("page"))) {
+      url <- mx_find_link(page, if (what == "municipal") "current" else "series")
+      if (!is.na(url)) message("  SESNSP page: ", what, " link ", url) else message("  no municipal '", if (what == "municipal") "current year" else "2015 series", "' link found on ", page)
     }
     if (is.na(url)) { if (what == "municipal") stop("No URL for the SESNSP municipal file: set 'municipal' in reference/mx_sources.csv"); next }
     ext <- if (grepl("\\.csv($|\\?)", url, ignore.case = TRUE)) "csv" else "zip"
-    mx_fetch(url, paste0("mx_", what, "_delitos.", ext))
+    mx_fetch(url, if (what == "municipal_series") paste0("mx_municipal_delitos_2015_2025.", ext) else paste0("mx_", what, "_delitos.", ext))
   }
 }
 
@@ -121,7 +135,7 @@ mx_read <- function(f, level = "municipality") {
   out <- do.call(rbind, lapply(paths, function(p) mx_read_one(p, f, level)))
   out <- out[!duplicated(out), ]
   yrs <- sort(unique(out$year)); message("  years in ", basename(f), ": ", if (length(yrs) > 2) paste(min(yrs), max(yrs), sep = "-") else paste(yrs, collapse = ", "),
-                                        if (length(yrs) == 1) "  <- only one year: the SESNSP page also publishes the 2015-onwards series (set 'municipal' in reference/mx_sources.csv to its link)" else "")
+                                        if (length(yrs) == 1 && length(mx_files("municipal")) == 1) "  <- only one year: the SESNSP also publishes the 2015-2025 series (copy it as <date>_mx_municipal_delitos_2015_2025.zip or set 'municipal_series' in reference/mx_sources.csv)" else "")
   # Months of the latest year that are empty or zero for every row have not been reported yet:
   # dropped, so that their quarter stays incomplete (the SESNSP files sometimes carry zeros there)
   last <- max(out$year, na.rm = TRUE); mcols <- grep("^m\\d+$", names(out), value = TRUE)
@@ -175,8 +189,11 @@ mx_aggregate <- function(d, keys, ...) {
 # Municipal table aggregated to the leaf category (one row per year x municipio x code), cached
 mx_load_municipal <- function(f) {
   if (!is.null(MX_STATE$muni) && identical(MX_STATE$file, f)) return(MX_STATE$muni)
-  message("  reading ", basename(f), " (a few minutes and ~3 GB of memory the first time)")
-  d <- mx_read(f, "municipality")
+  message("  reading ", paste(basename(f), collapse = " + "), " (a few minutes and ~3 GB of memory the first time)")
+  d <- do.call(rbind, lapply(f, mx_read, level = "municipality"))
+  # The series zip and the current-year zip must not overlap; if they do, the newest file wins
+  keycols <- setdiff(names(d), c(grep("^m\\d+$", names(d), value = TRUE), "file"))
+  d <- d[!duplicated(d[, keycols]), ]
   agg <- mx_aggregate(d, c("year", "ent", "mun", "code"), mun_name = dplyr::first(mun_name))
   # "No especificado" / "Otros municipios" pseudo-municipios count in the state but are not places
   agg$special <- as.integer(substr(agg$mun, 3, 5)) >= 990 | grepl("NO ESPECIFICADO|OTROS MUNICIPIOS", mx_norm(agg$mun_name))
@@ -209,8 +226,8 @@ mx_align_codes <- function(code, ref) {
 
 mx_ingest <- function(con) {
   m <- COUNTRY_MODULES$MX
-  f <- mx_file("municipal")
-  if (is.na(f)) stop("No SESNSP municipal file in ", m$dir_raw, ": run the download, or copy the zip there as YYYYMMDD_mx_municipal_delitos.zip")
+  f <- mx_files("municipal")
+  if (length(f) == 0) stop("No SESNSP municipal file in ", m$dir_raw, ": run the download, or copy the zips there as YYYYMMDD_mx_municipal_delitos.zip (current year) and YYYYMMDD_mx_municipal_delitos_2015_2025.zip (series)")
   d <- mx_load_municipal(f)
   d$code <- mx_align_codes(d$code, read_reference("mx_offence_types.csv")$source_code)
   rows <- list()
@@ -298,8 +315,8 @@ mx_boundaries_inegi <- function(url, states) {
 mx_territory <- function(con) {
   states <- read_reference("mx_states.csv")
   tbl <- data.frame(territory_id = paste0("MX-", states$clave_ent), level = "region", parent_id = "MX", official_code = states$clave_ent, name = states$name, stringsAsFactors = FALSE)
-  f <- mx_file("municipal"); munis <- NULL
-  if (!is.na(f)) {
+  f <- mx_files("municipal"); munis <- NULL
+  if (length(f)) {
     d <- mx_load_municipal(f)
     munis <- d[!d$special, c("year", "ent", "mun", "mun_name")] |> dplyr::arrange(dplyr::desc(year)) |> dplyr::distinct(mun, .keep_all = TRUE) |> as.data.frame()   # latest name per municipio
     munis$mun_name[is.na(munis$mun_name) | munis$mun_name == ""] <- munis$mun[is.na(munis$mun_name) | munis$mun_name == ""]

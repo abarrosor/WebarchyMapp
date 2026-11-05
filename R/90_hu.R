@@ -32,12 +32,14 @@ hu_download <- function(days = 60) {
 
 # Read a STADAT CSV as a character matrix (delimiter detected; UTF-8 or Latin-2)
 hu_read <- function(f) {
-  first <- readLines(f, n = 3, warn = FALSE, encoding = "UTF-8")
-  if (!all(validUTF8(first))) first <- iconv(readLines(f, n = 3, warn = FALSE), "ISO-8859-2", "UTF-8")
+  lines <- readLines(f, warn = FALSE)                       # bytes as they are; the whole file decides the encoding
+  utf8 <- all(validUTF8(lines)); enc <- if (utf8) "UTF-8" else "windows-1250"   # KSH exports: UTF-8 (often with BOM) or Central European Windows
+  first <- iconv(utils::head(lines, 3), if (utf8) "UTF-8" else "windows-1250", "UTF-8", sub = "")
   sep <- names(which.max(sapply(c(";" = ";", "," = ",", "\t" = "\t"), function(s) sum(lengths(regmatches(first, gregexpr(s, first, fixed = TRUE)))))))
   d <- readr::read_delim(f, delim = sep, col_names = FALSE, col_types = readr::cols(.default = "c"), progress = FALSE, show_col_types = FALSE,
-                         locale = readr::locale(encoding = if (all(validUTF8(first))) "UTF-8" else "ISO-8859-2"), skip_empty_rows = TRUE)
-  m <- as.matrix(d); m[is.na(m)] <- ""; m
+                         locale = readr::locale(encoding = enc), skip_empty_rows = TRUE)
+  m <- as.matrix(d); m[is.na(m)] <- ""; m <- apply(m, 2, function(col) iconv(col, "UTF-8", "UTF-8", sub = ""))   # never leave an invalid byte for the regexes
+  if (is.null(dim(m))) m <- matrix(m, nrow = 1); m
 }
 hu_number <- function(x) { x <- gsub("[^0-9]", "", gsub("\\s", "", x)); suppressWarnings(as.numeric(ifelse(nzchar(x), x, NA))) }   # "104,253" / "104 253" -> 104253; ".." -> NA
 hu_clean <- function(x) tolower(trimws(gsub("[¹²³⁰-₟*]", "", x)))   # drop superscript footnote marks (plain footnote letters, e.g. "regiona", are tolerated by the patterns)

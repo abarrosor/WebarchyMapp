@@ -53,7 +53,10 @@ country_checks <- function(con, only = NULL) {
       tt <- crime[crime$offence_code %in% tot_code, c("territory_id", "year", "quarter", "cumulative")]
       pp <- crime[crime$offence_code %in% parts, ] |> dplyr::group_by(territory_id, year, quarter) |> dplyr::summarise(parts = sum(cumulative, na.rm = TRUE), .groups = "drop")
       j <- dplyr::inner_join(tt, pp, by = c("territory_id", "year", "quarter"))
-      over <- sum(j$parts > j$cumulative * 1.001 + 1, na.rm = TRUE); if (over) add(cc, "parts_exceed_total", "error", over, "sum of the categories marked total > total (double counting?)")
+      # Sources that round small figures (CBS rounds municipal counts to 5) make the parts exceed the total slightly: tolerated up to 5 % + 10
+      over_small <- sum(j$parts > j$cumulative * 1.001 + 1 & j$parts <= j$cumulative * 1.05 + 10, na.rm = TRUE); over <- sum(j$parts > j$cumulative * 1.05 + 10, na.rm = TRUE)
+      if (over) add(cc, "parts_exceed_total", "error", over, "sum of the categories marked total > total by more than 5% (double counting?)")
+      if (over_small) add(cc, "parts_exceed_total_rounding", "info", over_small, "parts slightly above the total (rounded source figures)")
       under <- sum(j$parts < j$cumulative * 0.5, na.rm = TRUE); if (under) add(cc, "parts_far_below_total", "info", under, "categories cover < 50% of the total (large 'other' remainder)")
     }
     # 8. Country total = sum of the regions (when both exist): within 1 %
@@ -65,7 +68,7 @@ country_checks <- function(con, only = NULL) {
     }
     # 9. Population: years, zeros, coverage of the territories with data, sum of municipalities vs region
     if (nrow(pop)) {
-      z <- sum(pop$population <= 0, na.rm = TRUE); if (z) add(cc, "population_not_positive", "error", z)
+      z <- sum(pop$population <= 0, na.rm = TRUE); if (z) add(cc, "population_not_positive", "info", z, "zero population (uninhabited or discontinued units): no rate for them")
       cy <- range(crime$year); py <- range(pop$year)
       if (py[2] < cy[2] - 1) add(cc, "population_years_behind", "warning", cy[2] - py[2], sprintf("population to %d, crime to %d (the app uses the latest population year)", py[2], cy[2]))
       if (py[1] > cy[1]) add(cc, "population_starts_later", "info", py[1] - cy[1], sprintf("population from %d, crime from %d (early years use the first population year)", py[1], cy[1]))

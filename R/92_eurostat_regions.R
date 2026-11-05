@@ -35,10 +35,12 @@ er_download <- function(days = 30) {
   }
   get(paste0(x$dataset, "_NR.json"), paste0(x$api, "/", x$dataset, "?format=JSON&lang=EN&unit=NR"))
   get(paste0(x$population, "_T.json"), paste0(x$api, "/", x$population, "?format=JSON&lang=EN&sex=T&age=TOTAL&unit=NR&sinceTimePeriod=2008"))
-  for (lv in 2:3) {   # NUTS 2 and 3 boundaries, 1:3M, WGS84
-    url <- sprintf("%s/nuts/geojson/NUTS_RG_03M_%d_4326_LEVL_%d.geojson", CONFIG$gisco$base, CONFIG$gisco$nuts_year, lv)
+  # NUTS 2 and 3 boundaries, 1:3M, WGS84: the current version and the previous one (crim_gen_reg still
+  # carries NUTS 2021 and older codes, e.g. Italian provinces or Norwegian counties before their reforms)
+  for (yr in unique(c(CONFIG$gisco$nuts_year, 2021, 2016, 2013))) for (lv in 2:3) {   # older versions: codes still present in crim_gen_reg
+    url <- sprintf("%s/nuts/geojson/NUTS_RG_03M_%d_4326_LEVL_%d.geojson", CONFIG$gisco$base, yr, lv)
     prev <- newest_first(list.files(CONFIG$shared$gisco, basename(url), full.names = TRUE))
-    if (length(prev) == 0 || difftime(Sys.time(), file.mtime(prev[1]), units = "days") > 365) download_versioned(url, CONFIG$shared$gisco)
+    if (length(prev) == 0 || difftime(Sys.time(), file.mtime(prev[1]), units = "days") > 365) tryCatch(download_versioned(url, CONFIG$shared$gisco), error = function(e) message("  GISCO NUTS ", yr, " level ", lv, " not downloaded (", conditionMessage(e), ")"))
   }
 }
 
@@ -60,10 +62,20 @@ er_population <- function() {
   d$year <- as.integer(d$time); d$cntr <- substr(d$geo, 1, 2)
   ER_STATE$pop <- d; d
 }
-er_nuts <- function(level) {
-  f <- newest_first(list.files(CONFIG$shared$gisco, sprintf("NUTS_RG_03M_%d_4326_LEVL_%d\\.geojson$", CONFIG$gisco$nuts_year, level), full.names = TRUE))
+er_nuts <- function(level, year = CONFIG$gisco$nuts_year) {
+  f <- newest_first(list.files(CONFIG$shared$gisco, sprintf("NUTS_RG_03M_%d_4326_LEVL_%d\\.geojson$", year, level), full.names = TRUE))
   if (length(f) == 0) return(NULL)
   sf::st_read(f[1], quiet = TRUE)
+}
+# Current NUTS polygons, completed with the previous version for the codes that no longer exist
+er_nuts_all <- function(level) {
+  g <- er_nuts(level); if (is.null(g)) return(NULL)
+  for (yr in setdiff(c(2021, 2016, 2013), CONFIG$gisco$nuts_year)) {   # newest version of each code wins
+    old <- er_nuts(level, yr); if (is.null(old)) next
+    keep <- intersect(names(g), names(old)); old <- old[!old$NUTS_ID %in% g$NUTS_ID, keep]
+    if (nrow(old)) g <- rbind(g[, keep], old)
+  }
+  g
 }
 
 # Eurostat country code of a module code (Greece is EL in Eurostat)
@@ -95,7 +107,7 @@ er_make <- function(row) {
       tbl <- data.frame(territory_id = ids, level = lvl, parent_id = parent, official_code = codes$geo, name = codes$geo_label)
       tbl$name[tbl$level == "country"] <- row$name_en
       save_country_territory(con, cc, tbl, scheme = "NUTS 2024")
-      g2 <- er_nuts(2); g3 <- er_nuts(3)
+      g2 <- er_nuts_all(2); g3 <- er_nuts_all(3)
       if (!is.null(g2) && !is.null(g3)) {
         g2 <- g2[g2$CNTR_CODE == geo, ]; g3 <- g3[g3$CNTR_CODE == geo, ]
         g2$territory_id <- er_id(cc, g2$NUTS_ID); g2$name <- g2$NAME_LATN
