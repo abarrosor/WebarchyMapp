@@ -3,7 +3,8 @@
 # readers (R/20_crime_balance.R, R/21_ine_population.R, R/22_municipal_boundaries.R) and this
 # module feeds the shared tables with them:
 #   stg_country_crime       from v_crime_balance (figure of the most recent publication, cumulative
-#                           January to quarter end), offence_code = normalised type key
+#                           January to quarter end; every type of the latest publication that covers the
+#                           territory and period, so that the old and new type schemes never mix), offence_code = normalised type key
 #   ref_country_population  INE register figures by municipality, added up to province, region, country
 #   dim_territory           country, 19 regions, 52 provinces (reference/es_provinces.csv), every
 #                           municipality of the IGN boundaries with its INE name; islands and old
@@ -70,7 +71,10 @@ es_ingest <- function(con) {
       SELECT 'ES' AS country, s.territory_id, s.level, s.offence_type_key AS offence_code, s.year, s.quarter, s.value AS cumulative, s.file
       FROM stg_crime_balance s
       WHERE s.territory_id IS NOT NULL AND s.level IN ('country', 'region', 'province', 'municipality', 'island') AND s.value IS NOT NULL
-      QUALIFY row_number() OVER (PARTITION BY s.territory_id, s.offence_type_key, s.year, s.quarter ORDER BY s.pub_year DESC, s.pub_quarter DESC) = 1")
+      -- One publication per territory and period, the most recent one, with every type it carries (P-028):
+      -- a publication that repeats an earlier year uses the current type scheme, so the earlier
+      -- scheme's aggregates ('Resto de infracciones penales') of that period are left out, never added
+      QUALIFY s.pub_year * 10 + s.pub_quarter = max(s.pub_year * 10 + s.pub_quarter) OVER (PARTITION BY s.territory_id, s.year, s.quarter)")
   })
   per <- DBI::dbGetQuery(con, "SELECT min(year) AS y0, max(year * 10 + quarter) AS p1, count(DISTINCT territory_id) AS t, count(DISTINCT territory_id) FILTER (level = 'municipality') AS m FROM stg_country_crime WHERE country = 'ES'")
   log_ingest(con, "country_ES", "stg_crime_balance", NA, sprintf("%d-%dQ%d", per$y0, per$p1 %/% 10, per$p1 %% 10), n)
