@@ -99,8 +99,7 @@ data/raw/country_es/    Spain: crime_balance, ine_population, municipal_boundari
 data/raw/city_madrid/   Madrid: calls, activity, districts, neighbourhoods, census
 data/raw/city_barcelona/ Barcelona: incidents, boundaries, census
 data/raw/shared/        GISCO, geoBoundaries, Natural Earth, Eurostat files used by several countries
-                        (projects created before November 2026 still have the flat folders data/raw/crime_balance,
-                        data/raw/madrid_calls...: they keep working; scripts/maintenance/migrate_raw_layout.R moves them)
+
 data/webarchymapp.duckdb    the database (rebuildable from data/raw)
 data/territory_*.gpkg   official boundaries in WGS84
 reports/                quality reports and update logs

@@ -122,7 +122,6 @@ data_status <- function(con = NULL) {
   q <- function(sql) tryCatch(DBI::dbGetQuery(con, sql), error = function(e) NULL)
   mon <- function(d) if (is.null(d) || is.na(d)) "-" else format(d, "%Y-%m")
   line <- function(cond, label, text) message(if (isTRUE(cond)) "[ok] " else "[!!] ", label, strrep(" ", max(1, 20 - nchar(label))), text)
-  if (exists("raw_layout_legacy") && raw_layout_legacy()) message("Note: the Spanish/Madrid/Barcelona raw files use the legacy folder layout (data/raw/<source>); scripts/maintenance/migrate_raw_layout.R moves them to the country_es / city_* / shared layout (decision Q-004).")
   pop_of <- function(id) q(paste0("SELECT max(ref_date) AS d, sum(population) FILTER (ref_date = (SELECT max(ref_date) FROM ref_population WHERE territory_id LIKE '",
                                   id, "-%')) AS n FROM ref_population WHERE territory_id LIKE '", id, "-%'"))
   terr_of <- function(id) q(paste0("SELECT count(*) FILTER (level = 'neighbourhood') AS nb, count(*) FILTER (level = 'district') AS di FROM dim_territory WHERE territory_id LIKE '", id, "-%'"))
