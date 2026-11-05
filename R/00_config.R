@@ -101,6 +101,38 @@ CONFIG <- list(
   )
 )
 
+# Raw-data layout -------------------------------------------------------------------------------
+# Target layout (one folder per country, city or shared source, like data/raw/country_<cc>):
+#   data/raw/country_es/{crime_balance, ine_population, municipal_boundaries, mossos, abp}
+#   data/raw/city_madrid/{calls, activity, districts, neighbourhoods, census}
+#   data/raw/city_barcelona/{incidents, boundaries, census}
+#   data/raw/shared/{gisco, geoboundaries, natural_earth, eurostat}
+# The legacy flat folders (data/raw/crime_balance, data/raw/madrid_calls...) keep working: a path
+# resolves to the new folder when it exists, to the legacy one while only that exists. The one-off
+# script scripts/maintenance/migrate_raw_layout.R moves the folders (files are never edited or
+# deleted). Decision pending (Q-004 in the decision register).
+raw_dir <- function(new, legacy) if (!dir.exists(new) && dir.exists(legacy)) legacy else new
+RAW_LAYOUT <- c(   # new path = legacy path
+  "data/raw/country_es/crime_balance" = "data/raw/crime_balance", "data/raw/country_es/ine_population" = "data/raw/ine_population",
+  "data/raw/country_es/municipal_boundaries" = "data/raw/municipal_boundaries", "data/raw/country_es/mossos" = "data/raw/mossos", "data/raw/country_es/abp" = "data/raw/abp",
+  "data/raw/city_madrid/calls" = "data/raw/madrid_calls", "data/raw/city_madrid/activity" = "data/raw/madrid_activity", "data/raw/city_madrid/districts" = "data/raw/madrid_districts",
+  "data/raw/city_madrid/neighbourhoods" = "data/raw/madrid_neighbourhoods", "data/raw/city_madrid/census" = "data/raw/madrid_census",
+  "data/raw/city_barcelona/incidents" = "data/raw/bcn_incidents", "data/raw/city_barcelona/boundaries" = "data/raw/bcn_boundaries", "data/raw/city_barcelona/census" = "data/raw/bcn_census",
+  "data/raw/shared/gisco" = "data/raw/gisco", "data/raw/shared/geoboundaries" = "data/raw/geoboundaries", "data/raw/shared/natural_earth" = "data/raw/natural_earth", "data/raw/shared/eurostat" = "data/raw/eurostat")
+raw_resolve <- function(new) raw_dir(new, unname(RAW_LAYOUT[new]))
+local({
+  map <- c(crime_balance = "data/raw/country_es/crime_balance", ine_population = "data/raw/country_es/ine_population", municipal_boundaries = "data/raw/country_es/municipal_boundaries",
+           mossos = "data/raw/country_es/mossos", madrid_calls = "data/raw/city_madrid/calls", madrid_activity = "data/raw/city_madrid/activity", madrid_districts = "data/raw/city_madrid/districts",
+           madrid_neighbourhoods = "data/raw/city_madrid/neighbourhoods", madrid_census = "data/raw/city_madrid/census", bcn_incidents = "data/raw/city_barcelona/incidents",
+           bcn_boundaries = "data/raw/city_barcelona/boundaries", bcn_census = "data/raw/city_barcelona/census")
+  for (k in names(map)) CONFIG$sources[[k]]$dir_raw <<- raw_resolve(map[[k]])
+  CONFIG$sources$mossos$dir_abp <<- raw_resolve("data/raw/country_es/abp")
+})
+CONFIG$shared <- list(gisco = raw_resolve("data/raw/shared/gisco"), geoboundaries = raw_resolve("data/raw/shared/geoboundaries"),
+                      natural_earth = raw_resolve("data/raw/shared/natural_earth"), eurostat = raw_resolve("data/raw/shared/eurostat"))
+# TRUE when at least one source still lives in a legacy folder
+raw_layout_legacy <- function() any(vapply(names(RAW_LAYOUT), function(n) !dir.exists(n) && dir.exists(RAW_LAYOUT[[n]]), logical(1)))
+
 # Shared open sources used by the country modules (R/70_countries.R and R/7x_*.R)
 CONFIG$gisco <- list(base = "https://gisco-services.ec.europa.eu/distribution/v2", nuts_year = 2024, lau_year = 2023)
 CONFIG$eurostat <- list(base = "https://ec.europa.eu/eurostat/api/dissemination/sdmx/3.0/data/dataflow/ESTAT")

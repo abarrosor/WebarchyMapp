@@ -15,7 +15,7 @@
 EUROSTAT_REGIONS <- list(
   dataset = "crim_gen_reg", population = "demo_r_pjangrp3",
   api = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data",
-  dir_raw = "data/raw/eurostat",
+  dir_raw = CONFIG$shared$eurostat,
   types = data.frame(
     code = c("ICCS0101", "ICCS02011", "ICCS0401", "ICCS0501", "ICCS05012", "ICCS0502", "ICCS050211"),
     offence_type_id = c("homicide", "assault", "robbery_violence", "burglary", "residential_burglary", "theft", "vehicle_theft"),
@@ -37,8 +37,8 @@ er_download <- function(days = 30) {
   get(paste0(x$population, "_T.json"), paste0(x$api, "/", x$population, "?format=JSON&lang=EN&sex=T&age=TOTAL&unit=NR&sinceTimePeriod=2008"))
   for (lv in 2:3) {   # NUTS 2 and 3 boundaries, 1:3M, WGS84
     url <- sprintf("%s/nuts/geojson/NUTS_RG_03M_%d_4326_LEVL_%d.geojson", CONFIG$gisco$base, CONFIG$gisco$nuts_year, lv)
-    prev <- newest_first(list.files(file.path(CONFIG$dir_raw, "gisco"), basename(url), full.names = TRUE))
-    if (length(prev) == 0 || difftime(Sys.time(), file.mtime(prev[1]), units = "days") > 365) download_versioned(url, file.path(CONFIG$dir_raw, "gisco"))
+    prev <- newest_first(list.files(CONFIG$shared$gisco, basename(url), full.names = TRUE))
+    if (length(prev) == 0 || difftime(Sys.time(), file.mtime(prev[1]), units = "days") > 365) download_versioned(url, CONFIG$shared$gisco)
   }
 }
 
@@ -61,7 +61,7 @@ er_population <- function() {
   ER_STATE$pop <- d; d
 }
 er_nuts <- function(level) {
-  f <- newest_first(list.files(file.path(CONFIG$dir_raw, "gisco"), sprintf("NUTS_RG_03M_%d_4326_LEVL_%d\\.geojson$", CONFIG$gisco$nuts_year, level), full.names = TRUE))
+  f <- newest_first(list.files(CONFIG$shared$gisco, sprintf("NUTS_RG_03M_%d_4326_LEVL_%d\\.geojson$", CONFIG$gisco$nuts_year, level), full.names = TRUE))
   if (length(f) == 0) return(NULL)
   sf::st_read(f[1], quiet = TRUE)
 }

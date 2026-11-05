@@ -53,10 +53,13 @@ mx_find_link <- function(page_url) {
   html <- get_text(page_url); if (is.null(html)) return(NA_character_)
   anchors <- regmatches(html, gregexpr("<a[^>]+href=\"[^\"]+\"[^>]*>.*?</a>", html, perl = TRUE))[[1]]
   hrefs <- sub(".*href=\"([^\"]+)\".*", "\\1", anchors)
-  hit <- hrefs[grepl("Municipal[-_ ]?Delitos", hrefs, ignore.case = TRUE)]
-  if (!length(hit)) hit <- hrefs[grepl("municipal", anchors, ignore.case = TRUE) & grepl("delitos|drive\\.google", anchors, ignore.case = TRUE)]
-  if (!length(hit)) return(NA_character_)
-  u <- gsub("&amp;", "&", hit[1])
+  text <- gsub("<[^>]+>", " ", anchors)
+  is_hit <- grepl("Municipal[-_ ]?Delitos", hrefs, ignore.case = TRUE) | (grepl("municipal", anchors, ignore.case = TRUE) & grepl("delitos|drive\\.google|sharepoint", anchors, ignore.case = TRUE))
+  # The page offers the whole series (2015 onwards) and sometimes a current-year cut: prefer the series
+  if (!any(is_hit)) return(NA_character_)
+  cand <- which(is_hit); full <- cand[grepl("2015", paste(text[cand], hrefs[cand]))]
+  if (length(cand) > 1) message("  SESNSP page: ", length(cand), " municipal links (", paste(trimws(gsub("\\s+", " ", text[cand])), collapse = " | "), ")", if (length(full)) "; taking the 2015 series" else "")
+  u <- gsub("&amp;", "&", hrefs[if (length(full)) full[1] else cand[1]])
   if (grepl("^/", u)) u <- paste0("https://www.gob.mx", u)
   u
 }
@@ -83,12 +86,12 @@ mx_download <- function(days = 25) {
   for (what in c("municipal", "estatal")) {
     prev <- mx_file(what)
     if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < days) { message("= MX ", what, " file downloaded less than ", days, " days ago"); next }
-    url <- NA_character_
-    if (what == "municipal" && !is.na(page <- mx_source_url("page"))) {
+    url <- mx_source_url(what)                      # an explicit link in reference/mx_sources.csv wins over the scrape
+    if (!is.na(url)) message("  ", what, " link from reference/mx_sources.csv: ", url)
+    if (is.na(url) && what == "municipal" && !is.na(page <- mx_source_url("page"))) {
       url <- mx_find_link(page)
       if (!is.na(url)) message("  SESNSP page: current municipal link ", url) else message("  no 'Municipal-Delitos' link found on ", page)
     }
-    if (is.na(url)) url <- mx_source_url(what)
     if (is.na(url)) { if (what == "municipal") stop("No URL for the SESNSP municipal file: set 'municipal' in reference/mx_sources.csv"); next }
     ext <- if (grepl("\\.csv($|\\?)", url, ignore.case = TRUE)) "csv" else "zip"
     mx_fetch(url, paste0("mx_", what, "_delitos.", ext))
@@ -97,21 +100,36 @@ mx_download <- function(days = 25) {
 
 # --- Reading the SESNSP files ----------------------------------------------------------------
 
-# The CSV inside a zip (the largest one), or the CSV itself
-mx_csv_path <- function(f) {
+# The CSVs inside a zip (the SESNSP zip may hold one file per year), or the CSV itself
+mx_csv_paths <- function(f) {
   if (grepl("\\.csv$", f, ignore.case = TRUE)) return(f)
   tmp <- file.path(tempdir(), tools::file_path_sans_ext(basename(f))); unlink(tmp, recursive = TRUE)
   utils::unzip(f, exdir = tmp)
   csv <- list.files(tmp, "\\.csv$", full.names = TRUE, recursive = TRUE, ignore.case = TRUE)
+  csv <- csv[!grepl("diccionario|catalogo|catálogo|readme", basename(csv), ignore.case = TRUE)]
   if (!length(csv)) stop("No CSV inside ", basename(f))
-  csv[which.max(file.size(csv))]
+  sort(csv)
 }
+mx_csv_path <- function(f) { p <- mx_csv_paths(f); p[which.max(file.size(p))] }
 mx_encoding <- function(csv) { l <- readLines(csv, n = 200, warn = FALSE); if (all(validUTF8(l))) "UTF-8" else "latin1" }
 mx_header <- function(csv, enc = mx_encoding(csv)) names(readr::read_csv(csv, n_max = 0, col_types = readr::cols(.default = "c"), locale = readr::locale(encoding = enc), show_col_types = FALSE, name_repair = "minimal"))
 
 # Read one SESNSP file keeping only the needed columns: id columns as text, months as numbers
 mx_read <- function(f, level = "municipality") {
-  csv <- mx_csv_path(f); enc <- mx_encoding(csv); nm <- mx_header(csv, enc)
+  paths <- mx_csv_paths(f)
+  if (length(paths) > 1) message("  ", length(paths), " CSV files inside ", basename(f), ": read one by one")
+  out <- do.call(rbind, lapply(paths, function(p) mx_read_one(p, f, level)))
+  out <- out[!duplicated(out), ]
+  yrs <- sort(unique(out$year)); message("  years in ", basename(f), ": ", if (length(yrs) > 2) paste(min(yrs), max(yrs), sep = "-") else paste(yrs, collapse = ", "),
+                                        if (length(yrs) == 1) "  <- only one year: the SESNSP page also publishes the 2015-onwards series (set 'municipal' in reference/mx_sources.csv to its link)" else "")
+  # Months of the latest year that are empty or zero for every row have not been reported yet:
+  # dropped, so that their quarter stays incomplete (the SESNSP files sometimes carry zeros there)
+  last <- max(out$year, na.rm = TRUE); mcols <- grep("^m\\d+$", names(out), value = TRUE)
+  for (mc in mcols) { v <- out[[mc]][out$year == last]; if (length(v) && all(is.na(v) | v == 0)) out[[mc]][out$year == last] <- NA_real_ }
+  out
+}
+mx_read_one <- function(csv, f, level = "municipality") {
+  enc <- mx_encoding(csv); nm <- mx_header(csv, enc)
   col <- lapply(MX_COLUMNS, mx_pick, nm = nm)
   months <- nm[match(MX_MONTHS, mx_norm(nm))]; months <- months[!is.na(months)]
   if (is.na(col$year) || is.na(col$ent_code) || is.na(col$tipo) || length(months) < 3 || (level == "municipality" && is.na(col$mun_code)))
@@ -301,6 +319,7 @@ mx_territory <- function(con) {
 
 # CSV (Latin-1/UTF-8) or XLSX as text; n = 0 reads the header only
 mx_read_table <- function(f, n = Inf) {
+  if (grepl("\\.zip$", f, ignore.case = TRUE)) f <- mx_csv_path(f)          # e.g. the INEGI ITER census zip (largest CSV inside)
   if (grepl("\\.xlsx?$", f, ignore.case = TRUE)) return(readxl::read_excel(f, n_max = if (is.finite(n)) n else Inf, col_types = "text"))
   readr::read_csv(f, n_max = n, col_types = readr::cols(.default = "c"), locale = readr::locale(encoding = mx_encoding(f)), progress = FALSE, show_col_types = FALSE, name_repair = "minimal")
 }
@@ -318,7 +337,7 @@ mx_read_population <- function(f) {
   }
   if (is.na(code) || is.na(pop)) stop("Population file ", basename(f), ": no municipal key / population column in: ", paste(nm, collapse = " | "))
   out <- data.frame(cve = sprintf("%05d", suppressWarnings(as.integer(gsub("[^0-9]", "", d[[code]])))),
-                    year = if (!is.na(year)) as.integer(substr(gsub("[^0-9]", "", d[[year]]), 1, 4)) else { y <- regmatches(basename(f), regexpr("20[0-9]{2}", basename(f))); as.integer(if (length(y)) y else 2020) },
+                    year = if (!is.na(year)) as.integer(substr(gsub("[^0-9]", "", d[[year]]), 1, 4)) else { b <- sub("^[0-9]{8}_", "", basename(f)); y <- regmatches(b, regexpr("(19|20)[0-9]{2}", b)); as.integer(if (length(y)) y else 2020) },   # year in the file name (date prefix ignored)
                     population = suppressWarnings(as.numeric(gsub("[^0-9.]", "", d[[pop]]))), stringsAsFactors = FALSE)
   # state totals (xx000) and pseudo-municipios (xx990+) are left out
   out <- out[!is.na(out$cve) & !is.na(out$year) & !is.na(out$population) & substr(out$cve, 3, 5) != "000" & as.integer(substr(out$cve, 3, 5)) < 990, ]
@@ -331,7 +350,7 @@ mx_population <- function(con) {
   if (nrow(s) == 0) stop("No population URL in reference/mx_sources.csv (keys population_*)")
   files <- character()
   for (i in seq_len(nrow(s))) {
-    ext <- if (grepl("\\.xlsx?($|\\?)", s$url[i], ignore.case = TRUE)) "xlsx" else "csv"
+    ext <- if (grepl("\\.xlsx?($|\\?)", s$url[i], ignore.case = TRUE)) "xlsx" else if (grepl("\\.zip($|\\?)", s$url[i], ignore.case = TRUE)) "zip" else "csv"
     name <- paste0("mx_", s$key[i], ".", ext)
     prev <- newest_first(list.files(m$dir_raw, paste0("_", name, "$"), full.names = TRUE))
     if (!length(prev) || difftime(Sys.time(), file.mtime(prev[1]), units = "days") > 365)
@@ -359,8 +378,9 @@ register_country(list(
                 url = "https://www.gob.mx/sesnsp/acciones-y-programas/datos-abiertos-de-incidencia-delictiva",
                 licence = "Términos de Libre Uso de la Información del Gobierno de México (Libre Uso MX)",
                 measure = "Carpetas de investigación (investigation files) opened by the state prosecutors' offices for fuero común offences, counted by month of registration (offences, not victims), as reported to SESNSP; the total shown is the sum of all types, including negligent homicide and injuries."),
-  population_source = "CONAPO, Proyecciones de la Población de los Municipios de México (Libre Uso MX); URL in reference/mx_sources.csv",
+  population_source = "INEGI, Censo de Población y Vivienda 2020 (ITER), one year applied to the whole series; CONAPO projections when a link is available (reference/mx_sources.csv)",
   boundaries_attribution = "geoBoundaries (www.geoboundaries.org), CC BY 4.0; ADM2 polygons from 2012 matched to current municipios by name",
+  measure_labels = list(kind = "alleged_offences", title = c("Alleged offences recorded (fuero común)", "Presuntos delitos registrados (fuero común)"), noun = c("alleged offences", "presuntos delitos")),
   not_published = c("No suppression threshold: SESNSP publishes every figure, zeros included", "Sin umbral de supresión: el SESNSP publica todas las cifras, incluidos los ceros"),
   notes_en = "Prosecutor files, not police incidents: very high under-reporting (ENVIPE 'cifra negra' above 90%) and uneven recording practices between states; monthly files are revised retroactively; 'Tipo de delito' is the leaf category except Homicidio, Lesiones and Robo (split by subtipo); negligent homicide and injuries are counted in the total but not listed.",
   default_region = "MX-09",

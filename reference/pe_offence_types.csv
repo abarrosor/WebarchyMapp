@@ -1,0 +1,10 @@
+source_code,offence_type_id,name_local,name_en,included_in,sensitive
+TOTAL_DENUNCIAS,total,Total de denuncias registradas (suma de las modalidades publicadas),Total complaints registered (sum of the published categories),,no
+Robo,robbery_violence,Robo,Robbery (theft with violence or threat),total,no
+Hurto,theft,Hurto,Theft (without violence),total,no
+Estafa,fraud,Estafa,Fraud (swindle),total,no
+Extorsión,extortion,Extorsión,Extortion,total,no
+Secuestro,kidnapping,Secuestro,Kidnapping,total,yes
+Violencia contra la mujer e integrantes,domestic_violence,Violencia contra la mujer e integrantes del grupo familiar,Violence against women and family members,total,yes
+Violencia contra la mujer e integrantes del grupo familiar,domestic_violence,Violencia contra la mujer e integrantes del grupo familiar,Violence against women and family members,total,yes
+Otros,other,Otras denuncias (sin desglose en la fuente),Other complaints (not broken down by the source),total,no

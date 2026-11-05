@@ -252,6 +252,10 @@ co_read_population <- function(f) {
     if (is.na(hdr)) next
     d <- all[-seq_len(hdr), , drop = FALSE]; names(d) <- trimws(as.character(unlist(all[hdr, ]))); names(d)[is.na(names(d))] <- ""
     col <- lapply(CO_COLUMNS$population, co_pick, nm = names(d))
+    # DANE swaps DPMP / MPIO between editions (one holds the 5-digit code, the other the name): take the column with most 5-digit values
+    cands <- unique(c(col$code, names(d)[grepl("^(DPMP|MPIO)$", names(d), ignore.case = TRUE)])); cands <- cands[!is.na(cands)]
+    score <- vapply(cands, function(cn) mean(grepl("^0?[0-9]{4,5}$", trimws(as.character(d[[cn]]))), na.rm = TRUE), numeric(1))
+    if (length(score)) col$code <- cands[which.max(score)]
     code <- gsub("\\D", "", as.character(d[[col$code]])); code <- ifelse(nchar(code) == 4, paste0("0", code), code)
     area <- if (!is.na(col$area)) normalize_text(d[[col$area]]) else "TOTAL"
     pv <- trimws(as.character(d[[col$pop]])); pop <- suppressWarnings(as.numeric(pv)); i <- is.na(pop) & !is.na(pv)
@@ -297,6 +301,7 @@ register_country(list(
                 measure = "Offences (casos) recorded by the Policía Nacional in SIEDCO, by month of the event, for six offence families only: vehicle theft, residential and commercial theft, personal injury (traffic excluded), sexual offences, domestic violence and threats. No official total: the total shown is their sum. Hurto a personas and homicide are not published as open data."),
   population_source = "DANE, proyecciones de población municipales por área (series 2005-2017 and 2018-2042)",
   boundaries_attribution = "geoBoundaries (CC BY 4.0), derived from DANE MGN",
+  measure_labels = list(kind = "reported_cases", title = c("Reported cases (SIEDCO)", "Casos reportados (SIEDCO)"), noun = c("reported cases", "casos reportados")),
   not_published = c("Every recorded case is published (no suppression); a municipality without a row had no recorded case", "Se publican todos los casos registrados (sin supresión); un municipio sin fila no tuvo casos registrados"),
   notes_en = "Figures are provisional until March of the following year and are revised retroactively. Hurto a residencias exists in the open data only from 2024, so the summed total jumps that year; the commercial-theft series doubles in 2017 (new complaint-validation method with the Fiscalía). Hurto a personas, homicide, extortion and kidnapping are missing from the open-data portal. Bogotá (20 localidades, women victims only) and Medellín (comunas) have separate city datasets not loaded here.",
   default_region = "CO-11",

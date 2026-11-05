@@ -30,7 +30,9 @@ options_menu <- c(
   "Remove the automatic update",
   "Check whether the automatic update is scheduled and how the last run went",
   "Rebuild the database from scratch",
-  "Update only the other countries (Country menu of the app)"
+  "Update only the other countries (Country menu of the app)",
+  "Reload some countries (type their codes; forces the reload after a fix)",
+  "Check the consistency of the other countries' data (report in reports/)"
 )
 choice <- utils::menu(options_menu, title = "\nWebarchyMapp - What do you want to do?")
 switch(as.character(choice),
@@ -52,5 +54,14 @@ switch(as.character(choice),
   "11" = show_schedule_status(),
   "12" = rebuild_database(),
   "13" = update_countries(),
+  "14" = {
+    message("Registered: ", paste(names(COUNTRY_MODULES), collapse = " "))
+    codes <- toupper(unlist(strsplit(trimws(readline("Country codes separated by spaces (e.g. GBE GBS FI): ")), "[ ,;]+")))
+    codes <- codes[nzchar(codes)]
+    if (length(codes) == 0) message("Nothing chosen.")
+    else if (length(bad <- setdiff(codes, names(COUNTRY_MODULES)))) message("Unknown codes: ", paste(bad, collapse = " "))
+    else update_countries(only = codes)
+  },
+  "15" = check_countries(),
   message("Nothing chosen.")
 )

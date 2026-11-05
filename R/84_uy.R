@@ -221,6 +221,7 @@ register_country(list(
                 measure = "Complaints (denuncias) registered in the Sistema de Gestión de Seguridad Pública for rapiña, hurto, lesiones, violencia doméstica and abigeato, attempts included, by month of the event; no official total (the total shown is their sum). Homicides are victims and are kept apart."),
   population_source = "INE Uruguay, estimaciones (1996-2023) y proyecciones (2024-2045) de población por departamento, revisión 2025",
   boundaries_attribution = "Ministerio del Interior, Seccionales Policiales (Licencia DAG); geoBoundaries (CC BY 4.0) as fallback",
+  measure_labels = list(kind = "complaints", title = c("Reported offences (complaints)", "Delitos denunciados"), noun = c("complaints", "denuncias")),
   not_published = c("Not published", "No publicado"),
   notes_en = "Seccional boundaries changed over the period and some complaints have no seccional (counted in the departamento only); rates exist for departamentos only (no population by seccional); homicide victims are a separate series.",
   default_region = "UY-1",

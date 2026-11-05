@@ -37,7 +37,9 @@ Every figure is shown with its source, what it measures and its limitations. Dif
 | 10 | Remove the automatic update |
 | 11 | Check whether the update is scheduled and how the last run went (`reports/update_*.log`) |
 | 12 | Rebuild the database from scratch from `data/raw/` (originals untouched) |
-| 13 | **Update only the other countries** (the *Country* menu of the app) and the Eurostat tables; option 1 includes them. A country whose raw and reference files did not change since its last load is kept as it is (Canada alone parses 50 GB); to reload one after a code fix: `update_countries(only = "CA")` in the console |
+| 13 | **Update only the other countries** (the *Country* menu of the app) and the Eurostat tables; option 1 includes them. A country whose raw and reference files did not change since its last load is kept as it is (Canada alone parses 50 GB); to reload one after a code fix: option 14, or `update_countries(only = "CA")` in the console |
+| 14 | **Reload some countries**: asks for the codes (`GBE GBS FI`, separated by spaces, no quotes) and reloads them even if their files did not change. Use it after a fix to one module |
+| 15 | **Check the consistency of the other countries' data**: duplicates, territories without name, cumulative figures that decrease, parts above the total, population coverage, polygons without territory, quarters in the future. Prints the findings and saves `reports/country_checks_<date>.csv`. Read-only |
 
 The same actions exist as scripts in `scripts/` and `scripts/maintenance/`.
 
@@ -92,7 +94,13 @@ R/                      the code, one file per source (00_config.R has every URL
 app/                    the Shiny app (app.R, i18n.R, translations.csv)
 reference/              editable equivalence tables
 scripts/                entry points and maintenance scripts
-data/raw/<source>/      original downloaded files — never edited, never deleted
+data/raw/country_<cc>/  original downloaded files of each country — never edited, never deleted
+data/raw/country_es/    Spain: crime_balance, ine_population, municipal_boundaries, mossos, abp
+data/raw/city_madrid/   Madrid: calls, activity, districts, neighbourhoods, census
+data/raw/city_barcelona/ Barcelona: incidents, boundaries, census
+data/raw/shared/        GISCO, geoBoundaries, Natural Earth, Eurostat files used by several countries
+                        (projects created before November 2026 still have the flat folders data/raw/crime_balance,
+                        data/raw/madrid_calls...: they keep working; scripts/maintenance/migrate_raw_layout.R moves them)
 data/webarchymapp.duckdb    the database (rebuildable from data/raw)
 data/territory_*.gpkg   official boundaries in WGS84
 reports/                quality reports and update logs

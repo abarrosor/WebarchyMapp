@@ -540,7 +540,7 @@ GB_NOT_PUBLISHED <- c("Not published by the source", "Not published by the sourc
 GB_POP_SOURCE <- "ONS mid-year population estimates (UK local authorities; Scottish and Northern Irish figures from NRS and NISRA)"
 
 register_country(list(
-  code = "GBE", iso3 = "GBR", name_en = "England and Wales", name_local = "England and Wales", lang = "en",
+  code = "GBE", iso3 = "GBR", name_en = "England and Wales", name_local = "England and Wales", lang = "en", financial_year = TRUE,
   levels = c("region", "municipality"),
   level_labels = list(region = c("Police force areas", "Police force areas", "Police force area", "Police force area"),
                       municipality = c("Community Safety Partnerships", "Community Safety Partnerships", "Community Safety Partnership", "Community Safety Partnership")),
@@ -555,7 +555,7 @@ register_country(list(
 ))
 
 register_country(list(
-  code = "GBS", iso3 = "GBR", name_en = "Scotland", name_local = "Scotland", lang = "en",
+  code = "GBS", iso3 = "GBR", name_en = "Scotland", name_local = "Scotland", lang = "en", financial_year = TRUE,
   levels = c("municipality"),
   level_labels = list(municipality = c("Council areas", "Council areas", "Council area", "Council area")),
   source = list(name = "Recorded Crimes and Offences", publisher = "Scottish Government (Police Scotland data)", url = GBS_SOURCES$page,

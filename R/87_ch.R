@@ -55,7 +55,7 @@ ch_download <- function(days = 60) {
   # 1. Crime: the codes of reference/ch_offence_types.csv, all cantons, totals of Ausführungs-/Aufklärungsgrad, years in chunks
   vals <- function(v) vapply(v$values, as.character, ""); txts <- function(v) vapply(v$valueTexts, as.character, "")
   total_of <- function(v) { x <- vals(v)[grepl("Total", txts(v))]; if (length(x)) x[1] else vals(v)[1] }   # the "Total" code of a variable
-  if (recent("_ch_crime_.*\\.json$")) message("= CH crime cube downloaded less than ", days, " days ago")
+  if (recent("_ch_crime_[0-9]{4}_[0-9]{4}\\.json$")) message("= CH crime cube downloaded less than ", days, " days ago")
   else {
     meta <- ch_meta("crime")
     straftat <- ch_var(meta, "^Straftat$"); kanton <- ch_var(meta, "^Kanton"); jahr <- ch_var(meta, "^Jahr$")
@@ -114,7 +114,7 @@ ch_ids <- function(code, label, cantons) {
 }
 
 ch_ingest <- function(con) {
-  files <- newest_first(list.files(COUNTRY_MODULES$CH$dir_raw, "_ch_crime_.*\\.json$", full.names = TRUE))
+  files <- newest_first(list.files(COUNTRY_MODULES$CH$dir_raw, "_ch_crime_[0-9]{4}_[0-9]{4}\\.json$", full.names = TRUE))   # year chunks only (not ch_crime_meta.json)
   files <- files[!duplicated(sub("^.*?_ch_crime_", "", basename(files)))]      # newest version of each year chunk
   if (length(files) == 0) stop("No BFS crime file yet in ", COUNTRY_MODULES$CH$dir_raw)
   cantons <- ch_cantons()

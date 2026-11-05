@@ -55,3 +55,19 @@ Contra el medio ambiente,other,Delitos contra el medio ambiente,Environmental of
 Delitos cometidos por servidores públicos,other,Delitos cometidos por servidores públicos,Offences by public officials,total,no
 Electorales,other,Delitos electorales,Electoral offences,total,no
 Otros delitos del Fuero Común,other,Otros delitos del fuero común,Other fuero común offences,total,no
+Violación,sexual_offences,Violación,Rape,total,yes
+Violación a la intimidad sexual,sexual_offences,Violación a la intimidad sexual,Violation of sexual privacy,total,yes
+Pornografía infantil,offences_against_minors,Pornografía infantil,Child sexual abuse material,total,yes
+Tentativa de homicidio doloso,attempted_homicide,Tentativa de homicidio doloso,Attempted intentional homicide,total,yes
+Privación ilegal de la libertad,unlawful_deprivation_liberty,Privación ilegal de la libertad,Unlawful deprivation of liberty,total,yes
+Retención o sustracción de menores e incapaces,offences_against_minors,Retención o sustracción de menores e incapaces,Retention or abduction of minors and incapacitated persons,total,yes
+Tortura,torture,Tortura,Torture,total,yes
+Discriminación,other,Discriminación,Discrimination,total,no
+Suplantación y usurpación de identidad,fraud,Suplantación y usurpación de identidad,Identity theft,total,no
+Delitos contra la administración de justicia,other,Delitos contra la administración de justicia,Offences against the administration of justice,total,no
+"Robo de maquinaria - Cables, tubos y otros objetos destinados a servicios públicos",theft,"Robo de maquinaria: cables, tubos y otros objetos de servicios públicos","Theft of machinery: cables, pipes and other public-service objects",total,no
+Robo de maquinaria - Herramienta industrial o agrícola,theft,Robo de maquinaria: herramienta industrial o agrícola,Theft of machinery: industrial or agricultural tools,total,no
+Robo de maquinaria - Tractores y/o montacargas,theft,Robo de maquinaria: tractores y/o montacargas,Theft of machinery: tractors and forklifts,total,no
+Robo de vehículo automotor - Coche de 4 ruedas,vehicle_theft,Robo de vehículo automotor: coche de 4 ruedas,Vehicle theft: cars,total,no
+Robo de vehículo automotor - Motocicleta,vehicle_theft,Robo de vehículo automotor: motocicleta,Vehicle theft: motorcycles,total,no
+Robo de vehículo automotor - Embarcaciones,vehicle_theft,Robo de vehículo automotor: embarcaciones,Vehicle theft: boats,total,no

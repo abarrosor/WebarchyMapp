@@ -240,6 +240,7 @@ register_country(list(
                 measure = "Records of complaints (denuncias) received by the OIJ, by month of the event; one complaint with several victims or objects gives several records. Six categories, no official total (the total shown is their sum)."),
   population_source = "INEC Costa Rica, estimaciones y proyecciones de población (file supplied by the user)",
   boundaries_attribution = "geoBoundaries (CC BY 4.0 / CC0; OpenStreetMap contributors for ADM1 and ADM3)",
+  measure_labels = list(kind = "complaint_records", title = c("Complaints (OIJ)", "Denuncias (OIJ)"), noun = c("complaint records", "registros de denuncias")),
   not_published = c("Not published", "No publicado"),
   notes_en = "OIJ complaints only (not Fuerza Pública incidents); records, not incidents; distritos identified by name (no official code list), cantones created after 2015 (Río Cuarto, Monteverde, Puerto Jiménez) appear from their creation.",
   default_region = "CR-1",

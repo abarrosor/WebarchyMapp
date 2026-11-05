@@ -180,14 +180,14 @@ save_country_gpkg <- function(con, cc, layers, tolerance_m = 150) {
 # Licence: free reuse with the source statement "© EuroGeographics for the administrative boundaries".
 gisco_nuts <- function(level, year = CONFIG$gisco$nuts_year, scale = "03M") {
   url <- sprintf("%s/nuts/geojson/NUTS_RG_%s_%d_4326_LEVL_%d.geojson", CONFIG$gisco$base, scale, year, level)
-  dir <- file.path(CONFIG$dir_raw, "gisco")
+  dir <- CONFIG$shared$gisco
   f <- newest_first(list.files(dir, basename(url), full.names = TRUE))
   if (length(f) == 0 || difftime(Sys.time(), file.mtime(f[1]), units = "days") > 365) f <- download_versioned(url, dir)
   sf::st_read(f[1], quiet = TRUE)
 }
 gisco_lau <- function(cc, year = CONFIG$gisco$lau_year) {
   url <- sprintf("%s/lau/gpkg/LAU_RG_01M_%d_4326.gpkg", CONFIG$gisco$base, year)
-  dir <- file.path(CONFIG$dir_raw, "gisco")
+  dir <- CONFIG$shared$gisco
   f <- newest_first(list.files(dir, basename(url), full.names = TRUE))
   if (length(f) == 0) f <- download_versioned(url, dir)
   g <- sf::st_read(f[1], quiet = TRUE, query = sprintf("SELECT * FROM \"%s\" WHERE CNTR_CODE = '%s'", sf::st_layers(f[1])$name[1], cc))
@@ -196,7 +196,7 @@ gisco_lau <- function(cc, year = CONFIG$gisco$lau_year) {
 
 # geoBoundaries (CC BY 4.0): ADM0-ADM3 of every country, through its API
 geoboundaries <- function(iso3, adm) {
-  dir <- file.path(CONFIG$dir_raw, "geoboundaries")
+  dir <- CONFIG$shared$geoboundaries
   name <- sprintf("geoBoundaries-%s-ADM%d.geojson", iso3, adm)
   f <- newest_first(list.files(dir, name, full.names = TRUE))
   if (length(f) == 0) {
@@ -212,7 +212,7 @@ geoboundaries <- function(iso3, adm) {
 
 # Natural Earth (public domain): first-level divisions of every country
 natural_earth_admin1 <- function(iso2) {
-  dir <- file.path(CONFIG$dir_raw, "natural_earth")
+  dir <- CONFIG$shared$natural_earth
   url <- "https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_1_states_provinces.zip"
   f <- newest_first(list.files(dir, "ne_10m_admin_1_states_provinces\\.zip$", full.names = TRUE))
   if (length(f) == 0) f <- download_versioned(url, dir)
@@ -224,7 +224,7 @@ natural_earth_admin1 <- function(iso2) {
 
 # Eurostat: population on 1 January by NUTS3 (demo_r_pjangrp3) through the dissemination API (no key)
 eurostat_population_nuts3 <- function(cc, since = 2015) {
-  dir <- file.path(CONFIG$dir_raw, "eurostat")
+  dir <- CONFIG$shared$eurostat
   url <- sprintf("%s/demo_r_pjangrp3/1.0/*.*.*.*.%s?format=TSV&compressed=false&c[sex]=T&c[age]=TOTAL&c[unit]=NR&c[geo]=%s&c[TIME_PERIOD]=ge:%d",
                  CONFIG$eurostat$base, cc, cc, since)
   f <- download_versioned(url, dir, name = sprintf("demo_r_pjangrp3_%s.tsv", cc))
@@ -285,6 +285,10 @@ country_marts <- function(con) {
     source = m$source$name, publisher = m$source$publisher, url = m$source$url, licence = m$source$licence, measure = m$source$measure,
     population_source = m$population_source %||% "", boundaries_attribution = m$boundaries_attribution %||% "",
     not_published_en = m$not_published[1] %||% "", not_published_local = m$not_published[2] %||% "",
+    # What is counted, when it is not "recorded offences" (complaints, reported cases...): title and noun, English and local
+    measure_kind = m$measure_labels$kind %||% "",
+    measure_title_en = m$measure_labels$title[1] %||% "", measure_title_local = m$measure_labels$title[2] %||% "",
+    count_noun_en = m$measure_labels$noun[1] %||% "", count_noun_local = m$measure_labels$noun[2] %||% "",
     notes_en = m$notes_en %||% "", default_region = m$default_region %||% "", stringsAsFactors = FALSE))
   meta <- if (length(rows) > 0) do.call(rbind, rows) else data.frame()
   loaded <- DBI::dbGetQuery(con, "SELECT country, min(year * 10 + quarter) AS first_period, max(year * 10 + quarter) AS last_period, count(*) AS rows FROM stg_country_crime GROUP BY 1")

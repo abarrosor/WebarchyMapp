@@ -34,3 +34,5 @@ Possession of weapons offences,weapons,Possession of weapons offences,Possession
 Public order offences,public_order,Public order offences,Public order offences,total,no
 Miscellaneous crimes against society,other,Miscellaneous crimes against society,Miscellaneous crimes against society,total,no
 Fraud offences,unmapped,Fraud offences,Fraud offences (recorded centrally by Action Fraud; excluded),,no
+Other theft offences,theft,Other theft offences,Other theft offences,theft_offences,no
+Rape offences,rape,Rape offences,Rape offences,sexual_offences,yes

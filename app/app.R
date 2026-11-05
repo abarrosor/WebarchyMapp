@@ -56,10 +56,15 @@ ARR     <- q("SELECT * FROM mart_madrid_arrests");  ARRNAMES <- q("SELECT * FROM
 CCRIME  <- q("SELECT * FROM mart_country_crime WHERE country <> 'ES'")   # other countries (R/70_countries.R)
 CPOP    <- q("SELECT * FROM mart_country_population WHERE country <> 'ES'")
 CMETA   <- q("SELECT * FROM mart_country_meta")
-CRATES  <- q("SELECT * FROM mart_country_rates")                         # national rates (Eurostat / UNODC) for the Countries table
+CRATES  <- q("SELECT * FROM mart_country_rates")                         # national rates (Eurostat; UNODC excluded by its terms) for the Countries table
 db_disconnect(con)
 
-read_layer <- function(file, layer) tryCatch(sf::st_read(path(file), layer = layer, quiet = TRUE), error = function(e) NULL)
+# A layer that the GeoPackage does not hold (a country without municipalities, say) is simply NULL
+read_layer <- function(file, layer) {
+  f <- path(file); if (!file.exists(f)) return(NULL)
+  has <- tryCatch(layer %in% sf::st_layers(f)$name, error = function(e) FALSE); if (!has) return(NULL)
+  tryCatch(sf::st_read(f, layer = layer, quiet = TRUE), error = function(e) NULL)
+}
 GEO_MUNI     <- read_layer("data/territory_spain.gpkg", "municipality")
 GEO_PROVINCE <- read_layer("data/territory_spain.gpkg", "province")
 GEO_REGION   <- read_layer("data/territory_spain.gpkg", "region")
@@ -1347,7 +1352,10 @@ make_country <- function(cc) {
   e <- new.env(parent = app_env)
   e$CC <- cc; e$CB <- crime; e$POPM <- pop; e$HAS_CB <- TRUE; e$HAS_POPM <- has_rows(pop)
   e$CLANG <- if (cc == "ES") "es" else meta$lang %||% "en"
-  e$CNAME <- if (cc == "ES") function(lang) TR("sp_spain", lang) else function(lang) if (lang == e$CLANG && nzchar(meta$name_local %||% "")) meta$name_local else meta$name_en %||% cc
+  # Country name: local name in the local language, a translated name (country_<cc> key) elsewhere, English as the fallback
+  e$CNAME <- if (cc == "ES") function(lang) TR("sp_spain", lang) else function(lang) {
+    if (lang == e$CLANG && nzchar(meta$name_local %||% "")) return(meta$name_local)
+    k <- paste0("country_", cc); tx <- TR(k, lang); if (!identical(tx, k)) tx else meta$name_en %||% cc }
   e$HAS_ABP <- cc == "ES" && HAS_ABP; e$ABP_REGION <- if (cc == "ES") "ES-09" else "none"
   # Boundaries: Spain's files, or data/territory_<cc>.gpkg for the other countries
   if (cc == "ES") { e$GEO_MUNI <- GEO_MUNI; e$GEO_PROVINCE <- GEO_PROVINCE; e$GEO_REGION <- GEO_REGION; e$GEO_ABP <- GEO_ABP }
@@ -1377,6 +1385,8 @@ make_country <- function(cc) {
     x <- if (col) { if (lang == e$CLANG) pick(single_local) %||% pick(single_en) else pick(single_en) } else NA
     if (is.na(x)) x <- if (lang == e$CLANG) pick(labels_local) else pick(labels_en)
     if (is.na(x)) x <- pick(labels_en)
+    # Other languages: the English label translated when it is a common word (lvl_* keys), else English
+    if (!is.na(x) && lang != "en" && lang != e$CLANG) { k <- paste0("lvl_", gsub("[^a-z]", "", tolower(sub("\\s*\\(.*$", "", x)))); tx <- TR(k, lang); if (!identical(tx, k)) x <- tx }
     if (is.na(x) || !nzchar(x)) TR(paste0(if (col) "sp_col_" else "sp_level_", level), lang) else unname(x)
   }
   # Width of the view (degrees of longitude) under which the level changes: Spain's tuned values,
@@ -1391,13 +1401,31 @@ make_country <- function(cc) {
   np <- function(lang) { x <- if (!is.null(meta) && lang == e$CLANG) meta$not_published_local else meta$not_published_en %||% ""; if (is.null(x) || is.na(x) || !nzchar(x)) TR("sp_not_published", lang) else x }
   e$NOT_PUBLISHED <- if (cc == "ES") function(lang) TR("sp_no_data_small", lang) else np
   e$NOT_PUBLISHED_LEGEND <- if (cc == "ES") function(lang) TR("sp_legend_small", lang) else function(lang) TR("sp_legend_not_published", lang)
+  # Countries that count something other than recorded offences (complaints, reported cases): the title,
+  # the KPI noun and the legends use the module's words in English and in the local language
+  mlab <- function(what, lang) { if (is.null(meta)) return(NULL); x <- meta[[paste0(what, if (lang == e$CLANG) "_local" else "_en")]]
+    if (lang != "en" && lang != e$CLANG) {   # other languages: the translated measure kind (msr_<kind>_title / _noun), else English
+      kind <- meta$measure_kind %||% ""; k <- paste0("msr_", kind, if (what == "count_noun") "_noun" else "_title")
+      tx <- if (nzchar(kind)) TR(k, lang) else k; x <- if (!identical(tx, k)) tx else meta[[paste0(what, "_en")]] }
+    if (is.null(x) || is.na(x) || !nzchar(x)) NULL else x }
+  cap1 <- function(x) paste0(toupper(substr(x, 1, 1)), substr(x, 2, nchar(x)))
+  e$TR <- function(k, lang, ...) {
+    if (cc != "ES" && !is.null(mlab("count_noun", lang))) {
+      noun <- mlab("count_noun", lang)
+      if (k == "sp_k_n") return(noun)
+      if (k == "sp_legend_rate") return(paste(cap1(noun), TR("sp_k_rate", lang)))
+      if (k == "sp_legend_number" || k == "sp_col_n") return(cap1(noun))
+      if (k == "sp_title" && !is.null(mlab("measure_title", lang))) return(mlab("measure_title", lang))
+    }
+    TR(k, lang, ...)
+  }
   for (fn in COUNTRY_FUNCTIONS) { g <- get(fn, envir = app_env); environment(g) <- e; assign(fn, g, envir = e) }
   e
 }
 
 # =============================================================================
 # Countries table: national rates per 100,000 inhabitants as published by
-# Eurostat (crim_off_cat) and UNODC. Shown apart from the maps, with the warning
+# Eurostat (crim_off_cat); UNODC is excluded by its terms of use. Shown apart from the maps, with the warning
 # that legal definitions and recording practices differ between countries.
 # =============================================================================
 ui_countries <- function(lang) {
@@ -1430,6 +1458,8 @@ server_countries <- function(input, output, session, lang) {
     latest <- d[!duplicated(d$country), ]
     prev <- d[!d$year %in% latest$year[match(d$country, latest$country)], ]; prev <- prev[!duplicated(prev$country), ]
     latest$prev <- prev$rate[match(latest$country, prev$country)]; latest$prev_year <- prev$year[match(latest$country, prev$country)]
+    # Country names in the reader's language when a country_<code> translation exists (Eurostat's English name otherwise)
+    latest$country_name <- vapply(seq_len(nrow(latest)), function(i) { k <- paste0("country_", latest$country[i]); tx <- t(k); if (identical(tx, k)) latest$country_name[i] else tx }, "")
     latest <- latest[order(latest$country_name), ]
     cell <- function(v) tags$td(class = "text-end", v)
     tags$table(class = "table table-sm",
@@ -1466,7 +1496,8 @@ ui_about <- function(lang, cities) {
   if (has_rows(CMETA)) rows <- c(rows, lapply(setdiff(CMETA$country, "ES"), function(cc) { m <- CMETA[CMETA$country == cc, ][1, ]; e <- COUNTRIES[[cc]]
     per <- if (!is.null(m$first_period) && !is.na(m$first_period)) sprintf("%d – %d (%s)", m$first_period %/% 10, m$last_period %/% 10, month_names(lang, TRUE)[(m$last_period %% 10) * 3]) else ""
     lvls <- if (!is.null(e)) paste(vapply(e$SP_LEVELS, function(l) e$LEVEL_LABEL(l, lang), ""), collapse = ", ") else ""
-    list(paste0(m$source, " (", m$name_en, ")"), paste0(m$measure, if (nzchar(m$notes_en %||% "")) paste0(" ", m$notes_en) else ""), paste0(m$name_en, ": ", lvls), per,
+    cname <- if (!is.null(e)) e$CNAME(lang) else m$name_en
+    list(paste0(m$source, " (", cname, ")"), paste0(m$measure, if (nzchar(m$notes_en %||% "")) paste0(" ", m$notes_en) else ""), paste0(cname, ": ", lvls), per,
          paste0(m$licence, if (nzchar(m$population_source %||% "")) paste0(" · ", t("about_pop_from", m$population_source)) else ""), m$url) }))
   rows <- Filter(Negate(is.null), rows)
   table <- tags$table(class = "table table-sm",

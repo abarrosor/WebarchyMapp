@@ -76,7 +76,7 @@ pl_quarter <- function(period) {
 }
 # Category label -> source_code of reference/pl_offence_types.csv (match_pattern column, first match wins)
 pl_source_code <- function(label, types) {
-  lab <- tolower(gsub("^przest[eę]pstwa( stwierdzone( przez policj[eę])?)?\\s*", "", tolower(label)))
+  lab <- tolower(gsub("^przest[eę]pstwa( stwierdzone( przez policj[eę])?( w zako[nń]czonych post[eę]powaniach przygotowawczych)?)?\\s*[-–:]?\\s*", "", tolower(label)))
   out <- rep(NA_character_, length(lab))
   for (i in seq_len(nrow(types))) { hit <- is.na(out) & grepl(types$match_pattern[i], lab, perl = TRUE); out[hit] <- types$source_code[i] }
   out
@@ -101,11 +101,16 @@ pl_download <- function(days = 60) {
 
 # BDL unit id (12 digits: macroregion 2, województwo TERYT 2, podregion 2, powiat TERYT 2, gmina 3, type 1)
 pl_teryt_voiv <- function(id) substr(id, 3, 4)
-pl_teryt_powiat <- function(id) paste0(substr(id, 3, 4), substr(id, 7, 8))
+# BDL unit id: 12 digits, województwo TERYT in digits 3-4 (verified against reference/pl_voivodeships.csv);
+# the powiat TERYT is NOT recoverable from the id (two attempts gave 194 and 160 distinct codes), so the
+# powiat identifier is the whole BDL unit id: PL-<woj>-<unit id>. Polygons are matched by name.
+pl_teryt_powiat <- function(id) id
 pl_ids <- function(unit_id, level) {
   v <- pl_teryt_voiv(unit_id)
-  if (level == "region") paste0("PL-", v) else paste("PL", v, pl_teryt_powiat(unit_id), sep = "-")
+  if (level == "region") paste0("PL-", v) else paste("PL", v, unit_id, sep = "-")
 }
+# Matching key of a powiat name: "Powiat m. st. Warszawa" / "Powiat bolesławiecki" -> "warszawa" / "boleslawiecki"
+pl_name_key <- function(x) { k <- tolower(normalize_text(chartr("łŁ", "lL", x))); k <- gsub("^powiat\\s+", "", k); k <- gsub("\\b(m\\.?|st\\.?|miasto|city|county|powiat)\\b", " ", k); k <- gsub("[^a-z0-9 ]", "", k); trimws(gsub("\\s+", " ", k)) }
 
 # Flatten the saved data pages of one variable: unit_id, unit_name, year, val, attr
 pl_read_data <- function(name) {
@@ -163,7 +168,7 @@ pl_ingest <- function(con) {
   nat <- sum_up(reg, function(x) "PL", "country")                               # Poland = sum of the województwa
   crime <- rbind(crime, reg, nat)
   n_pow <- length(unique(crime$territory_id[crime$level == "province"])); n_voi <- length(unique(crime$territory_id[crime$level == "region"]))
-  if (n_pow < 370 || n_pow > 390 || n_voi != 16) message(sprintf("  [!!] %d powiaty and %d województwa found (expected ~380 and 16): check the unit id scheme in pl_teryt_powiat()", n_pow, n_voi))
+  if (n_pow < 370 || n_pow > 390 || n_voi != 16) message(sprintf("  [!!] %d powiaty and %d województwa found (expected ~380 and 16): run pl_inspect()", n_pow, n_voi))
   replace_country_rows(con, "stg_country_crime", "PL", crime[, c("country", "territory_id", "level", "offence_code", "year", "quarter", "cumulative", "file")])
   log_ingest(con, "country_PL", paste(unique(files), collapse = ";"), NA, paste(range(crime$year), collapse = "-"), nrow(crime))
   message(sprintf("  %s rows, %d powiaty, %d-%d, categories: %s", fmt_int(nrow(crime)), n_pow, min(crime$year), max(crime$year), paste(unique(crime$offence_code), collapse = ", ")))
@@ -201,11 +206,42 @@ pl_territory <- function(con) {
     tbl <- rbind(tbl, pow[!duplicated(pow$territory_id), ])
   } else message("  no /units level 5 file yet: powiaty will be added from the data without names")
   layers <- list()
-  lau <- tryCatch(gisco_lau("PL"), error = function(e) { message("  GISCO LAU not available: no boundaries (", conditionMessage(e), ")"); NULL })
+  # Boundaries: geoBoundaries ADM1 (województwa) and ADM2 (powiaty, CC BY 4.0), matched by name inside the województwo
+  gb <- function(adm) tryCatch(geoboundaries("POL", adm), error = function(e) { message("  geoBoundaries ADM", adm, " not available (", conditionMessage(e), ")"); NULL })
+  g1 <- gb(1)
+  if (!is.null(g1)) {
+    # geoBoundaries names the województwa in English ("Masovian Voivodeship"): match the Polish and the English names
+    vk <- function(x) gsub("\\b(voivodeship|province|region)\\b", "", pl_name_key(x)); vk <- function(x) trimws(gsub("\\s+", " ", vk_raw(x)))
+    vk_raw <- function(x) gsub("\\b(voivodeship|province|region)\\b", "", pl_name_key(x))
+    key1 <- vk(g1$shapeName)
+    g1$teryt <- voiv$teryt[match(key1, vk(voiv$name_pl))]; miss <- is.na(g1$teryt); if (any(miss) && "name_en" %in% names(voiv)) g1$teryt[miss] <- voiv$teryt[match(key1[miss], vk(voiv$name_en))]
+    if (any(is.na(g1$teryt))) message("  województwa not matched to geoBoundaries ADM1: ", paste(g1$shapeName[is.na(g1$teryt)], collapse = ", "))
+    g1 <- g1[!is.na(g1$teryt), ]
+    if (nrow(g1) == 0) g1 <- NULL
+  }
+  if (!is.null(g1)) {
+    g1$territory_id <- paste0("PL-", g1$teryt); g1$name <- voiv$name_pl[match(g1$teryt, voiv$teryt)]
+    layers$region <- g1[, c("territory_id", "name", attr(g1, "sf_column"))]
+    g2 <- gb(2)
+    if (!is.null(g2) && !is.null(u5)) {
+      g2 <- sf::st_make_valid(sf::st_transform(g2, 4326)); r1 <- sf::st_transform(layers$region, 4326)
+      inside <- sf::st_within(suppressWarnings(sf::st_point_on_surface(g2)), r1, sparse = TRUE)
+      g2$teryt <- vapply(inside, function(i) if (length(i)) r1$territory_id[i[1]] else NA_character_, character(1))
+      pow <- tbl[tbl$level == "province", ]
+      g2$territory_id <- pow$territory_id[match(paste(g2$teryt, pl_name_key(g2$shapeName)), paste(pow$parent_id, pl_name_key(pow$name)))]
+      # "Powiat m. Wrocław" vs the land powiat "wrocławski": a city powiat name equals the city; try the land name as a second pass
+      miss <- is.na(g2$territory_id)
+      if (any(miss)) g2$territory_id[miss] <- pow$territory_id[match(paste(g2$teryt[miss], pl_name_key(g2$shapeName[miss])), paste(pow$parent_id, gsub("ski$|cki$|zki$", "", pl_name_key(pow$name))))]
+      g2 <- g2[!is.na(g2$territory_id) & !duplicated(g2$territory_id), ]
+      if (nrow(g2)) { g2$name <- pow$name[match(g2$territory_id, pow$territory_id)]; layers$province <- g2[, c("territory_id", "name", attr(g2, "sf_column"))] }
+      message(sprintf("  boundaries: geoBoundaries (CC BY 4.0), %d of %d powiaty matched by name%s", nrow(g2), nrow(pow), if (nrow(g2) < nrow(pow) * 0.5) paste0(" (e.g. ADM2 names: ", paste(utils::head(gb(2)$shapeName, 4), collapse = ", "), ")") else ""))
+    }
+  }
+  lau <- NULL   # GISCO LAU is not used for Poland (LAU_ID values are not TERYT codes in the 2023 file)
   if (!is.null(lau)) {
-    code <- gsub("[^0-9]", "", lau$LAU_ID)
-    ok <- nchar(code) == 7 & substr(code, 1, 2) %in% voiv$teryt
-    if (sum(ok) < 2000) message("  [!!] LAU_ID does not look like 7-digit TERYT codes (", sum(ok), " usable): powiat polygons skipped")
+    code <- gsub("[^0-9]", "", lau$LAU_ID); code <- ifelse(nchar(code) == 6, paste0("0", code), code)   # a lost leading zero
+    ok <- nchar(code) == 7 & substr(code, 1, 2) %in% sprintf("%02d", as.integer(voiv$teryt))
+    if (sum(ok) < 2000) message("  [!!] LAU_ID does not look like 7-digit TERYT codes (", sum(ok), " usable; e.g. ", paste(utils::head(lau$LAU_ID, 3), collapse = ", "), "): powiat polygons skipped")
     else {
       g <- lau[ok, ]; g$territory_id <- paste("PL", substr(code[ok], 1, 2), substr(code[ok], 1, 4), sep = "-")
       message("  dissolving gminy into powiaty and województwa (a minute or two)")
@@ -233,7 +269,7 @@ register_country(list(
                 measure = "Offences confirmed by the Police in completed preparatory proceedings (przestępstwa stwierdzone), counted at the closure of the proceeding, cumulative by quarter, by powiat."),
   population_source = "GUS Bank Danych Lokalnych (ludność ogółem, 31 XII)", boundaries_attribution = "© EuroGeographics for the administrative boundaries (Eurostat GISCO LAU, dissolved into powiaty)",
   not_published = c("Not published by GUS for this unit and period", "Brak danych GUS dla tej jednostki i okresu"),
-  notes_en = "Offences are counted when the preparatory proceeding closes, not when they are reported; the categories by Criminal Code chapter are shown, the alternative criminal/economic/road groupings are not; a new subject starts in 2025 (possible break).",
+  notes_en = "Offences are counted when the preparatory proceeding closes, not when they are reported. Two classifications: 2016-2024 by Criminal Code chapter (life and health, property, family...), from 2025 a list of selected offences (homicide, rape, robbery, theft, burglary, car theft, corruption, cybercrime, other) that does not add up to the total; the official total (ogółem) exists in both. Detection-rate indicators are not loaded.",
   default_region = "PL-14",
   download = pl_download, ingest = pl_ingest, territory = pl_territory, population = pl_population
 ))

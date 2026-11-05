@@ -298,6 +298,7 @@ register_country(list(
                 measure = "Police occurrences recorded by the state civil police forces (ocorrências, column `total`) by event and month; the lethal events and rape are reported as victims (`total_vitima`). No official total: the total shown is the sum of the mapped events."),
   population_source = "IBGE, estimativas da população residente (SIDRA, tabela 6579)",
   boundaries_attribution = "IBGE, malhas territoriais (API de malhas v3)",
+  measure_labels = list(kind = "recorded_events", title = c("Recorded events (SINESP VDE)", "Ocorrências registradas (SINESP VDE)"), noun = c("recorded events", "ocorrências")),
   not_published = c("Not reported by the state for this month/event", "Não informado pelo gestor estadual neste mês/evento"),
   notes_en = "Figures are reported by each state (gestor estadual) under its own definitions; coverage gaps and revisions by state are listed on the MJSP page. Municipalities are matched by name to IBGE codes; unmatched names stay in the state totals only.",
   default_region = "BR-53",

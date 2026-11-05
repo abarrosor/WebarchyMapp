@@ -19,7 +19,7 @@ EUROSTAT_RATES <- list(
     offence_en = c("Intentional homicide", "Attempted intentional homicide", "Serious assault", "Sexual violence", "Rape", "Robbery", "Burglary", "Burglary of private residential premises", "Theft", "Theft of a motorized vehicle or parts", "Unlawful acts involving controlled drugs", "Fraud"),
     offence_local = c("Homicidio intencional", "Tentativa de homicidio", "Agresión grave", "Violencia sexual", "Violación", "Robo con violencia", "Robo con fuerza", "Robo con fuerza en domicilio", "Hurto", "Robo de vehículo o de sus partes", "Delitos de drogas", "Estafa"),
     stringsAsFactors = FALSE),
-  dir_raw = "data/raw/eurostat"
+  dir_raw = CONFIG$shared$eurostat
 )
 
 # JSON-stat 2.0 (one dataset) -> long data frame with one column per dimension and `value`

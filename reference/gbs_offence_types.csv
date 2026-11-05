@@ -66,3 +66,6 @@ Offences: Group 8: Seat belt offences,unmapped,,,,no
 Offences: Group 8: Mobile phone offences,unmapped,,,,no
 Offences: Group 8: Other road traffic offences,unmapped,,,,no
 Offences: Group 8: Other motor vehicle offences,unmapped,,,,no
+Crimes: Group 2: Communicating indecently,other_sexual_offences,Communicating indecently,Communicating indecently,sexual_offences,yes
+Crimes: Group 2: Threatening to or disclosing intimate images,intimate_images,Threatening to or disclosing intimate images,Threatening to or disclosing intimate images,sexual_offences,yes
+Crimes: Coronavirus Restrictions,unmapped,,,,no

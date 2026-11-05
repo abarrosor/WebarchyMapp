@@ -1,16 +1,29 @@
 source_code,offence_type_id,name_local,name_en,included_in,sensitive,match_pattern
-OGOLEM,total,Przestępstwa stwierdzone ogółem,"All recorded offences (ogółem)",,no,"^og[oó][lł]em$|^przest[eę]pstwa( stwierdzone)? og[oó][lł]em"
+OGOLEM,total,Przestępstwa stwierdzone ogółem,All recorded offences (ogółem),,no,^og[oó][lł]em$|^przest[eę]pstwa( stwierdzone)? og[oó][lł]em
+WYKRYWALNOSC,unmapped,Wskaźnik wykrywalności sprawców (odsetek),"Detection rate of offenders (percentage, not a count)",,no,wska[zź]nik|wykrywaln
 KRYMINALNE,unmapped,Przestępstwa o charakterze kryminalnym,"Criminal-character offences (alternative grouping, overlaps the chapters below)",,no,kryminaln
-GOSPODARCZE,unmapped,Przestępstwa o charakterze gospodarczym,"Economic-character offences (alternative grouping, overlaps the chapters below)",,no,"^o charakterze gospodarczym|charakterze gospodarcz"
-DROGOWE,unmapped,Przestępstwa drogowe,"Road traffic offences (not shown)",,no,drogow
-BEZPIECZENSTWO_KOMUNIKACJA,unmapped,Przestępstwa przeciwko bezpieczeństwu powszechnemu i bezpieczeństwu w komunikacji,"Offences against public safety and traffic safety (mostly drink-driving; not shown)",,no,bezpiecze
-ZYCIE_ZDROWIE,life_and_health,Przestępstwa przeciwko życiu i zdrowiu,"Offences against life and health (incl. homicide and assault)",total,no,"[zż]yci[ua]"
+GOSPODARCZE,unmapped,Przestępstwa o charakterze gospodarczym,"Economic-character offences (alternative grouping, overlaps the chapters below)",,no,^o charakterze gospodarczym|charakterze gospodarcz
+DROGOWE,unmapped,Przestępstwa drogowe,Road traffic offences (not shown),,no,drogow
+BEZPIECZENSTWO_KOMUNIKACJA,unmapped,Przestępstwa przeciwko bezpieczeństwu powszechnemu i bezpieczeństwu w komunikacji,Offences against public safety and traffic safety (mostly drink-driving; not shown),,no,bezpiecze
+ZYCIE_ZDROWIE,life_and_health,Przestępstwa przeciwko życiu i zdrowiu,Offences against life and health (incl. homicide and assault),total,no,[zż]yci[ua]
 MIENIE,property_offences,Przestępstwa przeciwko mieniu,"Property offences (theft, burglary, robbery, damage, fraud)",total,no,mieniu
-WOLNOSC_SEKSUALNA,liberty_sexual_offences,"Przestępstwa przeciwko wolności, wolności sumienia i wyznania, wolności seksualnej i obyczajności","Offences against liberty, freedom of conscience, sexual liberty and decency",total,yes,"wolno[sś]ci"
-RODZINA_OPIEKA,family_offences,Przestępstwa przeciwko rodzinie i opiece,"Offences against the family and guardianship (incl. domestic abuse)",total,yes,rodzinie
+WOLNOSC_SEKSUALNA,liberty_sexual_offences,"Przestępstwa przeciwko wolności, wolności sumienia i wyznania, wolności seksualnej i obyczajności","Offences against liberty, freedom of conscience, sexual liberty and decency",total,yes,wolno[sś]ci
+RODZINA_OPIEKA,family_offences,Przestępstwa przeciwko rodzinie i opiece,Offences against the family and guardianship (incl. domestic abuse),total,yes,rodzinie
 INSTYTUCJE,offences_against_state_institutions,Przestępstwa przeciwko instytucjom państwowym i samorządu terytorialnego,Offences against state and local-government institutions,total,no,instytucjom
 WYMIAR_SPRAWIEDLIWOSCI,offences_against_justice,Przestępstwa przeciwko wymiarowi sprawiedliwości,Offences against the administration of justice,total,no,wymiarowi
 DOKUMENTY,document_fraud,Przestępstwa przeciwko wiarygodności dokumentów,Offences against the credibility of documents,total,no,wiarygodno
 OBROT_GOSPODARCZY,economic_offences,Przestępstwa przeciwko obrotowi gospodarczemu,Offences against economic transactions,total,no,obrotowi gospodarcz
-OBROT_PIENIEZNY,currency_offences,Przestępstwa przeciwko obrotowi pieniędzmi i papierami wartościowymi,Offences against monetary and securities transactions,total,no,"obrotowi pieni"
+OBROT_PIENIEZNY,currency_offences,Przestępstwa przeciwko obrotowi pieniędzmi i papierami wartościowymi,Offences against monetary and securities transactions,total,no,obrotowi pieni
 NARKOMANIA,drug_offences,Przestępstwa z ustawy o przeciwdziałaniu narkomanii,Drug offences (Act on counteracting drug addiction),total,no,narkoman
+ZABOJSTWO,homicide,Zabójstwo,Homicide (murder),total,yes,^zab[oó]jstw
+ZGWALCENIE,rape,Zgwałcenie,Rape,total,yes,^zgwa[lł]cen
+BOJKA_POBICIE,assault,Bójka i pobicie,Fights and beatings (assault),total,no,^b[oó]jka
+ROZBOJ,robbery_violence,"Rozbój, kradzież rozbójnicza i wymuszenia rozbójnicze","Robbery, robbery-theft and extortion",total,no,^rozb[oó]j
+KRADZIEZ_CUDZEJ_RZECZY,theft,Kradzież cudzej rzeczy,Theft,total,no,^kradzie[zż] cudzej
+KRADZIEZ_SAMOCHODU,vehicle_theft,Kradzież samochodu i poprzez włamanie,Car theft (including by breaking in),total,no,^kradzie[zż] samochod
+KRADZIEZ_Z_WLAMANIEM,burglary,Kradzież z włamaniem,Burglary (theft by breaking in),total,no,^kradzie[zż] z w[lł]amaniem
+KORUPCYJNE,corruption,Przestępstwa korupcyjne,Corruption offences,total,no,^korupcyjn
+CYBER,cybercrime,Cyberprzestępczość,Cybercrime,total,no,^cyberprzest
+GOSPODARCZE_2025,economic_offences,Przestępstwa gospodarcze,Economic offences,total,no,^gospodarcze$
+PRZECIWKO_INSTYTUCJI,offences_against_state_institutions,Przestępstwa przeciwko działalności instytucji państwowych oraz samorządu terytorialnego,Offences against the activity of state and local-government institutions,total,no,dzia[lł]alno[sś]ci instytucji
+INNE,other,Przestępstwa inne,Other offences,total,no,^przest[eę]pstwa inne$|^inne$
