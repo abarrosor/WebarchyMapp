@@ -32,13 +32,13 @@ Every figure is shown with its source, what it measures and its limitations. Dif
 | 5 | Install or complete the R packages |
 | 6 | Test the datos.madrid.es API |
 | 7 | Download the official boundaries again and reload districts and neighbourhoods |
-| 8 | Update only the Barcelona and Mossos sources (Spain itself is a country module: option 14 with the code `ES`) |
+| 8 | **Update only the cities** (every city module: Madrid, Barcelona); option 1 includes them |
 | 9 | Schedule the automatic weekly update (Windows Task Scheduler; runs `Rscript` without opening RStudio) |
 | 10 | Remove the automatic update |
 | 11 | Check whether the update is scheduled and how the last run went (`reports/update_*.log`) |
 | 12 | Rebuild the database from scratch from `data/raw/` (originals untouched) |
 | 13 | **Update every country** (the *Country* menu of the app, Spain included) and the Eurostat tables; option 1 includes them. A country whose raw and reference files did not change since its last load is kept as it is (Canada alone parses 50 GB); to reload one after a code fix: option 14, or `update_countries(only = "CA")` in the console |
-| 14 | **Reload some countries**: asks for the codes (`GBE GBS FI`, separated by spaces, no quotes) and reloads them even if their files did not change. Use it after a fix to one module. Spain is the code `ES` (Crime Balance, INE population, IGN boundaries, and its second source: the Mossos d'Esquadra by police area). Two codes stand for the city sources until they become modules of their own: `MAD` (Madrid: calls, register, activity) and `BCN` (Barcelona and Mossos). With a city code the status shown at the end is the full one (option 4) |
+| 14 | **Reload some countries**: asks for the codes (`GBE GBS FI`, separated by spaces, no quotes) and reloads them even if their files did not change. Use it after a fix to one module. Spain is the code `ES` (Crime Balance, INE population, IGN boundaries, and its second source: the Mossos d'Esquadra by police area). The cities are modules too: `MAD` (Madrid) and `BCN` (Barcelona) |
 | 15 | **Check the consistency of the countries' data** (Spain included): duplicates, territories without name, cumulative figures that decrease, parts above the total, population coverage, polygons without territory, quarters in the future. Prints the findings and saves `reports/country_checks_<date>.csv`. Read-only |
 
 The same actions exist as scripts in `scripts/` and `scripts/maintenance/`.
@@ -114,6 +114,10 @@ reports/                quality reports and update logs
 Each country, Spain included (`R/71_es.R`), is one R file (`R/7x_<cc>.R`, `R/8x_<cc>.R`, `R/9x_<cc>.R`) that registers itself with `register_country()` and one reference table `reference/<cc>_offence_types.csv` (source category -> offence type, English and local names, parent aggregate, sensitive flag). The file provides four functions: `download()`, `territory(con)`, `ingest(con)` and `population(con)`; the framework in `R/70_countries.R` does the rest (shared tables, marts, status). A country may carry a **second source** (a regional police, say): a file loaded after the country's that calls `register_source(cc, list(id, name, levels, level_labels, covers, ...))` with the same four functions and its own `reference/<cc>_<id>_offence_types.csv`; the app shows it as a switch of source inside the territory it covers (`covers` = a region id or the country code) and never adds it to the first one. `R/72_es_mossos.R` is the model. Use `R/71_fr.R` (France) as the model and `reference/eurostat_regions_countries.csv` to add a European country that only has Eurostat regional data. Rules: official sources with an open licence, no registration, raw files never modified, sensitive offences only inside totals, and never a comparison between countries.
 
 Countries whose module could not be tested against the real files (the first download happens on your computer) print a clear message naming the file and its header when the structure differs from what was documented; run `<cc>_inspect()` (e.g. `fr_inspect()`) to see the headers and adjust the column patterns at the top of the module.
+
+## 8b. Adding a city
+
+A city is one R file (`R/6x_city_<key>.R`) that registers itself with `register_city()` (code, key, municipality id, names, language, country, source, and the four functions `download()`, `territory(con)`, `ingest(con)`, `population(con)`). The territory step writes the districts and neighbourhoods into `dim_territory` and `data/territory_<key>.gpkg` (layer `territory`); the ingest step calls `publish_city_events()` with a view of monthly events by official neighbourhood and a type table (`type, block, sensitive, name_es, name_en`); the population step fills `ref_population` with the city register by neighbourhood. The framework (`R/60_cities.R`) builds `mart_city_events`, `mart_city_event_types` and `mart_city_meta`, and the app shows the city with the same map, filters and profile as Madrid and Barcelona. City-specific texts go in `translations.csv` as `key@<key>` variants. Use `R/62_city_barcelona.R` as the model (the Madrid one carries two extra panels of its own).
 
 ## 9. Adding a language
 

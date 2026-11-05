@@ -77,7 +77,7 @@ build_marts <- function(con, threshold = MARTS$threshold) {
     SELECT territory_id, level, parent_id, name FROM dim_territory ORDER BY territory_id")
 
   # 6. Other sources, each in its own R file
-  for (f in c("crime_balance_marts", "ine_population_marts", "mossos_marts", "bcn_incidents_marts", "madrid_activity_marts", "country_marts")) {
+  for (f in c("crime_balance_marts", "ine_population_marts", "mossos_marts", "bcn_incidents_marts", "madrid_activity_marts", "city_marts", "country_marts")) {
     if (exists(f, mode = "function")) do.call(f, list(con))
   }
 

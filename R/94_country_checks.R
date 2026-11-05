@@ -8,7 +8,10 @@
 
 check_countries <- function(only = NULL, save = TRUE) {
   with_db(function(con) {
-    out <- country_checks(con, only)
+    cities <- city_checks(con, only)
+    out <- country_checks(con, only, print = FALSE)
+    if (nrow(cities)) out <- if (nrow(out)) rbind(cities, out) else cities
+    print_checks(out)
     if (save && nrow(out)) {
       f <- file.path(CONFIG$dir_reports, paste0("country_checks_", format(Sys.Date(), "%Y%m%d"), ".csv"))
       utils::write.csv(out, f, row.names = FALSE, fileEncoding = "UTF-8"); message("Saved: ", f)
@@ -17,7 +20,7 @@ check_countries <- function(only = NULL, save = TRUE) {
   })
 }
 
-country_checks <- function(con, only = NULL) {
+country_checks <- function(con, only = NULL, print = TRUE) {
   need <- c("stg_country_crime", "ref_country_population", "ref_country_offence_types", "dim_territory")
   if (!all(need %in% DBI::dbListTables(con))) { message("Country tables not created yet."); return(invisible(data.frame())) }
   pairs <- DBI::dbGetQuery(con, "SELECT DISTINCT country, source FROM stg_country_crime ORDER BY 1, 2")
@@ -109,9 +112,63 @@ country_checks <- function(con, only = NULL) {
     if (last >= now && !isTRUE(m$financial_year)) add(cc, "future_or_current_quarter_complete", "warning", 1, sprintf("last period %dQ%d (today is %dQ%d); unreported months read as zeros?", last %/% 10, last %% 10, now %/% 10, now %% 10))
   }
   out <- if (length(rows)) do.call(rbind, rows) else data.frame(country = character(), check = character(), severity = character(), n = integer(), detail = character())
-  if (nrow(out) == 0) { message("Country checks: nothing to report for ", paste(unique(pairs$country), collapse = ", ")); return(invisible(out)) }
+  if (print) print_checks(out)
+  invisible(out)
+}
+
+print_checks <- function(out) {
+  if (nrow(out) == 0) { message("Checks: nothing to report."); return(invisible(out)) }
   out <- out[order(match(out$severity, c("error", "warning", "info")), out$country, out$check), ]
-  message("Country checks (", sum(out$severity == "error"), " errors, ", sum(out$severity == "warning"), " warnings, ", sum(out$severity == "info"), " notes)")
+  message("Checks (", sum(out$severity == "error"), " errors, ", sum(out$severity == "warning"), " warnings, ", sum(out$severity == "info"), " notes)")
   for (i in seq_len(nrow(out))) message(sprintf("  [%s] %-9s %-38s %6s  %s", c(error = "!!", warning = "! ", info = "i ")[out$severity[i]], out$country[i], out$check[i], fmt_int(out$n[i]), substr(out$detail[i], 1, 110)))
   invisible(out)
+}
+
+# --- Cities (R/60_cities.R): the same spirit, on the shared city tables -------------------------------
+# One pass per city with data: duplicates, months, territories, types, population, polygons. Read-only.
+city_checks <- function(con, only = NULL) {
+  need <- c("stg_city_events", "ref_city_event_types", "dim_territory")
+  if (!all(need %in% DBI::dbListTables(con)) || length(CITY_MODULES) == 0) return(data.frame())
+  rows <- list()
+  add <- function(cc, check, severity, n, detail = "") rows[[length(rows) + 1]] <<- data.frame(country = cc, check = check, severity = severity, n = as.integer(n), detail = detail, stringsAsFactors = FALSE)
+  q <- function(sql, ...) DBI::dbGetQuery(con, sprintf(sql, ...))
+  for (m in CITY_MODULES) {
+    if (!is.null(only) && !m$code %in% only && !m$key %in% only) next
+    kq <- DBI::dbQuoteString(con, m$key); cc <- m$code
+    ev <- q("SELECT month, neighbourhood_id, district_id, event_type, events FROM stg_city_events WHERE city = %s", kq)
+    if (nrow(ev) == 0) { add(cc, "no_data", "error", 0, "no rows in stg_city_events"); next }
+    types <- q("SELECT event_type, block, sensitive FROM ref_city_event_types WHERE city = %s", kq)
+    terr <- q("SELECT territory_id, level, parent_id, name FROM dim_territory WHERE territory_id LIKE %s OR territory_id = %s", DBI::dbQuoteString(con, paste0(m$id, "-%")), DBI::dbQuoteString(con, m$id))
+    dup <- sum(duplicated(ev[, c("month", "neighbourhood_id", "district_id", "event_type")])); if (dup) add(cc, "duplicate_keys", "error", dup)
+    # months: gaps inside the series, and a month in the future
+    mo <- sort(unique(ev$month)); all_mo <- seq(min(mo), max(mo), by = "month"); gap <- setdiff(format(all_mo, "%Y-%m"), format(mo, "%Y-%m"))
+    if (length(gap)) add(cc, "months_missing", "warning", length(gap), paste(utils::head(gap, 6), collapse = ", "))
+    if (max(mo) > as.Date(format(Sys.Date(), "%Y-%m-01"))) add(cc, "future_month", "warning", 1, format(max(mo), "%Y-%m"))
+    # territories named in the data but absent from dim_territory
+    nb <- unique(stats::na.omit(ev$neighbourhood_id)); orphan <- setdiff(nb, terr$territory_id[terr$level == "neighbourhood"])
+    if (length(orphan)) add(cc, "neighbourhoods_without_name", "error", length(orphan), paste(utils::head(orphan, 4), collapse = ", "))
+    di <- unique(stats::na.omit(ev$district_id)); orphan_d <- setdiff(di, terr$territory_id[terr$level == "district"])
+    if (length(orphan_d)) add(cc, "districts_without_name", "error", length(orphan_d), paste(utils::head(orphan_d, 4), collapse = ", "))
+    pct <- 100 * sum(ev$events[is.na(ev$neighbourhood_id)]) / sum(ev$events)
+    if (pct > 10) add(cc, "events_without_neighbourhood", "warning", round(pct), sprintf("%.1f%% of the events have no official neighbourhood (district or city totals only)", pct))
+    else if (pct > 0) add(cc, "events_without_neighbourhood", "info", round(pct), sprintf("%.1f%% of the events have no official neighbourhood", pct))
+    unk <- setdiff(unique(ev$event_type), types$event_type); if (length(unk)) add(cc, "types_unmapped", "warning", length(unk), paste(utils::head(unk, 6), collapse = " / "))
+    neg <- sum(ev$events < 0, na.rm = TRUE); if (neg) add(cc, "negative_events", "error", neg)
+    # population of the neighbourhoods (city register)
+    pop <- q("SELECT territory_id, max(ref_date) AS d FROM ref_population WHERE territory_id LIKE %s GROUP BY 1", DBI::dbQuoteString(con, paste0(m$id, "-%")))
+    nbs <- terr$territory_id[terr$level == "neighbourhood"]; nop <- setdiff(nbs, pop$territory_id)
+    if (nrow(pop) == 0) add(cc, "no_population", "warning", 0, "no register loaded: counts only, no rates")
+    else if (length(nop)) add(cc, "neighbourhoods_without_population", if (length(nop) > 0.2 * length(nbs)) "warning" else "info", length(nop), paste(utils::head(nop, 4), collapse = ", "))
+    if (nrow(pop) && max(pop$d) < Sys.Date() - 730) add(cc, "population_old", "info", as.integer(Sys.Date() - max(pop$d)), sprintf("latest register %s", format(max(pop$d))))
+    # polygons
+    if (file.exists(m$gpkg)) {
+      g <- tryCatch(sf::st_read(m$gpkg, layer = "territory", quiet = TRUE), error = function(e) NULL)
+      if (!is.null(g)) {
+        nog <- setdiff(nbs, g$territory_id); if (length(nog)) add(cc, "neighbourhoods_without_polygon", "warning", length(nog), paste(utils::head(nog, 4), collapse = ", "))
+        nod <- setdiff(g$territory_id, terr$territory_id); if (length(nod)) add(cc, "polygon_without_territory", "warning", length(nod), paste(utils::head(nod, 4), collapse = ", "))
+        inv <- sum(!sf::st_is_valid(g)); if (inv) add(cc, "invalid_geometry", "warning", inv)
+      }
+    } else add(cc, "no_boundaries", "error", 0, "no GeoPackage: the city view needs the map")
+  }
+  if (length(rows)) do.call(rbind, rows) else data.frame()
 }

@@ -37,14 +37,20 @@ has_rows <- function(x) !is.null(x) && nrow(x) > 0
 TERRITORY <- q("SELECT territory_id, level, parent_id, name FROM mart_territory")
 POP_ALL   <- q("SELECT * FROM mart_population") %||% data.frame(territory_id = character(), population = numeric())
 
-CITY_SOURCES <- list(
-  madrid    = list(id = "ES-13-28-28079", base = "mart_madrid_calls_month", meta = "mart_madrid_calls_meta",
-                   types = "mart_madrid_call_types", gpkg = "data/territory_madrid.gpkg"),
-  barcelona = list(id = "ES-09-08-08019", base = "mart_bcn_incidents_month", meta = "mart_bcn_incidents_meta",
-                   types = "mart_bcn_incident_types", gpkg = "data/territory_barcelona.gpkg")
-)
-RAW <- lapply(CITY_SOURCES, function(x) list(
-  base = q(paste("SELECT * FROM", x$base)), meta = q(paste("SELECT * FROM", x$meta)), types = q(paste("SELECT * FROM", x$types))))
+# Cities: one metadata row per city (mart_city_meta, written by the city modules of R/60_cities.R),
+# their monthly events by neighbourhood and their type names, all from the shared city tables
+CITY_META  <- q("SELECT * FROM mart_city_meta")
+CITY_EV    <- q("SELECT * FROM mart_city_events")
+CITY_TYPES <- q("SELECT * FROM mart_city_event_types")
+CITY_SOURCES <- if (has_rows(CITY_META)) setNames(lapply(seq_len(nrow(CITY_META)), function(i) { m <- CITY_META[i, ]; list(id = m$territory_id, code = m$code, gpkg = m$gpkg, meta = m) }), CITY_META$city) else list()
+RAW <- lapply(CITY_SOURCES, function(x) {
+  key <- x$meta$city
+  base <- if (has_rows(CITY_EV)) CITY_EV[CITY_EV$city == key, c("month", "neighbourhood_id", "district_id", "block", "event_type", "events")] else NULL
+  if (!is.null(base)) names(base)[names(base) == "event_type"] <- "call_type"
+  types <- if (has_rows(CITY_TYPES)) CITY_TYPES[CITY_TYPES$city == key, c("event_type", "block", "name_local", "name_en")] else NULL
+  if (!is.null(types)) names(types) <- c("call_type", "block", "name_es", "name_en")
+  list(base = base, meta = x$meta, types = types)
+})
 
 MOSSOS  <- q("SELECT * FROM mart_mossos_bcn_month")          # Mossos, Barcelona by district
 MGROUPS <- q("SELECT * FROM mart_mossos_groups")
@@ -336,7 +342,7 @@ ui_city <- function(lang) {
       uiOutput("stats_title"),
       bslib::layout_columns(col_widths = c(7, 5), fill = FALSE, plotOutput("stats_plot", height = "300px"), tableOutput("stats_table")),
       uiOutput("stats_notes"),
-      if (CITY == "madrid" && HAS_ARR) tagList(
+      if ("madrid_arrests" %in% PANELS && HAS_ARR) tagList(
         tags$hr(), uiOutput("arr_title"),
         bslib::layout_columns(col_widths = c(5, 7), fill = FALSE, div(class = "table-sp", uiOutput("arr_table")),
                               div(uiOutput("arr_evol_head"), plotOutput("arr_evol", height = "260px"))),
@@ -467,9 +473,9 @@ server_city <- function(input, output, session, lang) {
       if (HAS_RATES) comparison_block(row$rate, d$city$rate, d$neighbourhoods$rate, t("city"), paste(t("k_calls"), t("k_rate")), t("cmp_neighbourhoods"), lang),
       if (!is.na(ratio) && ratio >= 2) div(class = "alert alert-info", HTML(t("ratio_note", fmt_r(ratio, lang)))),
       if (HAS_RATES && isTRUE(pop_of[id] < 5000)) div(class = "alert alert-secondary", t("few_residents")),
-      if (CITY == "barcelona" && input$block == "public_safety" && r[1] < as.Date("2024-01-01") && r[2] >= as.Date("2024-01-01"))
-        div(class = "alert alert-warning", t("break_2024")),
-      if (CITY == "madrid" && grepl("Guindalera", name_of[[id]], ignore.case = TRUE)) div(class = "alert alert-warning", t("guindalera")),
+      if (nzchar(NOTE_BREAK$block) && identical(input$block, NOTE_BREAK$block) && r[1] < as.Date(NOTE_BREAK$date) && r[2] >= as.Date(NOTE_BREAK$date))
+        div(class = "alert alert-warning", t(NOTE_BREAK$key)),
+      if (nzchar(NOTE_TERRITORY$pattern) && grepl(NOTE_TERRITORY$pattern, name_of[[id]], ignore.case = TRUE)) div(class = "alert alert-warning", t(NOTE_TERRITORY$key)),
       rates_block(id, dis_id, d, lang),
       h6(t("by_month"), info(t("noise_note"))),
       plotOutput("evolution", height = "120px"),
@@ -479,8 +485,8 @@ server_city <- function(input, output, session, lang) {
           tags$tr(tags$td(type_name(types$call_type[i], lang),
                           if (!is.na(type_note(types$call_type[i], lang))) info(type_note(types$call_type[i], lang))),
                   tags$td(class = "text-end", figure(types$n[i], lang)))))),
-      if (CITY == "barcelona" && HAS_MOSSOS) mossos_block(dis_id, r, lang),
-      if (CITY == "madrid" && HAS_ACT) activity_block(dis_id, r, lang),
+      if ("mossos_districts" %in% PANELS && HAS_MOSSOS) mossos_block(dis_id, r, lang),
+      if ("madrid_activity" %in% PANELS && HAS_ACT) activity_block(dis_id, r, lang),
       reading_block(lang), source_block(lang)
     )
   })
@@ -534,7 +540,7 @@ server_city <- function(input, output, session, lang) {
   })
 
   # --- Madrid: people arrested or investigated by motive (whole city) ---
-  if (CITY == "madrid" && HAS_ARR) {
+  if ("madrid_arrests" %in% PANELS && HAS_ARR) {
     motive_name <- local_name(ARRNAMES, "motive_id", lang)
     motive_sel <- reactiveVal("domestic_gender_violence")
     observeEvent(input$arr_click, motive_sel(input$arr_click))
@@ -728,9 +734,9 @@ source_block <- function(lang) {
     tags$li(t("data_from", fmt_month(meta$first_month, lang), fmt_month(meta$last_month, lang), fmt_date(meta$loaded_at, lang))),
     tags$li(t("pct_without_neighbourhood", fmt_r(meta$pct_without_neighbourhood, lang))),
     if (HAS_RATES) tags$li(t("source_register", fmt_date(meta$population_date, lang))),
-    if (CITY == "madrid" && HAS_ACT && !is.null(ACTMETA))
+    if ("madrid_activity" %in% PANELS && HAS_ACT && !is.null(ACTMETA))
       tags$li(t("activity_source", fmt_month(ACTMETA$first_month, lang), fmt_month(ACTMETA$last_month, lang)), " · ", tags$a(href = ACTMETA$url, target = "_blank", "datos.madrid.es")),
-    if (CITY == "barcelona" && HAS_MOSSOS && !is.null(MMETA))
+    if ("mossos_districts" %in% PANELS && HAS_MOSSOS && !is.null(MMETA))
       tags$li(t("mossos_source", fmt_month(MMETA$first_month, lang), fmt_month(MMETA$last_month, lang)), " · ", tags$a(href = MMETA$url, target = "_blank", "analisi.transparenciacatalunya.cat"))))
 }
 
@@ -744,8 +750,12 @@ make_city <- function(key) {
   if (!has_rows(x$base) || is.null(x$meta) || !file.exists(path(f$gpkg))) return(NULL)
   app_env <- environment(make_city)
   e <- new.env(parent = app_env)
-  e$CITY <- key; e$CITY_ID <- f$id; e$CITY_NAME <- unname(name_of[f$id]) %||% key
+  e$CITY <- key; e$CITY_ID <- f$id; e$CITY_NAME <- unname(name_of[f$id]) %||% x$meta$name_en %||% key
   e$base <- x$base; e$meta <- x$meta
+  # Extra panels the module declares (each one has its own tables and code below), and the notes it asks for
+  e$PANELS <- strsplit(x$meta$panels %||% "", ";")[[1]]
+  e$NOTE_TERRITORY <- list(pattern = x$meta$note_territory_pattern %||% "", key = x$meta$note_territory_key %||% "")
+  e$NOTE_BREAK <- list(block = x$meta$note_break_block %||% "", date = x$meta$note_break_date %||% "", key = x$meta$note_break_key %||% "")
   types <- x$types %||% data.frame(call_type = character(), name_es = character(), name_en = character())
   e$NAME_EN <- setNames(types$name_en, types$call_type); e$NAME_ES <- setNames(types$name_es, types$call_type)
   geo <- sf::st_read(path(f$gpkg), quiet = TRUE)
@@ -1459,14 +1469,14 @@ ui_about <- function(lang, cities) {
   host <- function(u) sub("^https?://([^/]+).*$", "\\1", u)
   link <- function(u) if (is.null(u) || is.na(u) || !nzchar(u)) NULL else tags$a(href = u, target = "_blank", host(u))
   months <- function(m) if (is.null(m) || all(is.na(m))) "" else { d <- as.Date(m); paste(fmt_month(min(d), lang), "–", fmt_month(max(d), lang)) }
-  meta_of <- function(city) if (!is.null(cities[[city]])) RAW[[city]]$meta else NULL
-  mc <- meta_of("madrid"); mb <- meta_of("barcelona")
-  rows <- list(
-    if (HAS_MOSSOS && !any(CMETA$source == "mossos")) list(t("about_src_mossos"), t("about_mossos_measures"), t("about_mossos_territory"), if (!is.null(MMETA)) months(c(MMETA$first_month, MMETA$last_month)) else "", t("about_mossos_licence"), MMETA$url %||% NA),
-    if (!is.null(mc)) list(t("about_src_calls"), t("about_calls_measures"), t("about_madrid_territory"), months(c(mc$first_month, mc$last_month)), mc$licence, mc$url),
-    if (!is.null(mc) && HAS_ACT && !is.null(ACTMETA)) list(t("about_src_act"), t("about_act_measures"), t("about_act_territory"), months(c(ACTMETA$first_month, ACTMETA$last_month)), ACTMETA$licence, ACTMETA$url),
-    if (!is.null(mb)) list(t("about_src_bcn"), t("about_bcn_measures"), t("about_bcn_territory"), months(c(mb$first_month, mb$last_month)), mb$licence, mb$url)
-  )
+  # One row per city (source, what it counts, territory, months, licence: the module's About keys when it names them), then its extra panels
+  key_or <- function(k, default) if (nzchar(k %||% "") && !identical(TR(k, "en"), k)) t(k) else default
+  panels_of <- function(city) cities[[city]]$PANELS %||% character()
+  rows <- unlist(lapply(names(cities), function(city) { m <- RAW[[city]]$meta; cname <- cities[[city]]$CITY_NAME
+    c(list(list(key_or(m$about_source_key, paste0(m$source_name, " (", cname, ")")), key_or(m$about_measures_key, m$measure), key_or(m$about_territory_key, cname), months(c(m$first_month, m$last_month)), m$licence, m$url)),
+      if ("madrid_activity" %in% panels_of(city) && HAS_ACT && !is.null(ACTMETA)) list(list(t("about_src_act"), t("about_act_measures"), t("about_act_territory"), months(c(ACTMETA$first_month, ACTMETA$last_month)), ACTMETA$licence, ACTMETA$url)),
+      if ("mossos_districts" %in% panels_of(city) && HAS_MOSSOS && !any(CMETA$source == "mossos")) list(list(t("about_src_mossos"), t("about_mossos_measures"), t("about_mossos_territory"), if (!is.null(MMETA)) months(c(MMETA$first_month, MMETA$last_month)) else "", t("about_mossos_licence"), MMETA$url %||% NA))) }), recursive = FALSE)
+  mc <- if (length(cities)) RAW[[names(cities)[1]]]$meta else NULL; mb <- if ("barcelona" %in% names(cities)) RAW$barcelona$meta else NULL
   # One row per country (the first one is DEFAULT_COUNTRY): source, measure and notes, levels, period, licence, population and boundaries
   # One row per country and source (main source first, then its second sources)
   rows <- c(unlist(lapply(names(COUNTRIES), function(cc) { e <- COUNTRIES[[cc]]; ms <- e$SRC_META[e$SRC_META$source == "main" | e$SRC_META$source %in% e$ALT_SOURCES$source, ]

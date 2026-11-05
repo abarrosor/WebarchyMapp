@@ -56,7 +56,7 @@ db_init <- function(con) {
       PRIMARY KEY (territory_id, ref_date))")
 
   for (f in c("madrid_calls_init", "madrid_activity_init", "crime_balance_init", "ine_population_init",
-              "mossos_init", "bcn_incidents_init", "country_init")) {
+              "mossos_init", "bcn_incidents_init", "city_init", "country_init")) {
     if (exists(f, mode = "function")) do.call(f, list(con))
   }
   invisible(TRUE)

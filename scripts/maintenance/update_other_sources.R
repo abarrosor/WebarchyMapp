@@ -1,4 +1,4 @@
-# Updates only the Crime Balance, INE, boundaries, Barcelona and Mossos (not the Madrid sources).
+# Updates only the cities (Madrid and Barcelona modules of R/60_cities.R); the countries are option 13.
 
 # --- Go to the project folder and load the project code (see scripts/_bootstrap.R) ---
 local({
@@ -15,4 +15,4 @@ local({
 source("scripts/_bootstrap.R", encoding = "UTF-8")
 # -----------------------------------------------------------------------------------------
 
-update_other_sources()
+update_cities()

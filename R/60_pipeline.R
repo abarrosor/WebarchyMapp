@@ -17,77 +17,26 @@ test_api <- function() {
 # Try an expression and report instead of stopping the whole update
 attempt <- function(label, expr) tryCatch(expr, error = function(e) message(label, ": ", conditionMessage(e), "\n(The rest continues.)"))
 
+# Districts and neighbourhoods of every city, rebuilt from the official files (option 7)
 update_territory <- function(download = TRUE) {
   with_db(function(con) {
     step("Territories (official district and neighbourhood boundaries)")
-    if (download) attempt("Madrid boundaries download not available", madrid_territory_download())
-    madrid_territory_save(con)
-    if (download) attempt("Barcelona boundaries download not available", bcn_territory_download())
-    attempt("Barcelona neighbourhoods not loaded", bcn_territory_save(con))
+    for (m in CITY_MODULES) {
+      if (download) attempt(paste(m$name_en, "boundaries download not available"), m$download())
+      attempt(paste(m$name_en, "territory not loaded"), m$territory(con, force = TRUE))
+    }
     build_marts(con)
-  })
-}
-
-# Steps for the Madrid sources. Each step fails on its own without stopping the others.
-madrid_steps <- function(con, download = TRUE) {
-  fetch <- function(label, expr) if (download) tryCatch(expr, error = function(e)
-    message("Download not available (", label, "): ", conditionMessage(e), "\nContinuing with the files already in data/raw."))
-
-  if (city_neighbourhood_count(con, ID_MADRID) == 0) {
-    step("Madrid territory (first load)")
-    have_zip <- length(list.files(CONFIG$sources$madrid_neighbourhoods$dir_raw, "Barrios\\.zip$")) > 0 &&
-                length(list.files(CONFIG$sources$madrid_districts$dir_raw, "Distritos\\.zip$")) > 0
-    if (download || !have_zip) fetch("Madrid boundaries", madrid_territory_download())
-    madrid_territory_save(con)
-  }
-  step("Madrid Municipal Police calls (F1)")
-  fetch("Madrid calls", madrid_calls_download())
-  madrid_calls_ingest(con)
-
-  step("Madrid population by neighbourhood (municipal register)")
-  fetch("Madrid register", madrid_census_download())
-  attempt("Register not loaded (the app works without rates per 1,000 residents)", madrid_census_ingest(con))
-
-  step("Madrid Municipal Police activity by district (F2)")
-  fetch("Madrid activity", madrid_activity_download())
-  attempt("Activity not loaded", madrid_activity_ingest(con))
-}
-
-# Steps for Barcelona. (The Crime Balance, the INE population and the IGN boundaries are the Spain
-# country module, R/71_es.R, and the Mossos d'Esquadra its second source, R/72_es_mossos.R: both run
-# in country_steps() like every country.)
-other_steps <- function(con, download = TRUE) {
-  fetch <- function(label, expr) if (download) tryCatch(expr, error = function(e)
-    message("Download not available (", label, "): ", conditionMessage(e)))
-
-  step("Barcelona: neighbourhoods, register and city police incidents (F5)")
-  if (city_neighbourhood_count(con, ID_BARCELONA) == 0 || !file.exists(GPKG_BARCELONA)) {
-    fetch("Barcelona boundaries", bcn_territory_download())
-    attempt("Barcelona neighbourhoods not loaded", bcn_territory_save(con))
-  }
-  fetch("Barcelona register", bcn_census_download())
-  attempt("Barcelona register not loaded", bcn_census_ingest(con))
-  fetch("Barcelona incidents", bcn_incidents_download())
-  attempt("Barcelona incidents not loaded", bcn_incidents_ingest(con))
-}
-
-update_other_sources <- function(download = TRUE) {
-  with_db(function(con) {
-    other_steps(con, download)
-    step("Tables for the app")
-    build_marts(con)
-    data_status(con)
   })
 }
 
 # --- Full routine -----------------------------------------------------------------
-
+# Cities (R/60_cities.R modules), then countries (R/70_countries.R modules, Spain included), then the
+# Eurostat national rates and the tables for the app. Each step fails on its own without stopping the others.
 update_all <- function(download = TRUE) {
   check_packages()
   t0 <- Sys.time()
   with_db(function(con) {
-    madrid_steps(con, download)
-    other_steps(con, download)
+    if (length(CITY_MODULES) > 0) city_steps(con, download)
     if (length(COUNTRY_MODULES) > 0) country_steps(con, download)
     if (exists("eurostat_rates_update", mode = "function")) eurostat_rates_update(con, download)
     step("Tables for the app")

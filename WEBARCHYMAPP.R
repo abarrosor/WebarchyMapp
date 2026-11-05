@@ -25,13 +25,13 @@ options_menu <- c(
   "Install or complete the R packages",
   "Test the automatic download (datos.madrid.es API)",
   "Update the district and neighbourhood boundaries (Madrid and Barcelona)",
-  "Update only the Barcelona sources (Spain and the Mossos are the country module: option 14, code ES)",
+  "Update only the cities (Madrid, Barcelona)",
   "Schedule the automatic update (weekly, without opening RStudio)",
   "Remove the automatic update",
   "Check whether the automatic update is scheduled and how the last run went",
   "Rebuild the database from scratch",
   "Update only the other countries (Country menu of the app)",
-  "Reload some countries (type their codes; forces the reload after a fix)",
+  "Reload some countries or cities (type their codes; forces the reload after a fix)",
   "Check the consistency of the other countries' data (report in reports/)"
 )
 choice <- utils::menu(options_menu, title = "\nWebarchyMapp - What do you want to do?")
@@ -48,19 +48,19 @@ switch(as.character(choice),
   "5" = install_packages(),
   "6" = test_api(),
   "7" = update_territory(),
-  "8" = update_other_sources(),
+  "8" = update_cities(),
   "9" = schedule_update_menu(),
   "10" = unschedule_update(),
   "11" = show_schedule_status(),
   "12" = rebuild_database(),
   "13" = update_countries(),
   "14" = {
-    message("Registered: ", paste(names(COUNTRY_MODULES), collapse = " "))
-    message("Cities: MAD (Madrid sources)  BCN (Barcelona sources)")
+    message("Countries: ", paste(names(COUNTRY_MODULES), collapse = " "))
+    message("Cities: ", paste(vapply(CITY_MODULES, function(m) paste0(m$code, " (", m$name_en, ")"), ""), collapse = "  "))
     codes <- toupper(unlist(strsplit(trimws(readline("Codes separated by spaces (e.g. ES GBE FI, or MAD BCN): ")), "[ ,;]+")))
     codes <- codes[nzchar(codes)]
     if (length(codes) == 0) message("Nothing chosen.")
-    else if (length(bad <- setdiff(codes, c(names(COUNTRY_MODULES), CITY_CODES)))) message("Unknown codes: ", paste(bad, collapse = " "))
+    else if (length(bad <- setdiff(codes, c(names(COUNTRY_MODULES), vapply(CITY_MODULES, function(m) m$code, ""))))) message("Unknown codes: ", paste(bad, collapse = " "))
     else update_countries(only = codes)
   },
   "15" = check_countries(),

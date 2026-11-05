@@ -406,21 +406,19 @@ country_steps <- function(con, download = TRUE, only = NULL, force = !is.null(on
   invisible(TRUE)
 }
 
-# `only` takes the country codes (Spain is ES), plus two city pseudo-codes until the city framework
-# exists (phase 3 of Q-005): MAD (Madrid: calls, register, activity) and BCN (Barcelona: neighbourhoods, register, incidents).
+# `only` takes country codes (Spain is ES) and city codes (MAD, BCN: modules of R/60_cities.R)
 update_countries <- function(download = TRUE, only = NULL, force = !is.null(only)) {
   with_db(function(con) {
-    spain <- intersect(only, CITY_CODES); others <- setdiff(only, CITY_CODES)
-    if ("MAD" %in% spain) madrid_steps(con, download)
-    if ("BCN" %in% spain) other_steps(con, download)
+    city_codes <- vapply(CITY_MODULES, function(m) m$code, ""); cities <- intersect(only, city_codes); others <- setdiff(only, city_codes)
+    if (length(cities)) city_steps(con, download, cities)
     if (is.null(only) || length(others)) country_steps(con, download, if (is.null(only)) NULL else others, force)
     if (is.null(only) && exists("eurostat_rates_update", mode = "function")) eurostat_rates_update(con, download)
     step("Tables for the app")
     build_marts(con)
-    if (length(spain)) data_status(con) else country_status(con)   # data_status covers the cities and ends with the countries
+    if (length(cities)) city_status(con)
+    country_status(con)
   })
 }
-CITY_CODES <- c("MAD", "BCN")
 
 country_status <- function(con) {
   if (!"stg_country_crime" %in% DBI::dbListTables(con)) return(invisible(NULL))
