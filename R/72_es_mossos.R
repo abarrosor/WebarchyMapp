@@ -10,7 +10,7 @@
 #                            plus TOTAL_MOSSOS = every offence known, sensitive ones included
 #   ref_country_offence_types   reference/es_mossos_offence_types.csv (Criminal Code offence -> 13 groups)
 #   dim_territory            the 60 ABP as 'police_area' under ES-09
-#   data/territory_es.gpkg   layer 'police_area' (Generalitat open data)
+#   data/territory_es.gpkg   layer 'police_area' (Generalitat open data), written by abp_save() in R/30_mossos.R
 #   ref_country_population   each ABP by year: INE municipalities added up; the Barcelona districts
 #                            share the city's figure by the city register
 #   ref_country_territory_info  the municipalities inside each ABP (shown under the territory selector)
@@ -25,7 +25,7 @@ es_mossos_download <- function() {
 
 # ABP rows in dim_territory, the police_area layer and the municipalities of each ABP
 es_mossos_territory <- function(con) {
-  abp_save(con)                                      # ref_abp, ref_abp_municipality, data/territory_abp.gpkg (kept until the phase-4 clean-up)
+  abp_save(con)                                      # ref_abp, ref_abp_municipality and the police_area layer of data/territory_es.gpkg
   ref <- DBI::dbGetQuery(con, "SELECT abp_code, name FROM ref_abp ORDER BY abp_code")
   if (nrow(ref) == 0) stop("no ABP list (ref_abp is empty: boundaries file missing?)")
   rows <- data.frame(territory_id = paste0(ES_MOSSOS_REGION, "-ABP-", ref$abp_code), level = "police_area", parent_id = ES_MOSSOS_REGION, country = "ES",
@@ -35,20 +35,13 @@ es_mossos_territory <- function(con) {
     DBI::dbExecute(con, "DELETE FROM dim_territory WHERE country = 'ES' AND level = 'police_area'")
     DBI::dbAppendTable(con, "dim_territory", rows[, c("territory_id", "level", "parent_id", "country", "official_code", "code_scheme", "name", "name_norm", "area_m2", "valid_from", "valid_to", "file", "loaded_at")])
   })
-  # Layer in the country GeoPackage (the ES territory step rewrites the file: this layer is added after it)
-  gpkg <- COUNTRY_MODULES$ES$gpkg
-  if (file.exists(GPKG_ABP) && file.exists(gpkg)) {
-    g <- sf::st_read(GPKG_ABP, layer = "abp", quiet = TRUE)
-    g <- sf::st_sf(territory_id = g$territory_id, name = g$name, region_id = ES_MOSSOS_REGION, province_id = NA_character_, geometry = sf::st_geometry(g))
-    sf::st_write(g, gpkg, layer = "police_area", quiet = TRUE, delete_layer = TRUE)
-    message(sprintf("  police_area layer: %d polygons", nrow(g)))
-  }
   # Context line: the municipalities inside each ABP (most populated first), or "a district of Barcelona"
   info <- DBI::dbGetQuery(con, "
-    WITH u AS (SELECT max(year) AS y FROM ref_population_municipality),
-    mu AS (SELECT DISTINCT m.abp_code, m.ine_code, m.district_code, i.name, i.population
+    WITH u AS (SELECT max(year) AS y FROM ref_country_population WHERE country = 'ES' AND level = 'municipality'),
+    mu AS (SELECT DISTINCT m.abp_code, m.ine_code, m.district_code, t.name, i.population
            FROM ref_abp_municipality m
-           LEFT JOIN ref_population_municipality i ON right(i.territory_id, 5) = m.ine_code AND i.year = (SELECT y FROM u))
+           LEFT JOIN dim_territory t ON t.country = 'ES' AND t.level = 'municipality' AND right(t.territory_id, 5) = m.ine_code
+           LEFT JOIN ref_country_population i ON i.country = 'ES' AND i.level = 'municipality' AND right(i.territory_id, 5) = m.ine_code AND i.year = (SELECT y FROM u))
     SELECT abp_code, count(DISTINCT ine_code) AS n, string_agg(name, ', ' ORDER BY population DESC) AS municipalities,
            bool_or(district_code IS NOT NULL) AS barcelona_district
     FROM mu GROUP BY abp_code")
@@ -90,14 +83,17 @@ es_mossos_ingest <- function(con) {
 # Population of each ABP by year: INE municipalities added up; Barcelona districts share the city's
 # figure in proportion to the city register (mart_population). Level 'police_area' only is replaced.
 es_mossos_population <- function(con) {
-  need <- c("ref_population_municipality", "ref_abp_municipality", "mart_population")
+  need <- c("ref_country_population", "ref_abp_municipality", "ref_population", "dim_territory")
   if (!all(need %in% DBI::dbListTables(con))) stop("needs ", toString(setdiff(need, DBI::dbListTables(con))))
   if (DBI::dbGetQuery(con, "SELECT count(*) AS n FROM ref_abp_municipality")$n == 0) stop("no municipality-to-ABP table")
   pop <- DBI::dbGetQuery(con, paste0("
     WITH m AS (SELECT abp_code, ine_code, district_code FROM ref_abp_municipality),
-    ine AS (SELECT right(territory_id, 5) AS ine_code, year, population FROM ref_population_municipality WHERE territory_id LIKE 'ES-09-%'),
-    dis AS (SELECT right(territory_id, 2) AS district_code, population * 1.0 / sum(population) OVER () AS share
-            FROM mart_population WHERE level = 'district' AND territory_id LIKE '", ID_BARCELONA, "-D%'),
+    ine AS (SELECT right(territory_id, 5) AS ine_code, year, population FROM ref_country_population WHERE country = 'ES' AND level = 'municipality' AND territory_id LIKE 'ES-09-%'),
+    nbp AS (SELECT p.territory_id, t.parent_id AS district_id, p.population, p.ref_date FROM ref_population p
+            JOIN dim_territory t ON t.territory_id = p.territory_id AND t.level = 'neighbourhood' AND t.territory_id LIKE '", ID_BARCELONA, "-%'),
+    lastd AS (SELECT max(ref_date) AS d FROM nbp),
+    dpop AS (SELECT district_id, sum(population) AS population FROM nbp WHERE ref_date = (SELECT d FROM lastd) GROUP BY 1),
+    dis AS (SELECT right(district_id, 2) AS district_code, population * 1.0 / sum(population) OVER () AS share FROM dpop),
     p AS (
       SELECT m.abp_code, i.year, i.population * 1.0 AS pop FROM m JOIN ine i USING (ine_code) WHERE m.district_code IS NULL
       UNION ALL

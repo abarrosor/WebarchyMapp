@@ -86,11 +86,13 @@ mossos_init <- function(con) {
     CREATE TABLE IF NOT EXISTS stg_mossos (
       month DATE, region VARCHAR, abp VARCHAR, title VARCHAR, offence VARCHAR, offence_key VARCHAR,
       known INTEGER, solved INTEGER, arrests INTEGER, file VARCHAR)")
-  types <- read_reference("mossos_types.csv", bool_cols = "sensitive")
-  types$offence_key <- normalize_text(types$source_text)
-  if (anyDuplicated(types$offence_key)) stop("reference/mossos_types.csv has repeated types: ",
-                                            toString(unique(types$source_text[duplicated(types$offence_key)])))
-  groups <- read_reference("mossos_groups.csv"); groups$sort_order <- as.integer(groups$sort_order)
+  # Offence types and their 13 groups from the shared file of the Mossos source (R/72_es_mossos.R):
+  # source_code = normalised offence, offence_type_id = group, sort_order = order of the group in the app
+  tf <- read_reference("es_mossos_offence_types.csv", bool_cols = "sensitive"); tf <- tf[tf$offence_type_id != "total", ]
+  types <- data.frame(offence_key = tf$source_code, group_id = tf$offence_type_id, sensitive = tf$sensitive, stringsAsFactors = FALSE)
+  if (anyDuplicated(types$offence_key)) stop("reference/es_mossos_offence_types.csv has repeated types: ", toString(unique(tf$source_text[duplicated(types$offence_key)])))
+  groups <- unique(data.frame(group_id = tf$offence_type_id, sort_order = as.integer(tf$sort_order), name_es = tf$name_local, name_en = tf$name_en, stringsAsFactors = FALSE))
+  groups <- groups[order(groups$sort_order), ]
   DBI::dbExecute(con, "CREATE TABLE IF NOT EXISTS ref_abp_municipality (abp_code VARCHAR, ine_code VARCHAR, district_code VARCHAR, file VARCHAR)")
   DBI::dbExecute(con, "CREATE TABLE IF NOT EXISTS ref_abp (abp_code VARCHAR, name VARCHAR, region_code VARCHAR)")
   mossos_abp_map(con)
@@ -153,7 +155,6 @@ abp_download <- function(days = 90) {
   download_versioned(src$abp_boundaries_url, src$dir_abp, name = "abp.geojson")
 }
 
-GPKG_ABP <- "data/territory_abp.gpkg"
 
 # Municipality -> ABP by geometry: the point on the surface of each Catalan municipality (IGN boundaries,
 # data/territory_es.gpkg) inside the ABP polygons. Barcelona itself is left out (its districts are ABPs).
@@ -207,9 +208,11 @@ abp_save <- function(con) {
     g <- sf::st_make_valid(g)
     g <- sf::st_transform(sf::st_simplify(sf::st_transform(g, 25831), dTolerance = 40), 4326)
     abp <- sf::st_sf(territory_id = paste0("ES-09-ABP-", sprintf("%02d", as.integer(g$codi_abp_mossos))),
-                     name = g$nom_abp_mossos, region_id = "ES-09", geometry = sf::st_geometry(g))
-    if (file.exists(GPKG_ABP)) file.remove(GPKG_ABP)
-    sf::st_write(abp, GPKG_ABP, layer = "abp", quiet = TRUE)
+                     name = g$nom_abp_mossos, region_id = "ES-09", province_id = NA_character_, geometry = sf::st_geometry(g))
+    # The police areas are a layer of the Spain GeoPackage (written by the ES territory step before this one)
+    gpkg_es <- if (exists("COUNTRY_MODULES") && !is.null(COUNTRY_MODULES$ES)) COUNTRY_MODULES$ES$gpkg else "data/territory_es.gpkg"
+    if (file.exists(gpkg_es)) { sf::st_write(abp, gpkg_es, layer = "police_area", quiet = TRUE, delete_layer = TRUE); message(sprintf("  police_area layer: %d polygons in %s", nrow(abp), gpkg_es)) }
+    else message("  (", gpkg_es, " not built yet: the police_area layer is written at the next run)")
     DBI::dbWriteTable(con, "ref_abp", data.frame(abp_code = sprintf("%02d", as.integer(g$codi_abp_mossos)),
                                                  name = g$nom_abp_mossos, region_code = g$codi_rp_mossos %||% NA_character_),
                       overwrite = TRUE)
@@ -217,7 +220,7 @@ abp_save <- function(con) {
   mossos_abp_map(con)
   message(sprintf("Police areas: %d ABP with %d municipalities%s%s", length(unique(tab$abp_code)), length(unique(tab$ine_code)),
                   if (!is.null(spatial)) " (assigned by geometry)" else " (CSV assignment: unreliable outside Barcelona)",
-                  if (length(f_geo) > 0) paste0("; boundaries in ", GPKG_ABP) else " (no boundaries)"))
+                  if (length(f_geo) > 0) "" else " (no boundaries)"))
   invisible(TRUE)
 }
 
@@ -246,12 +249,12 @@ mossos_ingest <- function(con) {
   }
   mossos_abp_map(con)
   unmapped <- DBI::dbGetQuery(con, "SELECT DISTINCT offence FROM v_mossos WHERE group_id = 'unmapped'")$offence
-  if (length(unmapped) > 0) message("Offence types without equivalence (reference/mossos_types.csv): ", paste(unmapped, collapse = " | "))
+  if (length(unmapped) > 0) message("Offence types without equivalence (reference/es_mossos_offence_types.csv): ", paste(unmapped, collapse = " | "))
   invisible(TRUE)
 }
 
-# Marts: Barcelona by district and month per offence group ('total' includes ALL
-# offences, sensitive ones too); Catalonia by ABP and year; ABP population and info
+# Marts of the Barcelona city panel: by district and month per offence group ('total' includes ALL
+# offences, sensitive ones too). Catalonia by police area lives in the shared country tables (R/72_es_mossos.R).
 mossos_marts <- function(con) {
   DBI::dbExecute(con, paste0("
     CREATE OR REPLACE TABLE mart_mossos_bcn_month AS
@@ -263,55 +266,6 @@ mossos_marts <- function(con) {
     ORDER BY ALL"))
   DBI::dbExecute(con, "CREATE OR REPLACE TABLE mart_mossos_groups AS SELECT * FROM ref_mossos_groups ORDER BY sort_order")
 
-  # Whole of Catalonia by ABP and year (January to the last month with data of that
-  # year). 'ES-09' = Catalonia WITHOUT the online reports with no place (ABP Virtual),
-  # so it can be compared with the ABPs. 'total' includes sensitive types too.
-  DBI::dbExecute(con, "
-    CREATE OR REPLACE TABLE mart_mossos_abp_year AS
-    WITH b AS (SELECT abp_code, abp, year(month) AS year, group_id, sensitive, known FROM v_mossos),
-    last AS (SELECT year(month) AS year, max(month(month)) AS to_month FROM stg_mossos GROUP BY 1),
-    x AS (
-      SELECT 'ES-09-ABP-' || abp_code AS territory_id, 'abp' AS level, year, group_id, sum(known) AS cumulative
-        FROM b WHERE abp_code IS NOT NULL AND NOT sensitive GROUP BY ALL
-      UNION ALL
-      SELECT 'ES-09-ABP-' || abp_code, 'abp', year, 'total', sum(known) FROM b WHERE abp_code IS NOT NULL GROUP BY ALL
-      UNION ALL
-      SELECT 'ES-09', 'region', year, group_id, sum(known) FROM b WHERE upper(abp) <> 'ABP VIRTUAL' AND NOT sensitive GROUP BY ALL
-      UNION ALL
-      SELECT 'ES-09', 'region', year, 'total', sum(known) FROM b WHERE upper(abp) <> 'ABP VIRTUAL' GROUP BY ALL)
-    SELECT x.territory_id, x.level, x.year, last.to_month, x.group_id, x.cumulative::INTEGER AS cumulative
-    FROM x JOIN last USING (year) ORDER BY ALL")
-
-  # Population of each ABP by year (INE). Barcelona districts share the municipal
-  # population according to the most recent city register.
-  if (DBI::dbExistsTable(con, "ref_population_municipality") && DBI::dbExistsTable(con, "mart_population") &&
-      DBI::dbGetQuery(con, "SELECT count(*) AS n FROM ref_abp_municipality")$n > 0) {
-    DBI::dbExecute(con, paste0("
-      CREATE OR REPLACE TABLE mart_population_abp AS
-      WITH m AS (SELECT abp_code, ine_code, district_code FROM ref_abp_municipality),
-      ine AS (SELECT right(territory_id, 5) AS ine_code, year, population FROM ref_population_municipality WHERE territory_id LIKE 'ES-09-%'),
-      dis AS (SELECT right(territory_id, 2) AS district_code, population * 1.0 / sum(population) OVER () AS share
-              FROM mart_population WHERE level = 'district' AND territory_id LIKE '", ID_BARCELONA, "-D%'),
-      p AS (
-        SELECT m.abp_code, i.year, i.population * 1.0 AS pop FROM m JOIN ine i USING (ine_code) WHERE m.district_code IS NULL
-        UNION ALL
-        SELECT m.abp_code, i.year, i.population * d.share FROM m JOIN ine i USING (ine_code) JOIN dis d USING (district_code)
-        WHERE m.district_code IS NOT NULL)
-      SELECT 'ES-09-ABP-' || abp_code AS territory_id, year, round(sum(pop))::INTEGER AS population
-      FROM p GROUP BY 1, 2 ORDER BY 1, 2"))
-    # Name of each ABP and the municipalities it covers (most populated first)
-    DBI::dbExecute(con, "
-      CREATE OR REPLACE TABLE mart_abp_info AS
-      WITH u AS (SELECT max(year) AS y FROM ref_population_municipality),
-      mu AS (SELECT DISTINCT m.abp_code, m.ine_code, m.district_code, i.name, i.population
-             FROM ref_abp_municipality m
-             LEFT JOIN ref_population_municipality i ON right(i.territory_id, 5) = m.ine_code AND i.year = (SELECT y FROM u))
-      SELECT 'ES-09-ABP-' || mu.abp_code AS territory_id, any_value(r.name) AS name,
-             count(DISTINCT mu.ine_code) AS n_municipalities,
-             string_agg(mu.name, ', ' ORDER BY mu.population DESC) AS municipalities,
-             bool_or(mu.district_code IS NOT NULL) AS barcelona_district
-      FROM mu LEFT JOIN ref_abp r USING (abp_code) GROUP BY mu.abp_code")
-  }
   DBI::dbExecute(con, paste0("
     CREATE OR REPLACE TABLE mart_mossos_meta AS
     SELECT 'Known and solved criminal offences and arrests (Mossos d''Esquadra)' AS source,

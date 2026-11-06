@@ -309,26 +309,6 @@ crime_balance_init <- function(con) {
       geography VARCHAR, level VARCHAR, territory_id VARCHAR, name VARCHAR,
       offence_type_source VARCHAR, offence_type_key VARCHAR, year INTEGER, quarter INTEGER, value DOUBLE,
       pub_year INTEGER, pub_quarter INTEGER, file VARCHAR)")
-  types <- read_reference("es_offence_types.csv", bool_cols = "sensitive")   # shared file of the Spain module (source_code = cb_type_key(source_text))
-  types$offence_type_key <- types$source_code; types$name_es <- types$name_local
-  if (anyDuplicated(types$offence_type_key))
-    stop("reference/es_offence_types.csv has repeated types: ", toString(unique(types$source_text[duplicated(types$offence_type_key)])))
-  DBI::dbWriteTable(con, "ref_crime_balance_types", as.data.frame(
-    types[, c("offence_type_key", "offence_type_id", "included_in", "sensitive", "name_es", "name_en")]), overwrite = TRUE)
-  # One row per territory x type x period, with the figure of the MOST RECENT
-  # publication (the Ministry revises the previous year).
-  # Types without equivalence: 'unmapped' and sensitive (not shown).
-  DBI::dbExecute(con, "
-    CREATE OR REPLACE VIEW v_crime_balance AS
-    SELECT s.territory_id, s.level, s.name, s.geography, s.year, s.quarter,
-           coalesce(c.offence_type_id, 'unmapped') AS offence_type_id, c.included_in,
-           coalesce(c.sensitive, TRUE) AS sensitive, c.name_es, c.name_en,
-           s.offence_type_source, s.value AS cumulative, s.pub_year, s.pub_quarter, s.file
-    FROM stg_crime_balance s
-    LEFT JOIN ref_crime_balance_types c USING (offence_type_key)
-    QUALIFY row_number() OVER (
-      PARTITION BY coalesce(s.territory_id, s.geography), s.offence_type_key, s.year, s.quarter
-      ORDER BY s.pub_year DESC, s.pub_quarter DESC) = 1")
   invisible(TRUE)
 }
 
@@ -395,7 +375,7 @@ crime_balance_ingest <- function(con, force = FALSE) {
   }))
 
   # 4. Quality checks
-  keys <- DBI::dbGetQuery(con, "SELECT offence_type_key FROM ref_crime_balance_types")$offence_type_key
+  keys <- read_reference("es_offence_types.csv")$source_code   # the shared type file of the Spain module (source_code = cb_type_key(label))
   for (nm in names(data)) {
     s <- stg[stg$file == nm, ]
     unmapped <- unique(s$offence_type_source[!s$offence_type_key %in% keys])
@@ -429,38 +409,4 @@ crime_balance_ingest <- function(con, force = FALSE) {
   message("Quality report: ", path)
   if (nrow(problems) > 0) print(problems, row.names = FALSE)
   invisible(report)
-}
-
-# --- Marts ------------------------------------------------------------------------------
-
-# mart_crime_balance: the whole country (country, regions, provinces, municipalities, islands).
-# `cumulative` is the official figure (January to quarter end); `quarterly` is the
-# difference between consecutive quarters of the same year (may be negative if the
-# Ministry revised the previous quarter).
-crime_balance_marts <- function(con) {
-  DBI::dbExecute(con, "
-    CREATE OR REPLACE TABLE mart_crime_balance AS
-    SELECT b.territory_id, b.level, coalesce(t.name, b.name) AS name, t.parent_id,
-           b.offence_type_id, b.included_in, b.sensitive, b.name_es, b.name_en,
-           b.year, b.quarter, b.cumulative,
-           CASE WHEN b.quarter = 1 THEN b.cumulative
-                WHEN lag(b.quarter) OVER w = b.quarter - 1 THEN b.cumulative - lag(b.cumulative) OVER w
-           END AS quarterly
-    FROM v_crime_balance b
-    LEFT JOIN dim_territory t USING (territory_id)
-    WHERE b.offence_type_id <> 'unmapped' AND b.territory_id IS NOT NULL
-    WINDOW w AS (PARTITION BY b.territory_id, b.offence_type_id, b.year ORDER BY b.quarter)
-    ORDER BY b.territory_id, b.offence_type_id, b.year, b.quarter")
-  DBI::dbExecute(con, "
-    CREATE OR REPLACE TABLE mart_crime_balance_meta AS
-    SELECT 'Crime Balance - Municipalities above 20,000 inhabitants and islands' AS source,
-           'Spanish Ministry of the Interior - Statistical Crime Portal' AS publisher,
-           'https://estadisticasdecriminalidad.ses.mir.es/publico/portalestadistico/balances' AS url,
-           'See the legal notice of the portal' AS licence,
-           'Known criminal offences (cumulative since January)' AS measure,
-           (SELECT min(year * 10 + quarter) FROM mart_crime_balance) AS first_period,
-           (SELECT max(year * 10 + quarter) FROM mart_crime_balance) AS last_period,
-           (SELECT max(loaded_at) FROM ingest_log WHERE source = 'crime_balance') AS loaded_at,
-           current_timestamp AS generated_at")
-  invisible(TRUE)
 }

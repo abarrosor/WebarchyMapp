@@ -10,8 +10,6 @@
 # (provinces and regions are unions of their municipalities), in WGS84, with the
 # project identifiers (ES-13-28-28079, ES-13-28, ES-13).
 
-GPKG_SPAIN <- "data/territory_es.gpkg"
-GPKG_SPAIN_OLD <- "data/territory_spain.gpkg"   # file of the previous layout, compared by es_parity() and removed in the clean-up
 
 municipal_boundaries_download <- function(days = 365) {
   src <- CONFIG$sources$municipal_boundaries
@@ -64,22 +62,4 @@ municipal_boundaries_build <- function() {
   reg <- reg[!duplicated(reg$territory_id), ]
   list(municipalities = mun[, c("territory_id", "name", "province_id", "region_id", "file")],
        provinces = prov[, c("territory_id", "name", "region_id")], regions = reg[, c("territory_id", "name")])
-}
-
-municipal_boundaries_save <- function(path = GPKG_SPAIN) {
-  g <- municipal_boundaries_build()
-  if (file.exists(path)) file.remove(path)
-  sf::st_write(g$municipalities, path, layer = "municipality", quiet = TRUE)
-  sf::st_write(g$provinces, path, layer = "province", append = TRUE, quiet = TRUE)
-  sf::st_write(g$regions, path, layer = "region", append = TRUE, quiet = TRUE)
-  message(sprintf("Boundaries saved: %s municipalities, %d provinces, %d regions in %s",
-                  fmt_int(nrow(g$municipalities)), nrow(g$provinces), nrow(g$regions), path))
-  invisible(g)
-}
-
-# Does the GeoPackage need (re)building? If missing or older than a source file
-municipal_boundaries_pending <- function(path = GPKG_SPAIN) {
-  files <- municipal_boundaries_files()
-  if (length(files) == 0) return(FALSE)
-  !file.exists(path) || any(file.mtime(files) > file.mtime(path))
 }

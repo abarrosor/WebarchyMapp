@@ -120,26 +120,3 @@ bcn_incidents_ingest <- function(con) {
 
 # Marts: same rules as the Madrid calls (month x neighbourhood x type, no
 # sensitive types, only the public-safety and coexistence blocks)
-bcn_incidents_marts <- function(con) {
-  blocks_sql <- paste(DBI::dbQuoteString(con, MARTS$blocks), collapse = ", ")
-  DBI::dbExecute(con, paste0("
-    CREATE OR REPLACE TABLE mart_bcn_incidents_month AS
-    SELECT month, neighbourhood_id, district_id, block, code AS call_type, sum(incidents)::INTEGER AS events
-    FROM v_bcn_incidents WHERE NOT sensitive AND block IN (", blocks_sql, ") GROUP BY ALL ORDER BY ALL"))
-  DBI::dbExecute(con, paste0("
-    CREATE OR REPLACE TABLE mart_bcn_incident_types AS
-    SELECT code AS call_type, block, name_es, name_en FROM ref_bcn_incident_types
-    WHERE NOT sensitive AND block IN (", blocks_sql, ")"))
-  DBI::dbExecute(con, paste0("
-    CREATE OR REPLACE TABLE mart_bcn_incidents_meta AS
-    SELECT 'Incidents handled by the Guardia Urbana in the city of Barcelona' AS source,
-           'Barcelona City Council - Guardia Urbana' AS publisher,
-           'https://opendata-ajuntament.barcelona.cat/data/en/dataset/incidents-gestionats-gub' AS url, 'CC BY 4.0' AS licence,
-           (SELECT min(month) FROM stg_bcn_incidents) AS first_month, (SELECT max(month) FROM stg_bcn_incidents) AS last_month,
-           (SELECT max(loaded_at) FROM ingest_log WHERE source = 'bcn_incidents') AS loaded_at,
-           (SELECT round(100.0 * sum(incidents) FILTER (neighbourhood_id IS NULL) / sum(incidents), 1)
-              FROM v_bcn_incidents WHERE NOT sensitive AND block IN (", blocks_sql, ")) AS pct_without_neighbourhood,
-           ", MARTS$threshold, " AS threshold,
-           (SELECT max(ref_date) FROM ref_population WHERE territory_id LIKE '", ID_BARCELONA, "-%') AS population_date"))
-  invisible(TRUE)
-}

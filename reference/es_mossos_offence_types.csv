@@ -1,113 +1,113 @@
-source_code,source_text,offence_type_id,name_local,name_en,included_in,sensitive
-TOTAL_MOSSOS,"(sum of every offence known, sensitive ones included; computed by the module)",total,Total (todos los delitos),Total (all offences),,no
-FURT,Furt,theft,Hurtos,Theft,total,no
-ROBATORI AMB VIOLENCIA I/O INTIMIDACIO,Robatori amb violència i/o intimidació,robbery_violence,Robos con violencia o intimidación,Robbery with violence or intimidation,total,no
-ROBATORI AMB FORÇA,Robatori amb força,burglary,Robos con fuerza (incluido interior de vehículos),Burglary (incl. from vehicles),total,no
-ROBATORI AMB FORÇA INTERIOR VEHICLE,Robatori amb força interior vehicle,burglary,Robos con fuerza (incluido interior de vehículos),Burglary (incl. from vehicles),total,no
-ROBATORI I FURT D'US DE VEHICLE,Robatori i furt d'us de vehicle,vehicle_theft,Robo o hurto de uso de vehículos,Vehicle theft,total,no
-DANYS,Danys,criminal_damage,Daños,Criminal damage,total,no
-ESTAFES,Estafes,fraud,Estafas y apropiaciones,Fraud and misappropriation,total,no
-APROPIACIO INDEGUDA,Apropiació indeguda,fraud,Estafas y apropiaciones,Fraud and misappropriation,total,no
-ADMINISTRACIO DESLLEIAL,Administració deslleial,fraud,Estafas y apropiaciones,Fraud and misappropriation,total,no
-DEFRAUDACIONS DE FLUID ELECTRIC I ANALOGUES,Defraudacions de fluid elèctric i anàlogues,fraud,Estafas y apropiaciones,Fraud and misappropriation,total,no
-LESIONS,Lesions,assault,Lesiones,Assault,total,no
-AMENACES,Amenaces,threats,Amenazas y coacciones,Threats and coercion,total,no
-COACCIONS,Coaccions,threats,Amenazas y coacciones,Threats and coercion,total,no
-CONTRA LA SALUT PUBLICA,Contra la salut pública,drugs,Contra la salud pública (drogas),Drug offences,total,no
-OCUPACIO IMMOBLES,Ocupació immobles,squatting,Ocupación y allanamiento,Squatting and trespass,total,no
-USURPACIO,Usurpació,squatting,Ocupación y allanamiento,Squatting and trespass,total,no
-ENTRADA A DOMICILI ALIE,Entrada a domicili aliè,squatting,Ocupación y allanamiento,Squatting and trespass,total,no
-ENTRADA A VIVENDA ALIENA,Entrada a vivenda aliena,squatting,Ocupación y allanamiento,Squatting and trespass,total,no
-ABANDONAMENT LLOC ACCIDENT,Abandonament lloc accident,road_safety,Seguridad vial,Road safety offences,total,no
-CONDUCCIO TEMERARIA,Conducció temerària,road_safety,Seguridad vial,Road safety offences,total,no
-CONDUIR SENSE PERMIS,Conduir sense permís,road_safety,Seguridad vial,Road safety offences,total,no
-CONDUIR SOTA ELS EFECTES D'ALCOHOL I DROGUES,Conduir sota els efectes d'alcohol i drogues,road_safety,Seguridad vial,Road safety offences,total,no
-NEGATIVA A SOTMETRE'S A LES PROVES,Negativa a sotmetre's a les proves,road_safety,Seguridad vial,Road safety offences,total,no
-ORIGINAR UN GREU RISC PER LA CIRCULACIO,Originar un greu risc per la circulació,road_safety,Seguridad vial,Road safety offences,total,no
-VELOCITAT PENALMENT PUNIBLE,Velocitat penalment punible,road_safety,Seguridad vial,Road safety offences,total,no
-DESORDRES PUBLICS,Desordres públics,public_order,Orden público,Public order,total,no
-ALTRES DELICTES CONTRA L'ORDRE PUBLIC,Altres delictes contra l'ordre públic,public_order,Orden público,Public order,total,no
-ORGANITZACIONS I GRUPS CRIMINALS,Organitzacions i grups criminals,public_order,Orden público,Public order,total,no
-ASSASSINAT CONSUMAT,Assassinat Consumat,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-ASSASSINAT TEMPTATIVA,Assassinat Temptativa,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-HOMICIDI CONSUMAT,Homicidi Consumat,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-HOMICIDI PER IMPRUDENCIA,Homicidi per imprudència,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-HOMICIDI TEMPTATIVA,Homicidi Temptativa,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-INDUCCIO I COOPERACIO AL SUICIDI,Inducció i cooperació al suïcidi,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-SUICIDI MENOR/DISC PER LES TIC,suicidi menor/disc per les tic,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-AGRESSIONS SEXUALS I ABUSOS SEXUALS,Agressions sexuals i Abusos sexuals,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-ASSETJAMENT SEXUAL,Assetjament sexual,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-EXHIBICIONISME I PROVOCACIO SEXUAL,Exhibicionisme i provocació sexual,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-RELATIUS A LA PROSTITUCIO,Relatius a la prostitució,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-RESTA DELICTES SEXUALS,Resta delictes sexuals,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-TORTURES,Tortures,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-TRACTE DEGRADANT / VEXATORI,Tracte degradant / vexatori,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-TRAFIC D'ESSERS HUMANS,Tràfic d'éssers humans,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-CONTRA ELS DRETS I DEURES FAMILIARS,Contra els drets i deures familiars,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-DETENCIO IL·LEGAL,Detenció il·legal,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-SEGREST,Segrest,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-AVORTAMENT,Avortament,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-LESIONS AL FETUS,Lesions al fetus,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-TRENCAMENT DE CONDEMNA,Trencament de condemna,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-DE LA USURPACIO DE L'ESTAT CIVIL,De la usurpació de l'estat civil,other,Otros delitos,Other offences,total,no
-FALSEDATS DOCUMENTALS,Falsedats documentals,other,Otros delitos,Other offences,total,no
-FALSIFICACIO DE MONEDA I EFECTES TIMBRATS,Falsificació de moneda i efectes timbrats,other,Otros delitos,Other offences,total,no
-USURPACIO DE FUNCIONS PUBLIQUES I INTRUSISME,Usurpació de funcions públiques i intrusisme,other,Otros delitos,Other offences,total,no
-BLANQUEIG DE CAPITALS,Blanqueig de capitals,other,Otros delitos,Other offences,total,no
-ALTERACIO DELS PREUS,Alteració dels preus,other,Otros delitos,Other offences,total,no
-EXTORSIO,Extorsió,other,Otros delitos,Other offences,total,no
-FRUSTRACIO D'EXECUCIO,Frustració d'execució,other,Otros delitos,Other offences,total,no
-MERCAT I CONSUMIDORS,Mercat i consumidors,other,Otros delitos,Other offences,total,no
-PROPIETAT INDUSTRIAL,Propietat industrial,other,Otros delitos,Other offences,total,no
-PROPIETAT INTEL·LECTUAL,Propietat intel·lectual,other,Otros delitos,Other offences,total,no
-RECEPTACIO I ALTRES CONDUCTES AFINS,Receptació i altres conductes afins,other,Otros delitos,Other offences,total,no
-SOCIETARIS,Societaris,other,Otros delitos,Other offences,total,no
-SOSTRACCIO DE COSA PROPIA D'UTILITAT SOCIAL,Sostracció de cosa pròpia d'utilitat social,other,Otros delitos,Other offences,total,no
-CONTRA ELS ANIMALS,Contra els animals,other,Otros delitos,Other offences,total,no
-CONTRA ELS DRETS DE CIUTADANS ESTRANGERS,Contra els drets de ciutadans estrangers,other,Otros delitos,Other offences,total,no
-CONTRA EXERCICI DRETS FONAMENTALS I LLIBERTATS PUBLIQUES,Contra exercici drets fonamentals i llibertats públiques,other,Otros delitos,Other offences,total,no
-"CONTRA LA LLIBERTAT DE CONSCIENCIA, RELIGIO I RESPECTE ALS DIFUNTS","Contra la llibertat de consciència, religió i respecte als difunts",other,Otros delitos,Other offences,total,no
-CONTRA LES INSTITUCIONS DE L'ESTAT I DIVISIO DE PODERS,Contra les institucions de l'Estat i divisió de poders,other,Otros delitos,Other offences,total,no
-DELS FUNCIONARIS PUBLICS CONTRA LES GARANTIES CONSTITUCIONALS,Dels funcionaris públics contra les garanties constitucionals,other,Otros delitos,Other offences,total,no
-"REUNIO, MANIFESTACIO IL·LICITA","Reunió, manifestació il·lícita",other,Otros delitos,Other offences,total,no
-"ACUSACIO, DENUNCIA FALSA I SIMULACIO DE DELICTES","Acusació, denúncia falsa i simulació de delictes",other,Otros delitos,Other offences,total,no
-ENCOBRIMENT,Encobriment,other,Otros delitos,Other offences,total,no
-FALS TESTIMONI,Fals testimoni,other,Otros delitos,Other offences,total,no
-OBSTRUCCIO A LA JUSTICIA I DESLLEIALTAT PROFESSIONAL,Obstrucció a la justícia i deslleialtat professional,other,Otros delitos,Other offences,total,no
-OMISSIO DELS DEURES D'IMPEDIR DELICTES,Omissió dels deures d'impedir delictes,other,Otros delitos,Other offences,total,no
-PREVARICACIO,Prevaricació,other,Otros delitos,Other offences,total,no
-REALITZACIO ARBITRARIA DEL PROPI DRET,Realització arbitrària del propi dret,other,Otros delitos,Other offences,total,no
-DESOBEDIENCIA I DENEGACIO D'AUXILI,Desobediència i denegació d'auxili,other,Otros delitos,Other offences,total,no
-INFIDELITAT CUSTODIA DOCUMENTS I VIOLACIO SECRETS,Infidelitat custòdia documents i violació secrets,other,Otros delitos,Other offences,total,no
-INFIDELITAT EN LA CUSTODIA DE DOCUMENTS I VIOLACIO DE SECRETS,Infidelitat en la custòdia de documents i violació de secrets,other,Otros delitos,Other offences,total,no
-MALVERSACIO,Malversació,other,Otros delitos,Other offences,total,no
-PREVARICACIO DE FUNCIONARIS PUBLICS,Prevaricació de funcionaris públics,other,Otros delitos,Other offences,total,no
-SUBORN,Suborn,other,Otros delitos,Other offences,total,no
-TRAFIC D'INFLUENCIES,Tràfic d'influències,other,Otros delitos,Other offences,total,no
-DESCOBRIMENT I REVELACIO DE SECRETS,Descobriment i revelació de secrets,other,Otros delitos,Other offences,total,no
-CALUMNIA,Calúmnia,other,Otros delitos,Other offences,total,no
-INJURIA,Injúria,other,Otros delitos,Other offences,total,no
-OMISSIO DEL DEURE DE SOCORS,Omissió del deure de socors,other,Otros delitos,Other offences,total,no
-CONTRA ELS DRETS DELS TREBALLADORS,Contra els drets dels treballadors,other,Otros delitos,Other offences,total,no
-HISENDA PUBLICA I SEGURETAT SOCIAL,Hisenda pública i seguretat social,other,Otros delitos,Other offences,total,no
-INCENDI,Incendi,other,Otros delitos,Other offences,total,no
-RISC CATASTROFIC,Risc catastròfic,other,Otros delitos,Other offences,total,no
-"TRAICIO, CONTRA LA PAU, INDEPENDENCIA DE L'ESTAT I DEFENSA NACIONAL","Traïció, contra la pau, independència de l'estat i defensa nacional",other,Otros delitos,Other offences,total,no
-CONTRA EL PATRIMONI HISTORIC,Contra el patrimoni històric,other,Otros delitos,Other offences,total,no
-CONTRA ELS RECURSOS NATURALS I EL MEDI AMBIENT,Contra els recursos naturals i el medi ambient,other,Otros delitos,Other offences,total,no
-CONTRA L'ORDENACIO DEL TERRITORI,Contra l'ordenació del territori,other,Otros delitos,Other offences,total,no
-"PROTECCIO DE LA FLORA, FAUNA I ANIMALS DOMESTICS","Protecció de la flora, fauna i animals domèstics",other,Otros delitos,Other offences,total,no
-FALTES CONTRA EL PATRIMONI,Faltes contra el patrimoni,other,Otros delitos,Other offences,total,no
-FALTES CONTRA LES PERSONES,Faltes contra les persones,other,Otros delitos,Other offences,total,no
-INSOLVENCIES PUNIBLES,Insolvències punibles,fraud,Estafas y apropiaciones,Fraud and misappropriation,total,no
-FALTES CONTRA L'ORDRE PUBLIC,Faltes contra l'ordre públic,public_order,Orden público,Public order,total,no
-CORRUPCIO ALS NEGOCIS,Corrupció als negocis,other,Otros delitos,Other offences,total,no
-CONTRA LA LLIBERTAT,Contra la llibertat,threats,Amenazas y coacciones,Threats and coercion,total,no
-CONTRA LA COMUNITAT INTERNACIONAL,Contra la comunitat internacional,other,Otros delitos,Other offences,total,no
-FALTES CONTRA ELS INTERESSOS GENERALS,Faltes contra els interessos generals,other,Otros delitos,Other offences,total,no
-EUTANASIA ACTIVA,Eutanàsia activa,sensitive,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
-ABANDO DE DESTI I OMISSIO DEURE PERSEGUIR DELICTES,Abandó de destí i omissió deure perseguir delictes,other,Otros delitos,Other offences,total,no
-NEGOCIACIONS I ACTIVITATS PROHIBIDES A FUNCIONARIS,Negociacions i activitats prohibides a funcionaris,other,Otros delitos,Other offences,total,no
-VIOLACIO DE SECRETS,Violació de secrets,other,Otros delitos,Other offences,total,no
-FRAUS I EXACCIONS IL·LEGALS,Fraus i exaccions il·legals,other,Otros delitos,Other offences,total,no
-CONTRA LA SEGURETAT COLECTIVA,Contra la seguretat colectiva,other,Otros delitos,Other offences,total,no
+source_code,source_text,offence_type_id,sort_order,name_local,name_en,included_in,sensitive
+TOTAL_MOSSOS,"(sum of every offence known, sensitive ones included; computed by the module)",total,0,Total (todos los delitos),Total (all offences),,no
+FURT,Furt,theft,1,Hurtos,Theft,total,no
+ROBATORI AMB VIOLENCIA I/O INTIMIDACIO,Robatori amb violència i/o intimidació,robbery_violence,2,Robos con violencia o intimidación,Robbery with violence or intimidation,total,no
+ROBATORI AMB FORÇA,Robatori amb força,burglary,3,Robos con fuerza (incluido interior de vehículos),Burglary (incl. from vehicles),total,no
+ROBATORI AMB FORÇA INTERIOR VEHICLE,Robatori amb força interior vehicle,burglary,3,Robos con fuerza (incluido interior de vehículos),Burglary (incl. from vehicles),total,no
+ROBATORI I FURT D'US DE VEHICLE,Robatori i furt d'us de vehicle,vehicle_theft,4,Robo o hurto de uso de vehículos,Vehicle theft,total,no
+DANYS,Danys,criminal_damage,5,Daños,Criminal damage,total,no
+ESTAFES,Estafes,fraud,8,Estafas y apropiaciones,Fraud and misappropriation,total,no
+APROPIACIO INDEGUDA,Apropiació indeguda,fraud,8,Estafas y apropiaciones,Fraud and misappropriation,total,no
+ADMINISTRACIO DESLLEIAL,Administració deslleial,fraud,8,Estafas y apropiaciones,Fraud and misappropriation,total,no
+DEFRAUDACIONS DE FLUID ELECTRIC I ANALOGUES,Defraudacions de fluid elèctric i anàlogues,fraud,8,Estafas y apropiaciones,Fraud and misappropriation,total,no
+LESIONS,Lesions,assault,6,Lesiones,Assault,total,no
+AMENACES,Amenaces,threats,7,Amenazas y coacciones,Threats and coercion,total,no
+COACCIONS,Coaccions,threats,7,Amenazas y coacciones,Threats and coercion,total,no
+CONTRA LA SALUT PUBLICA,Contra la salut pública,drugs,9,Contra la salud pública (drogas),Drug offences,total,no
+OCUPACIO IMMOBLES,Ocupació immobles,squatting,10,Ocupación y allanamiento,Squatting and trespass,total,no
+USURPACIO,Usurpació,squatting,10,Ocupación y allanamiento,Squatting and trespass,total,no
+ENTRADA A DOMICILI ALIE,Entrada a domicili aliè,squatting,10,Ocupación y allanamiento,Squatting and trespass,total,no
+ENTRADA A VIVENDA ALIENA,Entrada a vivenda aliena,squatting,10,Ocupación y allanamiento,Squatting and trespass,total,no
+ABANDONAMENT LLOC ACCIDENT,Abandonament lloc accident,road_safety,12,Seguridad vial,Road safety offences,total,no
+CONDUCCIO TEMERARIA,Conducció temerària,road_safety,12,Seguridad vial,Road safety offences,total,no
+CONDUIR SENSE PERMIS,Conduir sense permís,road_safety,12,Seguridad vial,Road safety offences,total,no
+CONDUIR SOTA ELS EFECTES D'ALCOHOL I DROGUES,Conduir sota els efectes d'alcohol i drogues,road_safety,12,Seguridad vial,Road safety offences,total,no
+NEGATIVA A SOTMETRE'S A LES PROVES,Negativa a sotmetre's a les proves,road_safety,12,Seguridad vial,Road safety offences,total,no
+ORIGINAR UN GREU RISC PER LA CIRCULACIO,Originar un greu risc per la circulació,road_safety,12,Seguridad vial,Road safety offences,total,no
+VELOCITAT PENALMENT PUNIBLE,Velocitat penalment punible,road_safety,12,Seguridad vial,Road safety offences,total,no
+DESORDRES PUBLICS,Desordres públics,public_order,11,Orden público,Public order,total,no
+ALTRES DELICTES CONTRA L'ORDRE PUBLIC,Altres delictes contra l'ordre públic,public_order,11,Orden público,Public order,total,no
+ORGANITZACIONS I GRUPS CRIMINALS,Organitzacions i grups criminals,public_order,11,Orden público,Public order,total,no
+ASSASSINAT CONSUMAT,Assassinat Consumat,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+ASSASSINAT TEMPTATIVA,Assassinat Temptativa,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+HOMICIDI CONSUMAT,Homicidi Consumat,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+HOMICIDI PER IMPRUDENCIA,Homicidi per imprudència,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+HOMICIDI TEMPTATIVA,Homicidi Temptativa,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+INDUCCIO I COOPERACIO AL SUICIDI,Inducció i cooperació al suïcidi,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+SUICIDI MENOR/DISC PER LES TIC,suicidi menor/disc per les tic,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+AGRESSIONS SEXUALS I ABUSOS SEXUALS,Agressions sexuals i Abusos sexuals,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+ASSETJAMENT SEXUAL,Assetjament sexual,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+EXHIBICIONISME I PROVOCACIO SEXUAL,Exhibicionisme i provocació sexual,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+RELATIUS A LA PROSTITUCIO,Relatius a la prostitució,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+RESTA DELICTES SEXUALS,Resta delictes sexuals,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+TORTURES,Tortures,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+TRACTE DEGRADANT / VEXATORI,Tracte degradant / vexatori,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+TRAFIC D'ESSERS HUMANS,Tràfic d'éssers humans,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+CONTRA ELS DRETS I DEURES FAMILIARS,Contra els drets i deures familiars,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+DETENCIO IL·LEGAL,Detenció il·legal,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+SEGREST,Segrest,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+AVORTAMENT,Avortament,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+LESIONS AL FETUS,Lesions al fetus,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+TRENCAMENT DE CONDEMNA,Trencament de condemna,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+DE LA USURPACIO DE L'ESTAT CIVIL,De la usurpació de l'estat civil,other,13,Otros delitos,Other offences,total,no
+FALSEDATS DOCUMENTALS,Falsedats documentals,other,13,Otros delitos,Other offences,total,no
+FALSIFICACIO DE MONEDA I EFECTES TIMBRATS,Falsificació de moneda i efectes timbrats,other,13,Otros delitos,Other offences,total,no
+USURPACIO DE FUNCIONS PUBLIQUES I INTRUSISME,Usurpació de funcions públiques i intrusisme,other,13,Otros delitos,Other offences,total,no
+BLANQUEIG DE CAPITALS,Blanqueig de capitals,other,13,Otros delitos,Other offences,total,no
+ALTERACIO DELS PREUS,Alteració dels preus,other,13,Otros delitos,Other offences,total,no
+EXTORSIO,Extorsió,other,13,Otros delitos,Other offences,total,no
+FRUSTRACIO D'EXECUCIO,Frustració d'execució,other,13,Otros delitos,Other offences,total,no
+MERCAT I CONSUMIDORS,Mercat i consumidors,other,13,Otros delitos,Other offences,total,no
+PROPIETAT INDUSTRIAL,Propietat industrial,other,13,Otros delitos,Other offences,total,no
+PROPIETAT INTEL·LECTUAL,Propietat intel·lectual,other,13,Otros delitos,Other offences,total,no
+RECEPTACIO I ALTRES CONDUCTES AFINS,Receptació i altres conductes afins,other,13,Otros delitos,Other offences,total,no
+SOCIETARIS,Societaris,other,13,Otros delitos,Other offences,total,no
+SOSTRACCIO DE COSA PROPIA D'UTILITAT SOCIAL,Sostracció de cosa pròpia d'utilitat social,other,13,Otros delitos,Other offences,total,no
+CONTRA ELS ANIMALS,Contra els animals,other,13,Otros delitos,Other offences,total,no
+CONTRA ELS DRETS DE CIUTADANS ESTRANGERS,Contra els drets de ciutadans estrangers,other,13,Otros delitos,Other offences,total,no
+CONTRA EXERCICI DRETS FONAMENTALS I LLIBERTATS PUBLIQUES,Contra exercici drets fonamentals i llibertats públiques,other,13,Otros delitos,Other offences,total,no
+"CONTRA LA LLIBERTAT DE CONSCIENCIA, RELIGIO I RESPECTE ALS DIFUNTS","Contra la llibertat de consciència, religió i respecte als difunts",other,13,Otros delitos,Other offences,total,no
+CONTRA LES INSTITUCIONS DE L'ESTAT I DIVISIO DE PODERS,Contra les institucions de l'Estat i divisió de poders,other,13,Otros delitos,Other offences,total,no
+DELS FUNCIONARIS PUBLICS CONTRA LES GARANTIES CONSTITUCIONALS,Dels funcionaris públics contra les garanties constitucionals,other,13,Otros delitos,Other offences,total,no
+"REUNIO, MANIFESTACIO IL·LICITA","Reunió, manifestació il·lícita",other,13,Otros delitos,Other offences,total,no
+"ACUSACIO, DENUNCIA FALSA I SIMULACIO DE DELICTES","Acusació, denúncia falsa i simulació de delictes",other,13,Otros delitos,Other offences,total,no
+ENCOBRIMENT,Encobriment,other,13,Otros delitos,Other offences,total,no
+FALS TESTIMONI,Fals testimoni,other,13,Otros delitos,Other offences,total,no
+OBSTRUCCIO A LA JUSTICIA I DESLLEIALTAT PROFESSIONAL,Obstrucció a la justícia i deslleialtat professional,other,13,Otros delitos,Other offences,total,no
+OMISSIO DELS DEURES D'IMPEDIR DELICTES,Omissió dels deures d'impedir delictes,other,13,Otros delitos,Other offences,total,no
+PREVARICACIO,Prevaricació,other,13,Otros delitos,Other offences,total,no
+REALITZACIO ARBITRARIA DEL PROPI DRET,Realització arbitrària del propi dret,other,13,Otros delitos,Other offences,total,no
+DESOBEDIENCIA I DENEGACIO D'AUXILI,Desobediència i denegació d'auxili,other,13,Otros delitos,Other offences,total,no
+INFIDELITAT CUSTODIA DOCUMENTS I VIOLACIO SECRETS,Infidelitat custòdia documents i violació secrets,other,13,Otros delitos,Other offences,total,no
+INFIDELITAT EN LA CUSTODIA DE DOCUMENTS I VIOLACIO DE SECRETS,Infidelitat en la custòdia de documents i violació de secrets,other,13,Otros delitos,Other offences,total,no
+MALVERSACIO,Malversació,other,13,Otros delitos,Other offences,total,no
+PREVARICACIO DE FUNCIONARIS PUBLICS,Prevaricació de funcionaris públics,other,13,Otros delitos,Other offences,total,no
+SUBORN,Suborn,other,13,Otros delitos,Other offences,total,no
+TRAFIC D'INFLUENCIES,Tràfic d'influències,other,13,Otros delitos,Other offences,total,no
+DESCOBRIMENT I REVELACIO DE SECRETS,Descobriment i revelació de secrets,other,13,Otros delitos,Other offences,total,no
+CALUMNIA,Calúmnia,other,13,Otros delitos,Other offences,total,no
+INJURIA,Injúria,other,13,Otros delitos,Other offences,total,no
+OMISSIO DEL DEURE DE SOCORS,Omissió del deure de socors,other,13,Otros delitos,Other offences,total,no
+CONTRA ELS DRETS DELS TREBALLADORS,Contra els drets dels treballadors,other,13,Otros delitos,Other offences,total,no
+HISENDA PUBLICA I SEGURETAT SOCIAL,Hisenda pública i seguretat social,other,13,Otros delitos,Other offences,total,no
+INCENDI,Incendi,other,13,Otros delitos,Other offences,total,no
+RISC CATASTROFIC,Risc catastròfic,other,13,Otros delitos,Other offences,total,no
+"TRAICIO, CONTRA LA PAU, INDEPENDENCIA DE L'ESTAT I DEFENSA NACIONAL","Traïció, contra la pau, independència de l'estat i defensa nacional",other,13,Otros delitos,Other offences,total,no
+CONTRA EL PATRIMONI HISTORIC,Contra el patrimoni històric,other,13,Otros delitos,Other offences,total,no
+CONTRA ELS RECURSOS NATURALS I EL MEDI AMBIENT,Contra els recursos naturals i el medi ambient,other,13,Otros delitos,Other offences,total,no
+CONTRA L'ORDENACIO DEL TERRITORI,Contra l'ordenació del territori,other,13,Otros delitos,Other offences,total,no
+"PROTECCIO DE LA FLORA, FAUNA I ANIMALS DOMESTICS","Protecció de la flora, fauna i animals domèstics",other,13,Otros delitos,Other offences,total,no
+FALTES CONTRA EL PATRIMONI,Faltes contra el patrimoni,other,13,Otros delitos,Other offences,total,no
+FALTES CONTRA LES PERSONES,Faltes contra les persones,other,13,Otros delitos,Other offences,total,no
+INSOLVENCIES PUNIBLES,Insolvències punibles,fraud,8,Estafas y apropiaciones,Fraud and misappropriation,total,no
+FALTES CONTRA L'ORDRE PUBLIC,Faltes contra l'ordre públic,public_order,11,Orden público,Public order,total,no
+CORRUPCIO ALS NEGOCIS,Corrupció als negocis,other,13,Otros delitos,Other offences,total,no
+CONTRA LA LLIBERTAT,Contra la llibertat,threats,7,Amenazas y coacciones,Threats and coercion,total,no
+CONTRA LA COMUNITAT INTERNACIONAL,Contra la comunitat internacional,other,13,Otros delitos,Other offences,total,no
+FALTES CONTRA ELS INTERESSOS GENERALS,Faltes contra els interessos generals,other,13,Otros delitos,Other offences,total,no
+EUTANASIA ACTIVA,Eutanàsia activa,sensitive,99,Sensibles (no se muestran por separado),Sensitive (not shown separately),total,yes
+ABANDO DE DESTI I OMISSIO DEURE PERSEGUIR DELICTES,Abandó de destí i omissió deure perseguir delictes,other,13,Otros delitos,Other offences,total,no
+NEGOCIACIONS I ACTIVITATS PROHIBIDES A FUNCIONARIS,Negociacions i activitats prohibides a funcionaris,other,13,Otros delitos,Other offences,total,no
+VIOLACIO DE SECRETS,Violació de secrets,other,13,Otros delitos,Other offences,total,no
+FRAUS I EXACCIONS IL·LEGALS,Fraus i exaccions il·legals,other,13,Otros delitos,Other offences,total,no
+CONTRA LA SEGURETAT COLECTIVA,Contra la seguretat colectiva,other,13,Otros delitos,Other offences,total,no

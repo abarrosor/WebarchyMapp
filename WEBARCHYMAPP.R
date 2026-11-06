@@ -32,7 +32,7 @@ options_menu <- c(
   "Rebuild the database from scratch",
   "Update only the other countries (Country menu of the app)",
   "Reload some countries or cities (type their codes; forces the reload after a fix)",
-  "Check the consistency of the other countries' data (report in reports/)"
+  "Check the consistency of the data (cities and countries; report in reports/)"
 )
 choice <- utils::menu(options_menu, title = "\nWebarchyMapp - What do you want to do?")
 switch(as.character(choice),

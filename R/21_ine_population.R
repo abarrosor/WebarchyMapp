@@ -37,49 +37,34 @@ ine_population_read <- function(path) {
   out[!is.na(region) & !is.na(out$year) & !is.na(out$population), ]
 }
 
-ine_population_init <- function(con) {
-  DBI::dbExecute(con, "
-    CREATE TABLE IF NOT EXISTS ref_population_municipality (
-      territory_id VARCHAR, name VARCHAR, year INTEGER, population INTEGER, file VARCHAR)")
-}
-
+# The register figures go straight into the shared ref_country_population of the Spain module
+# (municipality, province, region and country rows, country = 'ES'); nothing else keeps them.
 ine_population_ingest <- function(con) {
   src <- CONFIG$sources$ine_population
   f <- newest_first(list.files(src$dir_raw, "29005\\.csv$", full.names = TRUE))
   if (length(f) == 0) { message("No INE population file in ", src$dir_raw); return(invisible(NULL)) }
   f <- f[1]
   hash <- sha256_file(f)
-  if (hash %in% logged_hashes(con, "ine_population") &&
-      DBI::dbGetQuery(con, "SELECT count(*) AS n FROM ref_population_municipality")$n > 0) {
+  loaded <- DBI::dbGetQuery(con, "SELECT count(*) AS n FROM ref_country_population WHERE country = 'ES' AND level = 'municipality'")$n
+  if (hash %in% logged_hashes(con, "ine_population") && loaded > 0) {
     message("= ", basename(f), " (already loaded)")
     return(invisible(NULL))
   }
   pop <- ine_population_read(f)
   n_mun <- length(unique(pop$territory_id))
   if (n_mun < 8000) warning("Few municipalities in the INE table (", n_mun, "): check the file")
+  m <- pop[, c("territory_id", "year", "population")]
+  up <- function(level, id) m |> dplyr::group_by(territory_id = id, year) |> dplyr::summarise(population = sum(population), .groups = "drop") |> dplyr::mutate(level = level)
+  all <- dplyr::bind_rows(data.frame(m, level = "municipality"),
+                          up("province", sub("^(ES-[0-9]+-[0-9]+).*$", "\\1", m$territory_id)),
+                          up("region", sub("^(ES-[0-9]+).*$", "\\1", m$territory_id)),
+                          up("country", rep("ES", nrow(m))))
+  all$country <- "ES"; all$population <- as.numeric(all$population)
   DBI::dbWithTransaction(con, {
-    DBI::dbExecute(con, "DELETE FROM ref_population_municipality")
-    DBI::dbAppendTable(con, "ref_population_municipality", data.frame(pop, file = basename(f)))
+    DBI::dbExecute(con, "DELETE FROM ref_country_population WHERE country = 'ES' AND level IN ('municipality', 'province', 'region', 'country')")
+    DBI::dbAppendTable(con, "ref_country_population", as.data.frame(all[, c("country", "territory_id", "level", "year", "population")]))
     log_ingest(con, "ine_population", basename(f), hash, paste(range(pop$year), collapse = "-"), nrow(pop))
   })
   message(sprintf("+ %s: %s municipalities, years %d to %d", basename(f), fmt_int(n_mun), min(pop$year), max(pop$year)))
   invisible(pop)
-}
-
-# Population by municipality, province, region and country, for the whole of Spain
-ine_population_marts <- function(con) {
-  DBI::dbExecute(con, "
-    CREATE OR REPLACE TABLE mart_population_municipal AS
-    WITH m AS (SELECT territory_id, year, population FROM ref_population_municipality),
-    all_levels AS (
-      SELECT 'municipality' AS level, territory_id, year, population FROM m
-      UNION ALL
-      SELECT 'province', regexp_extract(territory_id, '^ES-[0-9]+-[0-9]+'), year, sum(population) FROM m GROUP BY 2, 3
-      UNION ALL
-      SELECT 'region', regexp_extract(territory_id, '^ES-[0-9]+'), year, sum(population) FROM m GROUP BY 2, 3
-      UNION ALL
-      SELECT 'country', 'ES', year, sum(population) FROM m GROUP BY 3
-    )
-    SELECT level, territory_id, year, population::INTEGER AS population FROM all_levels ORDER BY ALL")
-  invisible(TRUE)
 }

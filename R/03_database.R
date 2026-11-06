@@ -55,7 +55,7 @@ db_init <- function(con) {
       territory_id VARCHAR, ref_date DATE, population INTEGER, file VARCHAR,
       PRIMARY KEY (territory_id, ref_date))")
 
-  for (f in c("madrid_calls_init", "madrid_activity_init", "crime_balance_init", "ine_population_init",
+  for (f in c("madrid_calls_init", "madrid_activity_init", "crime_balance_init",
               "mossos_init", "bcn_incidents_init", "city_init", "country_init")) {
     if (exists(f, mode = "function")) do.call(f, list(con))
   }

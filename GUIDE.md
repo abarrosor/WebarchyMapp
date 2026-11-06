@@ -6,9 +6,12 @@ A personal R/RStudio project that downloads official open data about citizen saf
 
 | View | Data | Level | Source |
 |---|---|---|---|
-| **Spain** | Known criminal offences by region, province and municipality (> 20,000 inhabitants); in Catalonia also by police area (Mossos) | Quarter / year | Ministry of the Interior (Crime Balance); Mossos d'Esquadra; population INE; boundaries IGN |
+| **Country › Spain** (the app opens here) | Known criminal offences by region, province and municipality (> 20,000 inhabitants); in Catalonia also by police area (Mossos, a second source of the country) | Quarter / year | Ministry of the Interior (Crime Balance); Government of Catalonia |
+| **Country › 46 others** | Recorded offences (or complaints, cases...) by the levels each country publishes, from its official source; the About page lists them all | Quarter / year | National statistics offices, ministries, police forces, Eurostat |
+| **Countries (table)** | National rates per 100,000 inhabitants, with the warning that definitions differ between countries | Year | Eurostat |
 | **Cities › Madrid** | Calls received by the Municipal Police by neighbourhood; police activity by district; arrests by motive (city) | Month | Madrid City Council (datos.madrid.es) |
 | **Cities › Barcelona** | Incidents handled by the City Police by neighbourhood; recorded crime by district (Mossos) | Month | Barcelona City Council (Open Data BCN); Mossos |
+| **Cities › Lima and Callao** | Police complaints by distrito (the 50 distritos of Lima Metropolitana and the Callao) | Month | Ministry of the Interior of Peru (SIDPOL) |
 
 Every figure is shown with its source, what it measures and its limitations. Different sources are **never added together or compared with each other**: a call is not a crime, and Madrid's categories are not Barcelona's.
 
@@ -38,8 +41,8 @@ Every figure is shown with its source, what it measures and its limitations. Dif
 | 11 | Check whether the update is scheduled and how the last run went (`reports/update_*.log`) |
 | 12 | Rebuild the database from scratch from `data/raw/` (originals untouched) |
 | 13 | **Update every country** (the *Country* menu of the app, Spain included) and the Eurostat tables; option 1 includes them. A country whose raw and reference files did not change since its last load is kept as it is (Canada alone parses 50 GB); to reload one after a code fix: option 14, or `update_countries(only = "CA")` in the console |
-| 14 | **Reload some countries**: asks for the codes (`GBE GBS FI`, separated by spaces, no quotes) and reloads them even if their files did not change. Use it after a fix to one module. Spain is the code `ES` (Crime Balance, INE population, IGN boundaries, and its second source: the Mossos d'Esquadra by police area). The cities are modules too: `MAD` (Madrid) and `BCN` (Barcelona) |
-| 15 | **Check the consistency of the countries' data** (Spain included): duplicates, territories without name, cumulative figures that decrease, parts above the total, population coverage, polygons without territory, quarters in the future. Prints the findings and saves `reports/country_checks_<date>.csv`. Read-only |
+| 14 | **Reload some countries or cities**: asks for the codes (`GBE GBS FI`, separated by spaces, no quotes) and reloads them even if their files did not change. Use it after a fix to one module. Spain is `ES` (Crime Balance, INE population, IGN boundaries, and its second source, the Mossos d'Esquadra by police area); the cities are `MAD` (Madrid), `BCN` (Barcelona) and `LIM` (Lima and Callao) |
+| 15 | **Check the consistency of the data** (cities, then countries and their second sources): duplicates, territories without name, cumulative figures that decrease, parts above the total, population coverage, polygons without territory, quarters in the future. Prints the findings and saves `reports/country_checks_<date>.csv`. Read-only |
 
 The same actions exist as scripts in `scripts/` and `scripts/maintenance/`.
 
@@ -90,16 +93,18 @@ Quality reports of every load are in `reports/quality_<source>_*.csv`.
 
 ```
 WEBARCHYMAPP.R              the menu
-R/                      the code: one file per country module (R/71_es.R is Spain; R/7x, R/8x, R/9x the others),
-                        the Spanish readers it uses (R/20_, 21_, 22_), the city sources (R/10_, 11_, 30_, 31_);
-                        00_config.R has the folders, reference/<cc>_sources.csv the URLs of each country
+R/                      the code: the two frameworks (60_cities.R, 70_countries.R), one file per city module
+                        (61_city_madrid, 62_city_barcelona, 63_city_lima) and per country module (71_es.R is Spain,
+                        72_es_mossos.R its second source; 7x, 8x, 9x the others), the readers the Spanish modules
+                        use (10_, 11_, 20_, 21_, 22_, 30_, 31_), the marts (50_), the pipeline (60_pipeline.R),
+                        the checks (94_); 00_config.R has the folders, reference/<cc>_sources.csv the URLs
 app/                    the Shiny app (app.R, i18n.R, translations.csv)
 reference/              editable equivalence tables
 scripts/                entry points and maintenance scripts
 data/raw/country_<cc>/  original downloaded files of each country — never edited, never deleted
 data/raw/country_es/    Spain: crime_balance, ine_population, municipal_boundaries, mossos, abp
 data/raw/city_madrid/   Madrid: calls, activity, districts, neighbourhoods, census
-data/raw/city_barcelona/ Barcelona: incidents, boundaries, census
+data/raw/city_barcelona/ Barcelona: incidents, boundaries, census   (Lima and Callao use the Peru files)
 data/raw/shared/        GISCO, geoBoundaries, Natural Earth, Eurostat files used by several countries
 
 data/webarchymapp.duckdb    the database (rebuildable from data/raw)
@@ -107,7 +112,6 @@ data/territory_*.gpkg   official boundaries in WGS84
 reports/                quality reports and update logs
 ```
 
-`scripts/maintenance/remove_old_spanish.R` is the last trace of the move from the Spanish version (November 2026): run it once to delete the old quality reports (`reports/calidad_*.csv`) and the stale `.RData`, move your own copies of the Madrid CSV/PDF out of `Claude/02_datos/`, and it then removes itself. It asks before every step and never touches `data/raw/`.
 
 ## 8. Adding a country
 
@@ -117,7 +121,7 @@ Countries whose module could not be tested against the real files (the first dow
 
 ## 8b. Adding a city
 
-A city is one R file (`R/6x_city_<key>.R`) that registers itself with `register_city()` (code, key, municipality id, names, language, country, source, and the four functions `download()`, `territory(con)`, `ingest(con)`, `population(con)`). The territory step writes the districts and neighbourhoods into `dim_territory` and `data/territory_<key>.gpkg` (layer `territory`); the ingest step calls `publish_city_events()` with a view of monthly events by official neighbourhood and a type table (`type, block, sensitive, name_es, name_en`); the population step fills `ref_population` with the city register by neighbourhood. The framework (`R/60_cities.R`) builds `mart_city_events`, `mart_city_event_types` and `mart_city_meta`, and the app shows the city with the same map, filters and profile as Madrid and Barcelona. City-specific texts go in `translations.csv` as `key@<key>` variants. Use `R/62_city_barcelona.R` as the model (the Madrid one carries two extra panels of its own).
+A city is one R file (`R/6x_city_<key>.R`) that registers itself with `register_city()` (code, key, municipality id, names, language, country, source, and the four functions `download()`, `territory(con)`, `ingest(con)`, `population(con)`). The territory step writes the districts and neighbourhoods into `dim_territory` and `data/territory_<key>.gpkg` (layer `territory`); the ingest step calls `publish_city_events()` with a view of monthly events by official neighbourhood and a type table (`type, block, sensitive, name_es, name_en`); the population step fills `ref_population` with the city register by neighbourhood. The framework (`R/60_cities.R`) builds `mart_city_events`, `mart_city_event_types` and `mart_city_meta`, and the app shows the city with the same map, filters and profile as Madrid and Barcelona. City-specific texts go in `translations.csv` as `key@<key>` variants. Use `R/62_city_barcelona.R` as the model (the Madrid one carries two extra panels of its own), or `R/63_city_lima.R` for a city built on a country module's own data (it runs after the countries: `after_countries = TRUE`).
 
 ## 9. Adding a language
 

@@ -18,9 +18,11 @@
 #
 # Module fields: code ("MAD"), key ("madrid"), id (municipality id), name_en, name_local, lang, country,
 # source = list(name, publisher, url, licence, measure), download(), territory(con), ingest(con),
-# population(con). Optional: panels (ids of extra panels the app knows: "madrid_activity",
+# population(con). Optional: after_countries = TRUE (the city is built on a country module's data and runs
+# after the countries), panels (ids of extra panels the app knows: "madrid_activity",
 # "madrid_arrests", "mossos_districts"), note_territory = list(pattern, key) (a warning on territories
-# whose name matches), note_break = list(block, date, key) (a series break), about_*_key (About page texts).
+# whose name matches), note_break = list(block, date, key) (a series break), about_*_key (About page texts),
+# stats_level ("district" or "neighbourhood": what the statistics tab ranks by default).
 
 CITY_MODULES <- list()
 
@@ -85,7 +87,7 @@ city_marts <- function(con, threshold = MARTS$threshold) {
     data.frame(city = m$key, code = m$code, territory_id = m$id, country = m$country, name_en = m$name_en, name_local = m$name_local, lang = m$lang,
                source_name = m$source$name, source_local = m$source$name_local %||% m$source$name, publisher = m$source$publisher, url = m$source$url, licence = m$source$licence, measure = m$source$measure,
                first_month = per$first_month, last_month = per$last_month, loaded_at = loaded, pct_without_neighbourhood = pct, threshold = as.integer(threshold),
-               population_date = popd, gpkg = m$gpkg, panels = paste(m$panels %||% character(), collapse = ";"),
+               population_date = popd, gpkg = m$gpkg, panels = paste(m$panels %||% character(), collapse = ";"), stats_level = m$stats_level %||% "district",
                note_territory_pattern = m$note_territory$pattern %||% "", note_territory_key = m$note_territory$key %||% "",
                note_break_block = m$note_break$block %||% "", note_break_date = m$note_break$date %||% "", note_break_key = m$note_break$key %||% "",
                about_source_key = m$about_source_key %||% "", about_measures_key = m$about_measures_key %||% "", about_territory_key = m$about_territory_key %||% "",
@@ -98,9 +100,12 @@ city_marts <- function(con, threshold = MARTS$threshold) {
 }
 
 # --- Pipeline ------------------------------------------------------------------------------------------
-city_steps <- function(con, download = TRUE, only = NULL) {
+# `after_countries`: NULL = every city; TRUE / FALSE = only the cities built on a country module's data (a
+# module with after_countries = TRUE, run after country_steps()) or only the others
+city_steps <- function(con, download = TRUE, only = NULL, after_countries = NULL) {
   mods <- CITY_MODULES; if (!is.null(only)) mods <- mods[vapply(mods, function(m) m$code %in% only || m$key %in% only, logical(1))]
-  if (length(mods) == 0) { message("No city modules chosen."); return(invisible(FALSE)) }
+  if (!is.null(after_countries)) mods <- mods[vapply(mods, function(m) isTRUE(m$after_countries) == after_countries, logical(1))]
+  if (length(mods) == 0) { if (is.null(after_countries)) message("No city modules chosen."); return(invisible(FALSE)) }
   fetch <- function(label, expr) if (download) tryCatch(expr, error = function(e) message("Download not available (", label, "): ", conditionMessage(e), "\nContinuing with the files already in data/raw."))
   for (m in mods) {
     step(sprintf("%s (%s): %s", m$name_en, m$code, m$source$name))
@@ -135,33 +140,4 @@ city_status <- function(con) {
                     if (pop > 0) "" else " (no register: no rates)", if (file.exists(m$gpkg)) "" else " (no boundaries)"))
   }
   invisible(x)
-}
-
-# --- Parity with the per-city marts kept until the phase-4 clean-up ------------------------------------
-city_parity <- function(save = TRUE) {
-  with_db(function(con) {
-    has <- function(tb) tb %in% DBI::dbListTables(con)
-    out <- list(); add <- function(city, check, n, detail = "") out[[length(out) + 1]] <<- data.frame(city = city, check = check, n = as.integer(n), detail = detail, stringsAsFactors = FALSE)
-    old_of <- list(madrid = c("mart_madrid_calls_month", "mart_madrid_call_types"), barcelona = c("mart_bcn_incidents_month", "mart_bcn_incident_types"))
-    for (key in names(old_of)) {
-      if (!all(c(old_of[[key]], "mart_city_events") %in% DBI::dbListTables(con))) next
-      o <- DBI::dbGetQuery(con, paste0("SELECT month, neighbourhood_id, district_id, block, call_type AS event_type, events FROM ", old_of[[key]][1]))
-      n <- DBI::dbGetQuery(con, paste0("SELECT month, neighbourhood_id, district_id, block, event_type, events FROM mart_city_events WHERE city = ", DBI::dbQuoteString(con, key)))
-      k <- function(d) paste(d$month, d$neighbourhood_id, d$district_id, d$block, d$event_type)
-      j <- merge(o, n, by = c("month", "neighbourhood_id", "district_id", "block", "event_type"), all = TRUE, suffixes = c("_old", "_new"))
-      add(key, "rows_old", nrow(o)); add(key, "rows_new", nrow(n))
-      add(key, "only_in_old", sum(is.na(j$events_new))); add(key, "only_in_new", sum(is.na(j$events_old)))
-      add(key, "value_differences", sum(!is.na(j$events_old) & !is.na(j$events_new) & j$events_old != j$events_new))
-      to <- DBI::dbGetQuery(con, paste0("SELECT call_type FROM ", old_of[[key]][2]))$call_type
-      tn <- DBI::dbGetQuery(con, paste0("SELECT event_type FROM mart_city_event_types WHERE city = ", DBI::dbQuoteString(con, key)))$event_type
-      add(key, "types_only_in_old", length(setdiff(to, tn)), paste(utils::head(setdiff(to, tn), 5), collapse = ", ")); add(key, "types_only_in_new", length(setdiff(tn, to)), paste(utils::head(setdiff(tn, to), 5), collapse = ", "))
-    }
-    if (!length(out)) { message("Nothing to compare (run option 14 with MAD BCN first)."); return(invisible(NULL)) }
-    res <- do.call(rbind, out)
-    bad <- res$n[res$check %in% c("only_in_old", "only_in_new", "value_differences", "types_only_in_old", "types_only_in_new")]
-    message("City parity (old per-city marts vs shared city tables): ", if (all(bad == 0)) "IDENTICAL figures" else "DIFFERENCES found")
-    for (i in seq_len(nrow(res))) message(sprintf("  %-10s %-20s %9s  %s", res$city[i], res$check[i], fmt_int(res$n[i]), res$detail[i]))
-    if (save) { f <- file.path(CONFIG$dir_reports, paste0("parity_cities_", format(Sys.Date(), "%Y%m%d"), ".csv")); utils::write.csv(res, f, row.names = FALSE, fileEncoding = "UTF-8"); message("Saved: ", f) }
-    invisible(res)
-  })
 }

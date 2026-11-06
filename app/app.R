@@ -308,7 +308,7 @@ ui_city <- function(lang) {
       onDropdownClose = I("function() { var s = this; setTimeout(function() { if (!s.getValue() && s._prev) s.setValue(s._prev, true); }, 0); }")))
 
   filters <- tagList(
-    div(class = "facet", span(t("category"), info(paste(t("desc_public_safety"), t("desc_coexistence"))))),
+    div(class = "facet", span(t("category"), info(paste(vapply(BLOCKS, function(b) t(paste0("desc_", b)), ""), collapse = " ")))),
     radioButtons("block", NULL, choiceNames = lapply(BLOCKS, block_name, lang), choiceValues = BLOCKS),
     div(class = "facet", span(t("call_types")), span(actionLink("types_all", t("all")), " · ", actionLink("types_none", t("none")))),
     checkboxGroupInput("types", NULL, choices = character(0)),
@@ -337,8 +337,10 @@ ui_city <- function(lang) {
     bslib::nav_panel(t("nav_map"), value = "map", leafletOutput("map", height = "100%")),
     bslib::nav_panel(
       t("nav_stats"), value = "stats",
-      radioButtons("sort", t("sort_by"), inline = TRUE,
-                   choices = if (HAS_RATES) setNames(c("rate", "n"), c(t("sort_rate"), t("sort_number"))) else setNames("n", t("sort_number"))),
+      bslib::layout_columns(col_widths = c(6, 6), fill = FALSE,
+        radioButtons("stats_level", t("stats_level"), inline = TRUE, choices = setNames(c("district", "neighbourhood"), c(t("col_district"), t("col_neighbourhood"))), selected = STATS_LEVEL),
+        radioButtons("sort", t("sort_by"), inline = TRUE,
+                     choices = if (HAS_RATES) setNames(c("rate", "n"), c(t("sort_rate"), t("sort_number"))) else setNames("n", t("sort_number")))),
       uiOutput("stats_title"),
       bslib::layout_columns(col_widths = c(7, 5), fill = FALSE, plotOutput("stats_plot", height = "300px"), tableOutput("stats_table")),
       uiOutput("stats_notes"),
@@ -427,7 +429,7 @@ server_city <- function(input, output, session, lang) {
   output$map <- renderLeaflet({
     bb <- sf::st_bbox(geo_nb)
     leaflet(options = leafletOptions(minZoom = 10)) |>
-      addTiles(attribution = paste(ATTRIBUTION_OSM, "·", t("boundaries_by", t("council")))) |>
+      addTiles(attribution = paste(ATTRIBUTION_OSM, "·", t("boundaries_by", t("boundaries_source")))) |>
       layer_neighbourhoods(isolate(data()), isolate(input$shade) %||% shade_default(HAS_RATES), isolate(selection_text()), isolate(range()), lang) |>
       fitBounds(bb[["xmin"]], bb[["ymin"]], bb[["xmax"]], bb[["ymax"]])
   })
@@ -504,22 +506,24 @@ server_city <- function(input, output, session, lang) {
     if (any(low)) text(b[low], height[low], paste0("<", THRESHOLD), pos = 3, cex = 0.65, col = "#475569")
   }, res = 96)
 
-  # --- Statistics: top 5 districts (same filters) ---
+  # --- Statistics: the top districts (5) or neighbourhoods (10) by number or rate, same filters ---
   top5 <- reactive({
     d <- data(); by <- if (identical(input$sort, "rate") && HAS_RATES) "rate" else "n"
-    di <- d$districts[!is.na(d$districts[[by]]), ]
-    di <- di[order(-di[[by]]), ][seq_len(min(5, nrow(di))), ]
-    list(districts = di, city = d$city, by = by)
+    lvl <- input$stats_level %||% STATS_LEVEL
+    di <- if (lvl == "neighbourhood") { x <- d$neighbourhoods; x$name <- paste0(unname(name_of[x$territory_id]), " (", unname(name_of[unname(parent_of[x$territory_id])]), ")"); x } else d$districts
+    di <- di[!is.na(di[[by]]), ]
+    di <- di[order(-di[[by]]), ][seq_len(min(if (lvl == "neighbourhood") 10 else 5, nrow(di))), ]
+    list(districts = di, city = d$city, by = by, level = lvl)
   })
   output$stats_title <- renderUI({
     if (length(selected_types()) == 0) return(p(class = "note", t("no_type_selected")))
-    h5(class = "mt-2 mb-1", tags$b(t("top5")), " · ", selection_text(), " · ", fmt_range(range(), lang))
+    h5(class = "mt-2 mb-1", tags$b(t(if (identical(input$stats_level %||% STATS_LEVEL, "neighbourhood")) "top_neighbourhoods" else "top5")), " · ", selection_text(), " · ", fmt_range(range(), lang))
   })
   output$stats_plot <- renderPlot({
     x <- top5(); req(nrow(x$districts) > 0, length(selected_types()) > 0)
     v <- rev(x$districts[[x$by]]); lbl <- rev(x$districts$name)
     ref <- if (x$by == "rate") x$city$rate else NA
-    op <- par(mar = c(3, 9.5, 0.5, 3), las = 1); on.exit(par(op))
+    op <- par(mar = c(3, if (x$level == "neighbourhood") 13 else 9.5, 0.5, 3), las = 1, cex.axis = if (x$level == "neighbourhood") 0.8 else 1); on.exit(par(op))
     b <- barplot(v, names.arg = lbl, horiz = TRUE, col = "#3182bd", border = NA, xlim = c(0, max(v, ref, na.rm = TRUE) * 1.15))
     text(v, b, if (x$by == "rate") fmt_r(v, lang) else fmt_n(v, lang), pos = 4, cex = 0.85)
     if (!is.na(ref)) { abline(v = ref, lty = 2, col = "#475569"); mtext(t("city_average", fmt_r(ref, lang)), side = 1, line = 2, at = ref, cex = 0.8, col = "#475569") }
@@ -527,7 +531,7 @@ server_city <- function(input, output, session, lang) {
   output$stats_table <- renderTable({
     x <- top5(); req(nrow(x$districts) > 0, length(selected_types()) > 0)
     out <- data.frame(seq_len(nrow(x$districts)), x$districts$name, figure(x$districts$n, lang))
-    names(out) <- c(t("col_rank"), t("col_district"), t("col_calls"))
+    names(out) <- c(t("col_rank"), t(if (x$level == "neighbourhood") "col_neighbourhood" else "col_district"), t("col_calls"))
     if (HAS_RATES) {
       out[[t("col_rate")]]  <- ifelse(is.na(x$districts$rate), "—", fmt_r(x$districts$rate, lang))
       out[[t("col_ratio")]] <- ifelse(is.na(x$districts$rate), "—", sprintf(t("times"), fmt_r(x$districts$rate / x$city$rate, lang)))
@@ -754,6 +758,7 @@ make_city <- function(key) {
   e$base <- x$base; e$meta <- x$meta
   # Extra panels the module declares (each one has its own tables and code below), and the notes it asks for
   e$PANELS <- strsplit(x$meta$panels %||% "", ";")[[1]]
+  e$STATS_LEVEL <- if (identical(x$meta$stats_level, "neighbourhood")) "neighbourhood" else "district"   # level the statistics tab ranks by default
   e$NOTE_TERRITORY <- list(pattern = x$meta$note_territory_pattern %||% "", key = x$meta$note_territory_key %||% "")
   e$NOTE_BREAK <- list(block = x$meta$note_break_block %||% "", date = x$meta$note_break_date %||% "", key = x$meta$note_break_key %||% "")
   types <- x$types %||% data.frame(call_type = character(), name_es = character(), name_en = character())
@@ -764,7 +769,7 @@ make_city <- function(key) {
   pop <- POP_ALL[POP_ALL$territory_id == f$id | startsWith(POP_ALL$territory_id, paste0(f$id, "-")), ]
   e$HAS_RATES <- nrow(pop) > 0 && f$id %in% pop$territory_id
   e$pop_of <- if (e$HAS_RATES) setNames(pop$population, pop$territory_id) else c()
-  e$BLOCKS <- MARTS$blocks
+  e$BLOCKS <- MARTS$blocks[MARTS$blocks %in% unique(x$base$block)]   # only the categories this city's source publishes
   e$THRESHOLD <- x$meta$threshold[1] %||% MARTS$threshold
   e$MONTHS <- sort(unique(x$base$month))
   e$tr <- function(key, lang, ...) TR(key, lang, ..., city = CITY)
