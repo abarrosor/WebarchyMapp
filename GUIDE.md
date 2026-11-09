@@ -141,3 +141,7 @@ Add a column to `app/translations.csv` with the language code as header and tran
 ## 11. Known problems
 
 - **"LoadLibrary failure: Una directiva de Control de aplicaciones bloqueó este archivo"** (or the English "An Application Control policy has blocked this file") when a package loads, e.g. `classInt.dll`. Windows 11's Smart App Control checks the reputation of every DLL and blocks one it does not know; R packages are not signed, so a freshly updated package can be blocked while the rest load. Fix: stop the app, type `install.packages("<the package named>")` in the console (straight quotes), restart R and try again: the current CRAN binary usually has reputation. Seen 2026-11-09 with `classInt`; solved that way. If the new file is blocked too, the options are turning Smart App Control off (Windows Security → App & browser control; irreversible) or running R under WSL2.
+
+## 12. Licence
+
+The code and the reference tables are under the MIT License (file `LICENSE` in the project folder; decision P-034): anyone may use, copy, change and redistribute them, keeping the copyright notice; nothing is owed to the author, no warranty is given. The data is never distributed: `data/` stays out of the repository and every figure keeps the terms of the portal it came from (About the data). When publishing the repository, check that `.gitignore` still lists `data/`, `reports/` and `_old_spanish/`, and put your name or GitHub user in the copyright line of `LICENSE`.

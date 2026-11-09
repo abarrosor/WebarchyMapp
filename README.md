@@ -1,5 +1,7 @@
 # WebarchyMapp
 
+Code under the [MIT License](LICENSE) · data not distributed (see below) · personal, non-commercial project
+
 A personal, non-commercial map of **official crime and police figures** by territory: 47 countries of Europe and the Americas (48 sources: Spain carries the Mossos d'Esquadra as a second one) and 3 cities by neighbourhood (Madrid, Barcelona, Lima and Callao), built with R, DuckDB and Shiny from open data. Every source is shown on its own, with its unit, territory, period and licence; figures of different sources, countries or cities are **never added together or compared**, and the app gives no "safety score".
 
 The code, the reference tables (the project's own equivalence tables) and the documentation are what this repository holds. **The data is not distributed**: the pipeline downloads every file from its official portal under the portal's own terms, and `data/` (raw files, the DuckDB database, the GeoPackages) stays out of the repository.
@@ -80,9 +82,13 @@ Read from each module's metadata (`register_country()` / `register_city()`); the
 | Barcelona | Incidents handled by the Guardia Urbana in the city of Barcelona | Barcelona City Council - Guardia Urbana | CC BY 4.0 | opendata-ajuntament.barcelona.cat |
 | Lima and Callao | Police complaints (SIDPOL) by distrito | Ministerio del Interior (MININTER) / Policía Nacional del Perú, Plataforma Nacional de Datos Abiertos | Open Data Commons Attribution License (ODC-BY) | www.datosabiertos.gob.pe |
 
-## Licence of the code
+## Licence
 
-To be chosen before the first public release (MIT or AGPL-3.0; see the project's decision register, P-025). Until then: all rights reserved, personal use.
+The code, the reference tables in `reference/` (the project's own equivalence tables) and the documents of this repository are released under the **MIT License** (`LICENSE`): use, copy, modify and redistribute freely, for any purpose, keeping the copyright notice and the licence text. No warranty of any kind. If you build something on it, a note or an issue saying so is welcome, though not required.
+
+The licence covers the project's own work only. **It does not cover the data**: every figure the app shows is downloaded by the pipeline from its official portal and stays under that portal's own terms (table above); nothing in `data/` is part of the repository.
+
+The licence does not lift the project's principles either: the code refuses to add or compare different measures, suppresses small figures and keeps sensitive offences inside totals. Anyone may change that in a copy (MIT allows it), but a copy that does so is no longer WebarchyMapp and should not be presented as such.
 
 ## Principles
 
