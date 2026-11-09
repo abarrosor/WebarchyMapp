@@ -104,7 +104,9 @@ scripts/                entry points and maintenance scripts
 data/raw/country_<cc>/  original downloaded files of each country — never edited, never deleted
 data/raw/country_es/    Spain: crime_balance, ine_population, municipal_boundaries, mossos, abp
 data/raw/city_madrid/   Madrid: calls, activity, districts, neighbourhoods, census
-data/raw/city_barcelona/ Barcelona: incidents, boundaries, census   (Lima and Callao use the Peru files)
+data/raw/city_barcelona/ Barcelona: incidents, boundaries, census, survey (victimisation survey by district, CSV
+                        transcribed from the yearly report or exported from the Portal de Dades; see its README.txt)
+                        (Lima and Callao use the Peru files)
 data/raw/shared/        GISCO, geoBoundaries, Natural Earth, Eurostat files used by several countries
 
 data/webarchymapp.duckdb    the database (rebuildable from data/raw)
@@ -121,7 +123,7 @@ Countries whose module could not be tested against the real files (the first dow
 
 ## 8b. Adding a city
 
-A city is one R file (`R/6x_city_<key>.R`) that registers itself with `register_city()` (code, key, municipality id, names, language, country, source, and the four functions `download()`, `territory(con)`, `ingest(con)`, `population(con)`). The territory step writes the districts and neighbourhoods into `dim_territory` and `data/territory_<key>.gpkg` (layer `territory`); the ingest step calls `publish_city_events()` with a view of monthly events by official neighbourhood and a type table (`type, block, sensitive, name_es, name_en`); the population step fills `ref_population` with the city register by neighbourhood. The framework (`R/60_cities.R`) builds `mart_city_events`, `mart_city_event_types` and `mart_city_meta`, and the app shows the city with the same map, filters and profile as Madrid and Barcelona. City-specific texts go in `translations.csv` as `key@<key>` variants. Use `R/62_city_barcelona.R` as the model (the Madrid one carries two extra panels of its own), or `R/63_city_lima.R` for a city built on a country module's own data (it runs after the countries: `after_countries = TRUE`).
+A city is one R file (`R/6x_city_<key>.R`) that registers itself with `register_city()` (code, key, municipality id, names, language, country, source, and the four functions `download()`, `territory(con)`, `ingest(con)`, `population(con)`). The territory step writes the districts and neighbourhoods into `dim_territory` and `data/territory_<key>.gpkg` (layer `territory`); the ingest step calls `publish_city_events()` with a view of monthly events by official neighbourhood and a type table (`type, block, sensitive, name_es, name_en`); the population step fills `ref_population` with the city register by neighbourhood. The framework (`R/60_cities.R`) builds `mart_city_events`, `mart_city_event_types` and `mart_city_meta`, and the app shows the city with the same map, filters and profile as Madrid and Barcelona. City-specific texts go in `translations.csv` as `key@<key>` variants. A city may also carry a **survey** (victimisation, perception of security): `register_city_survey(key, list(id, name, publisher, url, licence, measure, ingest))`, whose `ingest(con)` calls `publish_city_survey()` with yearly values by city or district and the indicator definitions; the app shows it in the profile as a measure of its own (Barcelona's Enquesta de Victimització is the model, at the end of `R/62_city_barcelona.R`). Use `R/62_city_barcelona.R` as the model (the Madrid one carries two extra panels of its own), or `R/63_city_lima.R` for a city built on a country module's own data (it runs after the countries: `after_countries = TRUE`).
 
 ## 9. Adding a language
 
@@ -135,3 +137,7 @@ Add a column to `app/translations.csv` with the language code as header and tran
 4. Figures below 10 are suppressed after adding up the chosen months.
 5. Totals never mix blocks, measures or sources.
 6. No rankings of neighbourhoods; the district top 5 always shows rates, raw numbers and the city average, with a note on transient population.
+
+## 11. Known problems
+
+- **"LoadLibrary failure: Una directiva de Control de aplicaciones bloqueó este archivo"** (or the English "An Application Control policy has blocked this file") when a package loads, e.g. `classInt.dll`. Windows 11's Smart App Control checks the reputation of every DLL and blocks one it does not know; R packages are not signed, so a freshly updated package can be blocked while the rest load. Fix: stop the app, type `install.packages("<the package named>")` in the console (straight quotes), restart R and try again: the current CRAN binary usually has reputation. Seen 2026-11-09 with `classInt`; solved that way. If the new file is blocked too, the options are turning Smart App Control off (Windows Security → App & browser control; irreversible) or running R under WSL2.

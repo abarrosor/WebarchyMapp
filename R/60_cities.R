@@ -42,7 +42,38 @@ city_init <- function(con) {
   DBI::dbExecute(con, "
     CREATE TABLE IF NOT EXISTS ref_city_event_types (
       city VARCHAR, event_type VARCHAR, block VARCHAR, name_local VARCHAR, name_en VARCHAR, sensitive BOOLEAN)")
+  # Surveys (victimisation, perception of security): yearly indicators by city or district, a measure of
+  # what the records miss, never mixed with the events (P-033)
+  DBI::dbExecute(con, "
+    CREATE TABLE IF NOT EXISTS stg_city_survey (
+      city VARCHAR, year INTEGER, territory_id VARCHAR, indicator VARCHAR, value DOUBLE, sample INTEGER, file VARCHAR)")
+  DBI::dbExecute(con, "
+    CREATE TABLE IF NOT EXISTS ref_city_survey_indicators (
+      city VARCHAR, indicator VARCHAR, name_local VARCHAR, name_en VARCHAR, unit VARCHAR, definition_en VARCHAR, definition_local VARCHAR, higher_is VARCHAR)")
   invisible(TRUE)
+}
+
+# A survey of a city (register_city_survey(key, list(id, name, name_local, publisher, url, licence, measure,
+# download, ingest))): ingest(con) fills stg_city_survey (year, territory_id = the city or one of its
+# districts, indicator, value, sample) and ref_city_survey_indicators (indicator, names, unit, definition,
+# higher_is = "worse" / "better") through publish_city_survey(). Shown in the city profile and in About.
+register_city_survey <- function(key, s) {
+  if (is.null(CITY_MODULES[[key]])) stop("register_city_survey: city ", key, " is not registered")
+  needed <- c("id", "name", "publisher", "url", "licence", "measure", "ingest")
+  missing <- setdiff(needed, names(s)); if (length(missing)) stop("Survey ", s$id %||% "?", " of ", key, " lacks: ", toString(missing))
+  CITY_MODULES[[key]]$survey <<- s
+  invisible(s)
+}
+
+publish_city_survey <- function(con, key, values, indicators, file) {
+  v <- data.frame(city = key, year = as.integer(values$year), territory_id = values$territory_id, indicator = values$indicator, value = as.numeric(values$value),
+                  sample = if (!is.null(values$sample)) as.integer(values$sample) else NA_integer_, file = file, stringsAsFactors = FALSE)
+  replace_city_rows(con, "stg_city_survey", key, v)
+  i <- data.frame(city = key, indicator = indicators$indicator, name_local = indicators$name_local, name_en = indicators$name_en, unit = indicators$unit,
+                  definition_en = indicators$definition_en, definition_local = indicators$definition_local %||% indicators$definition_en, higher_is = indicators$higher_is %||% "worse", stringsAsFactors = FALSE)
+  replace_city_rows(con, "ref_city_survey_indicators", key, i)
+  message(sprintf("  %s survey: %d values, %d indicators, %d-%d, %d territories", key, nrow(v), nrow(i), min(v$year), max(v$year), length(unique(v$territory_id))))
+  invisible(v)
 }
 
 # Replace the rows of one city in a shared city table
@@ -91,11 +122,24 @@ city_marts <- function(con, threshold = MARTS$threshold) {
                note_territory_pattern = m$note_territory$pattern %||% "", note_territory_key = m$note_territory$key %||% "",
                note_break_block = m$note_break$block %||% "", note_break_date = m$note_break$date %||% "", note_break_key = m$note_break$key %||% "",
                about_source_key = m$about_source_key %||% "", about_measures_key = m$about_measures_key %||% "", about_territory_key = m$about_territory_key %||% "",
+               method_where = m$method$where %||% "", method_date = m$method$date %||% "", method_revisions = m$method$revisions %||% "",
                stringsAsFactors = FALSE)
   })
   meta <- if (length(rows)) do.call(rbind, rows) else data.frame()
   meta <- meta[!is.na(meta$first_month), ]
   DBI::dbWriteTable(con, "mart_city_meta", meta, overwrite = TRUE)
+  # Surveys: values with their indicator names, and one metadata row per city survey
+  DBI::dbExecute(con, "
+    CREATE OR REPLACE TABLE mart_city_survey AS
+    SELECT v.city, v.year, v.territory_id, v.indicator, v.value, v.sample, i.name_local, i.name_en, i.unit, i.definition_en, i.definition_local, i.higher_is
+    FROM stg_city_survey v JOIN ref_city_survey_indicators i ON i.city = v.city AND i.indicator = v.indicator ORDER BY ALL")
+  srows <- lapply(CITY_MODULES, function(m) { s <- m$survey; if (is.null(s)) return(NULL)
+    per <- DBI::dbGetQuery(con, paste0("SELECT min(year) AS y0, max(year) AS y1, count(*) AS n FROM stg_city_survey WHERE city = ", DBI::dbQuoteString(con, m$key)))
+    if (is.na(per$y0)) return(NULL)
+    data.frame(city = m$key, survey_id = s$id, name_en = s$name, name_local = s$name_local %||% s$name, publisher = s$publisher, url = s$url, licence = s$licence, measure = s$measure,
+               first_year = per$y0, last_year = per$y1, values = per$n, stringsAsFactors = FALSE) })
+  srows <- Filter(Negate(is.null), srows)
+  DBI::dbWriteTable(con, "mart_city_survey_meta", if (length(srows)) do.call(rbind, srows) else data.frame(city = character(), survey_id = character(), name_en = character(), name_local = character(), publisher = character(), url = character(), licence = character(), measure = character(), first_year = integer(), last_year = integer(), values = integer()), overwrite = TRUE)
   invisible(TRUE)
 }
 
@@ -113,6 +157,10 @@ city_steps <- function(con, download = TRUE, only = NULL, after_countries = NULL
     attempt(paste(m$code, "territory not loaded"), m$territory(con))
     attempt(paste(m$code, "data not loaded"), m$ingest(con))
     attempt(paste(m$code, "population not loaded (no rates per 1,000 residents)"), m$population(con))
+    if (!is.null(m$survey)) {
+      if (!is.null(m$survey$download)) fetch(paste(m$code, "survey"), m$survey$download())
+      attempt(paste(m$code, "survey not loaded"), m$survey$ingest(con))
+    }
   }
   invisible(TRUE)
 }

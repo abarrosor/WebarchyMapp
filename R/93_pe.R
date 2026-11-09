@@ -368,6 +368,7 @@ register_country(list(
   boundaries_attribution = "OCHA COD / IGN Perú (CC BY-IGO) or geoBoundaries (CC BY 4.0)",
   measure_labels = list(kind = "complaints", title = c("Police complaints", "Denuncias policiales"), noun = c("complaints", "denuncias")),
   not_published = c("No complaints registered or not published", "Sin denuncias registradas o no publicado"),
+  method = list(where = "Distrito of the police station where the complaint was filed, not where the facts happened", date = "Month the complaint was filed; complete quarters only", revisions = "The whole series is republished every month; the most recent file is kept. Registration rules changed in December 2022 and in April and November 2024 (robbery, virtual complaints)"),
   notes_en = "Complaints filed at police stations, not verified offences, counted where they are filed (commercial and transit districts look higher). 'Otros' (about a third of the complaints) is not broken down. Registration changes cause level shifts (robbery +52% Dec 2022, -27% Apr 2024, -28% Nov 2024 when virtual complaints stopped being counted): never compare periods across them. Lima Metropolitana = provincia de Lima (43 distritos); Callao is its own departamento.",
   default_region = "PE-15",
   download = pe_download, ingest = pe_ingest, territory = pe_territory, population = pe_population

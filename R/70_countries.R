@@ -23,6 +23,9 @@
 # noun), source$name_local, source$publisher_local, population_source_local, not_published (English, local) or not_published_key / not_published_legend_key (translation
 # keys when the texts exist in every language), notes_en, default_region, zoom_widths (c(region, province):
 # view width in degrees under which the map changes level; else proportional to the country).
+# method = list(where, date, revisions): short English sentences on where an event is counted (where it
+# happened / where it was reported), which date (occurrence / report / registration) and how the source
+# revises its figures; shown in the About page.
 # A second source of a country (register_source(cc, list(id, name, ..., levels, level_labels, covers,
 # download, ingest, territory, population))) is shown in the app as a switch of source when the reader
 # is inside the territory it covers (`covers`: a region id, or the country code).
@@ -347,7 +350,10 @@ country_marts <- function(con) {
     not_published_key = (s$not_published_key %||% m$not_published_key) %||% "", not_published_legend_key = (s$not_published_legend_key %||% m$not_published_legend_key) %||% "",
     title_key = s$title_key %||% "", help_key = s$help_key %||% "", notes_key = s$notes_key %||% "", source_text_key = s$source_text_key %||% "", breakdown_note_key = s$breakdown_note_key %||% "",
     zoom_region = unname(m$zoom_widths["region"]) %||% NA_real_, zoom_province = unname(m$zoom_widths["province"]) %||% NA_real_,
-    notes_en = (s$notes_en %||% m$notes_en) %||% "", notes_local = (s$notes_local %||% m$notes_local) %||% "", default_region = m$default_region %||% "", stringsAsFactors = FALSE)
+    notes_en = (s$notes_en %||% m$notes_en) %||% "", notes_local = (s$notes_local %||% m$notes_local) %||% "", default_region = m$default_region %||% "",
+    # How the source counts (About page, "How each source counts"): where the event is counted, which date, revisions policy
+    method_where = (s$method %||% m$method)$where %||% "", method_date = (s$method %||% m$method)$date %||% "", method_revisions = (s$method %||% m$method)$revisions %||% "",
+    stringsAsFactors = FALSE)
   rows <- unlist(lapply(COUNTRY_MODULES, function(m) c(list(meta_row(m)), lapply(m$sources %||% list(), function(s) meta_row(m, s)))), recursive = FALSE)
   meta <- if (length(rows) > 0) do.call(rbind, rows) else data.frame()
   loaded <- DBI::dbGetQuery(con, "SELECT country, source, min(year * 10 + quarter) AS first_period, max(year * 10 + quarter) AS last_period, count(*) AS rows FROM stg_country_crime GROUP BY 1, 2")

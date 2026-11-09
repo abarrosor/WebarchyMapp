@@ -90,6 +90,7 @@ lima_population <- function(con) {
 register_city(list(
   code = "LIM", key = "lima", id = ID_LIMA, name_en = "Lima and Callao", name_local = "Lima y Callao", lang = "es", country = "PE", after_countries = TRUE,
   stats_level = "neighbourhood",   # the statistics rank the 50 distritos, not the two provinces
+  method = list(where = "Distrito of the police station where the complaint was filed, not where the facts happened", date = "Month the complaint was filed", revisions = "The whole series is republished every month; registration rules changed in 2022 and 2024"),
   source = list(name = "Police complaints (SIDPOL) by distrito", name_local = "Denuncias policiales (SIDPOL) por distrito",
                 publisher = "Ministerio del Interior (MININTER) / Policía Nacional del Perú, Plataforma Nacional de Datos Abiertos",
                 url = "https://www.datosabiertos.gob.pe/dataset/denuncias-policiales", licence = "Open Data Commons Attribution License (ODC-BY)",

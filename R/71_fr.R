@@ -170,6 +170,7 @@ register_country(list(
                 licence = "Licence Ouverte 2.0", measure = "Offences recorded by the Police nationale and the Gendarmerie nationale, yearly, 15 indicators (no official total: the total shown is their sum)."),
   population_source = "INSEE (inside the SSMSI files)", boundaries_attribution = "© EuroGeographics for the administrative boundaries (Eurostat GISCO LAU)",
   not_published = c("Not published: 5 facts or fewer in one of the last three years (SSMSI rule)", "Non diffusé : 5 faits ou moins une des trois dernières années (règle SSMSI)"),
+  method = list(where = "Commune where the offence was committed (lieu de commission)", date = "Year of recording by police or gendarmerie", revisions = "A new annual base replaces the previous one each year"),
   notes_en = "Communes with 5 facts or fewer in any of three consecutive years are not published; violence indicators were redefined in 2025.",
   default_region = "FR-11",
   download = fr_download, ingest = fr_ingest, territory = fr_territory, population = fr_population

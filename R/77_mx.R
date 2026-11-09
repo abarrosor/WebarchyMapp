@@ -399,6 +399,7 @@ register_country(list(
   boundaries_attribution = "geoBoundaries (www.geoboundaries.org), CC BY 4.0; ADM2 polygons from 2012 matched to current municipios by name",
   measure_labels = list(kind = "alleged_offences", title = c("Alleged offences recorded (fuero común)", "Presuntos delitos registrados (fuero común)"), noun = c("alleged offences", "presuntos delitos")),
   not_published = c("No suppression threshold: SESNSP publishes every figure, zeros included", "Sin umbral de supresión: el SESNSP publica todas las cifras, incluidos los ceros"),
+  method = list(where = "Municipality of the prosecutor's office that opened the investigation file (carpeta de investigación)", date = "Month the file was opened; complete quarters only", revisions = "Monthly republication of the whole series with retroactive corrections; the most recent file is kept"),
   notes_en = "Prosecutor files, not police incidents: very high under-reporting (ENVIPE 'cifra negra' above 90%) and uneven recording practices between states; monthly files are revised retroactively; 'Tipo de delito' is the leaf category except Homicidio, Lesiones and Robo (split by subtipo); negligent homicide and injuries are counted in the total but not listed.",
   default_region = "MX-09",
   download = mx_download, ingest = mx_ingest, territory = mx_territory, population = mx_population

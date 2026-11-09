@@ -37,6 +37,7 @@ register_city(list(
                 url = "https://datos.madrid.es/dataset/837676-0-incidencias-recibidas-en-la-emisora-central-de-policia-municipal", licence = "CC BY 4.0",
                 measure = "Calls received by the central dispatch, by opening type (what was reported, not what was verified), month, district and neighbourhood. They are not offences."),
   panels = c("madrid_activity", "madrid_arrests"),
+  method = list(where = "Neighbourhood of the address the caller gave to the central dispatch", date = "Date the call was received", revisions = "Monthly files, not revised; the source publishes the previous month"),
   note_territory = list(pattern = "Guindalera", key = "guindalera"),
   about_source_key = "about_src_calls", about_measures_key = "about_calls_measures", about_territory_key = "about_madrid_territory",
   download = madrid_city_download, territory = madrid_city_territory, ingest = madrid_city_ingest, population = madrid_city_population

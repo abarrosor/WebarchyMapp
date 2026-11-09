@@ -42,6 +42,8 @@ POP_ALL   <- q("SELECT * FROM mart_population") %||% data.frame(territory_id = c
 CITY_META  <- q("SELECT * FROM mart_city_meta")
 CITY_EV    <- q("SELECT * FROM mart_city_events")
 CITY_TYPES <- q("SELECT * FROM mart_city_event_types")
+CITY_SURVEY <- q("SELECT * FROM mart_city_survey")                       # victimisation / perception surveys by city and district (yearly)
+CITY_SURVEY_META <- q("SELECT * FROM mart_city_survey_meta")
 CITY_SOURCES <- if (has_rows(CITY_META)) setNames(lapply(seq_len(nrow(CITY_META)), function(i) { m <- CITY_META[i, ]; list(id = m$territory_id, code = m$code, gpkg = m$gpkg, meta = m) }), CITY_META$city) else list()
 RAW <- lapply(CITY_SOURCES, function(x) {
   key <- x$meta$city
@@ -140,7 +142,15 @@ lc <- function(x) paste0(tolower(substr(x, 1, 1)), substr(x, 2, nchar(x)))   # "
 # It is a comparison of recorded figures, never a safety or danger score.
 CMP_LEVELS <- c("cmp_much_lower", "cmp_lower", "cmp_similar", "cmp_higher", "cmp_much_higher")
 CMP_COLOURS <- c("#dbe7f6", "#bdd7e7", "#8fbbdc", "#4f94cb", "#1d5fa6")
-comparison_block <- function(rate, ref_rate, rates_all, ref_label, unit_label, group_label, lang) {
+# Percentile band of a rank among n (highest rates first in the wording): top 10 %, upper quarter, middle half, lower quarter, bottom 10 %
+percentile_band <- function(rank, n, lang) {
+  if (n < 10) return(NULL)
+  p <- (rank - 0.5) / n   # share of places with a lower rate
+  TR(if (p >= 0.9) "band_top10" else if (p >= 0.75) "band_upper" else if (p > 0.25) "band_middle" else if (p > 0.1) "band_lower" else "band_bottom10", lang)
+}
+MIN_EVENTS_STABLE <- 30   # below this many events a rate or a change is marked as unstable (Poisson noise)
+
+comparison_block <- function(rate, ref_rate, rates_all, ref_label, unit_label, group_label, lang, n_events = NA) {
   t <- function(k, ...) TR(k, lang, ...)
   if (is.na(rate) || is.na(ref_rate) || ref_rate <= 0) return(NULL)
   ratio <- rate / ref_rate
@@ -148,14 +158,32 @@ comparison_block <- function(rate, ref_rate, rates_all, ref_label, unit_label, g
   all <- sort(rates_all[!is.na(rates_all)]); n <- length(all)
   rank <- sum(all < rate) + 1
   pct <- round(100 * abs(ratio - 1))
-  diff_text <- if (pct == 0) t("cmp_same", ref_label) else if (ratio < 1) t("cmp_below", pct, ref_label) else t("cmp_above", pct, ref_label)
+  diff_text <- if (pct == 0) t("cmp_same", ref_label) else if (ratio < 1) t("cmp_below", pct, ref_label) else if (ratio >= 1.995) t("cmp_times", fmt_r(ratio, lang), ref_label) else t("cmp_above", pct, ref_label)
+  band <- percentile_band(rank, n, lang)
   div(class = "cmp",
     div(class = "cmp-head", span(class = "cmp-title", t("cmp_title", ref_label), info(t("cmp_note"))),
         span(class = "cmp-pill", style = paste0("background:", CMP_COLOURS[lvl], ";color:", if (lvl >= 4) "#fff" else "#1f2933"), t(CMP_LEVELS[lvl]))),
     div(class = "cmp-bar", div(class = "cmp-fill", style = paste0("width:", if (n > 1) round(100 * (rank - 1) / (n - 1)) else 50, "%;background:", CMP_COLOURS[lvl]))),
     div(class = "cmp-rate", paste0(fmt_r(rate, lang), " ‰")),
     div(class = "cmp-sub", unit_label),
-    div(class = "cmp-sub", diff_text, if (n > 1) paste0(" · ", t("cmp_rank", rank, n, group_label))))
+    div(class = "cmp-sub", diff_text, if (n > 1) paste0(" · ", t("cmp_rank", rank, n, group_label)), if (!is.null(band)) paste0(" · ", band)),
+    if (!is.na(n_events) && n_events < MIN_EVENTS_STABLE) div(class = "cmp-sub text-warning-emphasis", t("cmp_unstable", n_events)))
+}
+
+# Area (km2) and density of one territory from its polygon, for the profile line
+area_density <- function(geo, id, population, lang) {
+  if (is.null(geo) || !"territory_id" %in% names(geo)) return(NULL)
+  g <- geo[geo$territory_id == id, ]; if (nrow(g) == 0) return(NULL)
+  km2 <- as.numeric(sf::st_area(sf::st_make_valid(g[1, ]))) / 1e6
+  if (!is.finite(km2) || km2 <= 0) return(NULL)
+  TR("area_density", lang, fmt_r(km2, lang), if (is.na(population) || population <= 0) "—" else fmt_n(round(population / km2), lang))
+}
+
+# "The 10 % of <units> with most <events> hold X % of them (a of b)": concentration of a vector of counts
+concentration_text <- function(n, unit_label, noun, lang) {
+  n <- n[!is.na(n)]; if (length(n) < 10 || sum(n) <= 0) return(NULL)
+  n <- sort(n, decreasing = TRUE); k <- max(1, ceiling(0.1 * length(n)))
+  TR("concentration", lang, 10, unit_label, noun, round(100 * sum(n[seq_len(k)]) / sum(n)), k, length(n))
 }
 
 # --- Styles -----------------------------------------------------------------------
@@ -163,6 +191,11 @@ CSS <- "
   .bslib-page-navbar .bslib-sidebar-layout > .main { padding: 0; }
   .tab-pane[data-value='stats'] { padding: 1rem 1.25rem !important; }
   #map { height: 100% !important; min-height: 420px; }
+  /* The button that hides and shows the sidebar: a visible tab above the map (leaflet controls sit at z-index 1000) */
+  .bslib-sidebar-layout > .collapse-toggle { z-index: 1100; background: #fff; border: 1px solid rgba(0,0,0,.3); border-radius: .5rem; box-shadow: 0 1px 5px rgba(0,0,0,.3); width: 1.9rem; height: 2.8rem; display: flex; align-items: center; justify-content: center; color: #222; }
+  .bslib-sidebar-layout > .collapse-toggle:hover { background: #f1f3f5; }
+  .bslib-sidebar-layout.sidebar-collapsed > .collapse-toggle { left: .35rem; }
+  .bslib-sidebar-layout.sidebar-collapsed > .main > *:first-child { margin-left: 2.6rem; }   /* room for the button next to the first title */
   .bslib-sidebar-layout > .sidebar > .sidebar-content { padding: .75rem .85rem; gap: .5rem; }
   .sidebar .form-group, .sidebar .shiny-input-container { margin-bottom: .25rem; }
   .sidebar .control-label { font-weight: 600; font-size: .85rem; margin-bottom: .1rem; }
@@ -344,6 +377,8 @@ ui_city <- function(lang) {
       uiOutput("stats_title"),
       bslib::layout_columns(col_widths = c(7, 5), fill = FALSE, plotOutput("stats_plot", height = "300px"), tableOutput("stats_table")),
       uiOutput("stats_notes"),
+      tags$hr(), uiOutput("season_title"),
+      bslib::layout_columns(col_widths = c(7, 5), fill = FALSE, plotOutput("season_plot", height = "260px"), uiOutput("season_notes")),
       if ("madrid_arrests" %in% PANELS && HAS_ARR) tagList(
         tags$hr(), uiOutput("arr_title"),
         bslib::layout_columns(col_widths = c(5, 7), fill = FALSE, div(class = "table-sp", uiOutput("arr_table")),
@@ -471,10 +506,13 @@ server_city <- function(input, output, session, lang) {
       div(class = "kpis",
           kpi(figure(row$n, lang), t("k_calls")),
           if (HAS_RATES) kpi(if (is.na(row$rate)) "—" else fmt_r(row$rate, lang), t("k_rate")),
-          if (HAS_RATES) kpi(if (is.na(ratio)) "—" else sprintf(t("times"), fmt_r(ratio, lang)), t("k_ratio"))),
-      if (HAS_RATES) comparison_block(row$rate, d$city$rate, d$neighbourhoods$rate, t("city"), paste(t("k_calls"), t("k_rate")), t("cmp_neighbourhoods"), lang),
+          if (HAS_RATES) kpi(if (is.na(ratio)) "—" else sprintf(t("times"), fmt_r(ratio, lang)), tagList(t("k_ratio"), info(t("lq_note"))))),
+      if (HAS_RATES) comparison_block(row$rate, d$city$rate, d$neighbourhoods$rate, t("city"), paste(t("k_calls"), t("k_rate")), t("cmp_neighbourhoods"), lang, n_events = row$n),
+      { ad <- area_density(geo_nb, id, unname(pop_of[id]), lang); if (!is.null(ad)) div(class = "sub", ad) },
       if (!is.na(ratio) && ratio >= 2) div(class = "alert alert-info", HTML(t("ratio_note", fmt_r(ratio, lang)))),
       if (HAS_RATES && isTRUE(pop_of[id] < 5000)) div(class = "alert alert-secondary", t("few_residents")),
+      if (!is.na(row$n) && row$n < MIN_EVENTS_STABLE) div(class = "alert alert-secondary", t("few_events", MIN_EVENTS_STABLE)),
+      if (HAS_SURVEY) survey_block(dis_id, lang),
       if (nzchar(NOTE_BREAK$block) && identical(input$block, NOTE_BREAK$block) && r[1] < as.Date(NOTE_BREAK$date) && r[2] >= as.Date(NOTE_BREAK$date))
         div(class = "alert alert-warning", t(NOTE_BREAK$key)),
       if (nzchar(NOTE_TERRITORY$pattern) && grepl(NOTE_TERRITORY$pattern, name_of[[id]], ignore.case = TRUE)) div(class = "alert alert-warning", t(NOTE_TERRITORY$key)),
@@ -519,6 +557,30 @@ server_city <- function(input, output, session, lang) {
     if (length(selected_types()) == 0) return(p(class = "note", t("no_type_selected")))
     h5(class = "mt-2 mb-1", tags$b(t(if (identical(input$stats_level %||% STATS_LEVEL, "neighbourhood")) "top_neighbourhoods" else "top5")), " · ", selection_text(), " · ", fmt_range(range(), lang))
   })
+  # --- Seasonal profile at city level: average events by calendar month over the complete years, for the chosen types ---
+  season <- reactive({
+    req(length(selected_types()) > 0)
+    d <- base[base$block == input$block & base$call_type %in% selected_types(), ]
+    if (nrow(d) == 0) return(NULL)
+    m <- d |> group_by(month) |> summarise(n = sum(events), .groups = "drop")
+    m$year <- as.integer(format(m$month, "%Y")); m$mo <- as.integer(format(m$month, "%m"))
+    full <- names(which(table(m$year) == 12)); m <- m[m$year %in% as.integer(full), ]
+    if (nrow(m) == 0) return(NULL)
+    avg <- m |> group_by(mo) |> summarise(n = mean(n), .groups = "drop")
+    list(avg = avg, years = sort(as.integer(full)), total = sum(m$n))
+  })
+  output$season_title <- renderUI({ s <- season(); if (is.null(s)) return(NULL); h5(class = "mt-2 mb-1", tags$b(t("seasonal_title")), " · ", selection_text(), " · ", if (length(s$years) == 1) s$years else paste(min(s$years), "–", max(s$years))) })
+  output$season_plot <- renderPlot({
+    s <- season(); req(!is.null(s))
+    op <- par(mar = c(3, 4, 0.5, 0.5), las = 1); on.exit(par(op))
+    v <- s$avg$n[match(1:12, s$avg$mo)]; v[is.na(v)] <- 0
+    b <- barplot(v, names.arg = substr(month_names(lang, TRUE), 1, 3), col = "#4e79a7", border = NA, ylab = "")
+    abline(h = mean(v), lty = 2, col = "#555")
+  }, res = 96)
+  output$season_notes <- renderUI({ s <- season(); if (is.null(s)) return(NULL)
+    v <- s$avg$n[match(1:12, s$avg$mo)]; hi <- which.max(v); lo <- which.min(v)
+    p(class = "note", t("seasonal_note", length(s$years), month_names(lang, FALSE)[hi], fmt_r(100 * (v[hi] / mean(v, na.rm = TRUE) - 1), lang), month_names(lang, FALSE)[lo], fmt_r(100 * (1 - v[lo] / mean(v, na.rm = TRUE)), lang)), " ", info(t("seasonal_info")))
+  })
   output$stats_plot <- renderPlot({
     x <- top5(); req(nrow(x$districts) > 0, length(selected_types()) > 0)
     v <- rev(x$districts[[x$by]]); lbl <- rev(x$districts$name)
@@ -540,7 +602,11 @@ server_city <- function(input, output, session, lang) {
   }, striped = TRUE, spacing = "s", align = "l")
   output$stats_notes <- renderUI({
     req(length(selected_types()) > 0); x <- top5()
-    p(class = "note mt-2", t("stats_note", fmt_n(x$city$n, lang), if (HAS_RATES) t("stats_total_rate", fmt_r(x$city$rate, lang)) else ""))
+    conc <- concentration_text(if (x$level == "neighbourhood") data()$neighbourhoods$n else data()$districts$n, t(if (x$level == "neighbourhood") "cmp_neighbourhoods" else "cmp_districts"), t("k_calls"), lang)
+    tagList(
+      if (!is.null(conc)) p(class = "note mt-2", conc, " ", info(t("concentration_note"))),
+      if (HAS_RATES) p(class = "note", t("lq_table_note")),
+      p(class = "note mt-2", t("stats_note", fmt_n(x$city$n, lang), if (HAS_RATES) t("stats_total_rate", fmt_r(x$city$rate, lang)) else "")))
   })
 
   # --- Madrid: people arrested or investigated by motive (whole city) ---
@@ -746,7 +812,7 @@ source_block <- function(lang) {
 
 CITY_FUNCTIONS <- c("figure", "type_name", "month_labels", "view_months", "view_label", "compute", "ui_city", "server_city",
                     "neighbourhood_labels", "layer_neighbourhoods", "layer_selection", "rates_block", "mossos_block", "activity_block",
-                    "reading_block", "source_block")
+                    "reading_block", "source_block", "survey_block")
 
 # Prepare the environment of a city (NULL if data or boundaries are missing)
 make_city <- function(key) {
@@ -759,6 +825,9 @@ make_city <- function(key) {
   # Extra panels the module declares (each one has its own tables and code below), and the notes it asks for
   e$PANELS <- strsplit(x$meta$panels %||% "", ";")[[1]]
   e$STATS_LEVEL <- if (identical(x$meta$stats_level, "neighbourhood")) "neighbourhood" else "district"   # level the statistics tab ranks by default
+  e$SURVEY <- if (has_rows(CITY_SURVEY)) CITY_SURVEY[CITY_SURVEY$city == key, ] else NULL
+  e$SURVEY_META <- if (has_rows(CITY_SURVEY_META) && key %in% CITY_SURVEY_META$city) CITY_SURVEY_META[CITY_SURVEY_META$city == key, ][1, ] else NULL
+  e$HAS_SURVEY <- has_rows(e$SURVEY)
   e$NOTE_TERRITORY <- list(pattern = x$meta$note_territory_pattern %||% "", key = x$meta$note_territory_key %||% "")
   e$NOTE_BREAK <- list(block = x$meta$note_break_block %||% "", date = x$meta$note_break_date %||% "", key = x$meta$note_break_key %||% "")
   types <- x$types %||% data.frame(call_type = character(), name_es = character(), name_en = character())
@@ -785,6 +854,30 @@ make_city <- function(key) {
 # territory it covers. The functions below run inside one environment per
 # country (make_country), where CC, CB, CB_ALL, POPM, GEO_*, SP_LEVELS... are that country's.
 # =============================================================================
+
+# --- City survey block: the latest value of each indicator for the district and the city, and the last years ---
+survey_block <- function(dis_id, lang) {
+  t <- function(k, ...) TR(k, lang, ..., city = CITY)
+  s <- SURVEY; if (!has_rows(s)) return(NULL)
+  loc <- function(en, local) if (lang == "es" || lang == "ca") local else en
+  blocks <- lapply(unique(s$indicator), function(ind) {
+    si <- s[s$indicator == ind, ]; d <- si[si$territory_id == dis_id, ]; c0 <- si[si$territory_id == CITY_ID, ]
+    if (nrow(d) == 0 && nrow(c0) == 0) return(NULL)
+    years <- sort(unique(c(d$year, c0$year)), decreasing = TRUE)[1:min(5, length(unique(c(d$year, c0$year))))]
+    val <- function(x, y) { v <- x$value[x$year == y]; if (length(v)) fmt_r(v[1], lang) else "—" }
+    last <- years[1]
+    u <- if (startsWith(si$unit[1] %||% "", "%")) " %" else paste0(" ", si$unit[1])
+    tagList(
+      h6(class = "mt-3 mb-1", loc(si$name_en[1], si$name_local[1]), " ", info(loc(si$definition_en[1], si$definition_local[1]))),
+      div(class = "sub", t("survey_latest", last, val(d, last), u, val(c0, last))),
+      tags$table(class = "table table-sm mt-1", tags$thead(tags$tr(tags$th(""), lapply(years, function(y) tags$th(class = "text-end", y)))),
+        tags$tbody(tags$tr(tags$td(name_of[[dis_id]] %||% dis_id), lapply(years, function(y) tags$td(class = "text-end", val(d, y)))),
+                   tags$tr(class = "ref", tags$td(CITY_NAME), lapply(years, function(y) tags$td(class = "text-end", val(c0, y)))))))
+  })
+  blocks <- Filter(Negate(is.null), blocks); if (!length(blocks)) return(NULL)
+  div(class = "survey mt-2", h5(class = "mb-0", t("survey_title"), info(t("survey_note"))), blocks,
+      if (!is.null(SURVEY_META)) p(class = "note", SURVEY_META$publisher, if (nzchar(SURVEY_META$url %||% "")) tagList(" · ", tags$a(href = SURVEY_META$url, target = "_blank", t("more_info")))))
+}
 
 # Offence types that can be chosen (no sensitive ones) of a type table, its aggregates first
 cb_types <- function(lang, tt = CB_TYPE_TABLE, aggregates = AGGREGATES) {
@@ -1086,9 +1179,11 @@ server_country <- function(input, output, session, lang) {
       div(class = "kpis",
           kpi(if (is.na(f$n)) t("less_than", MARTS$threshold) else fmt_n(f$n, lang), tt("sp_k_n")),
           kpi(if (is.na(f$rate)) "—" else fmt_r(f$rate, lang), t("sp_k_rate")),
-          if (id != x$ref_id) kpi(if (is.na(f$ratio)) "—" else sprintf(t("times"), fmt_r(f$ratio, lang)), x$vs_ref)),
+          if (id != x$ref_id) kpi(if (is.na(f$ratio)) "—" else sprintf(t("times"), fmt_r(f$ratio, lang)), tagList(x$vs_ref, info(t("lq_note"))))),
       if (id != x$ref_id) comparison_block(f$rate, x$d$rate[x$d$territory_id == x$ref_id][1], x$d$rate[x$d$level == x$level], x$ref_name,
-                                           paste(tt("sp_k_n"), t("sp_k_rate")), lc(LEVEL_LABEL(x$level, lang)), lang),
+                                           paste(tt("sp_k_n"), t("sp_k_rate")), lc(LEVEL_LABEL(x$level, lang)), lang, n_events = f$n),
+      { ad <- area_density(GEO_LEVEL(x$level), id, f$population, lang); if (!is.null(ad)) div(class = "sub", ad) },
+      if (!is.na(f$n) && f$n < MIN_EVENTS_STABLE) div(class = "alert alert-secondary small py-1", t("few_events", MIN_EVENTS_STABLE)),
       if (x$per$n == 1 && x$per$to_month < 12) div(class = "alert alert-secondary small py-1", t("sp_partial_note", month_names(lang, TRUE)[x$per$to_month])),
       if (x$per$n > 1) div(class = "alert alert-secondary small py-1", t("sp_range_note", x$per$n, x$per$year), if (x$per$dropped_partial) paste0(" ", t("sp_range_dropped"))))
   })
@@ -1156,11 +1251,13 @@ server_country <- function(input, output, session, lang) {
       cell(if (is.na(r$population)) "—" else fmt_n(r$population, lang)), cell(if (is.na(r$n)) t("less_than", MARTS$threshold) else fmt_n(r$n, lang)),
       cell(if (is.na(r$rate)) "—" else fmt_r(r$rate, lang)), cell(if (is.na(r$ratio) || r$territory_id == x$ref_id) "—" else sprintf(t("times"), fmt_r(r$ratio, lang))))
     if (nrow(main) == 0) return(p(class = "note", t("sp_no_data")))
-    tags$table(class = "table table-sm",
+    conc <- concentration_text(main$n, lc(LEVEL_LABEL(x$level, lang)), tt("sp_k_n"), lang)
+    tagList(tags$table(class = "table table-sm",
       tags$thead(tags$tr(tags$th(level_name(x$level)), tags$th(class = "text-end", t("sp_col_pop")), tags$th(class = "text-end", tt("sp_col_n")),
-                         tags$th(class = "text-end", t("sp_col_rate")), tags$th(class = "text-end", x$x_ref))),
+                         tags$th(class = "text-end", t("sp_col_rate")), tags$th(class = "text-end", x$x_ref, info(t("lq_note"))))),
       tags$tbody(lapply(seq_len(nrow(refs)), function(i) row(refs[i, ], "ref")),
-                 lapply(seq_len(nrow(main)), function(i) row(main[i, ], if (identical(main$territory_id[i], input$sp_territory)) "sel", link = TRUE))))
+                 lapply(seq_len(nrow(main)), function(i) row(main[i, ], if (identical(main$territory_id[i], input$sp_territory)) "sel", link = TRUE)))),
+      if (!is.null(conc)) p(class = "note mt-1", conc, " ", info(t("concentration_note"))))
   })
 
   # --- Map ---
@@ -1500,6 +1597,17 @@ ui_about <- function(lang, cities) {
       tags$td(tags$b(r[[1]]), if (!is.null(link(r[[6]]))) tagList(tags$br(), link(r[[6]]))),
       tags$td(r[[2]]), tags$td(r[[3]]), tags$td(r[[4]]), tags$td(r[[5]])))))
   first_calls <- if (!is.null(mc)) fmt_month(as.Date(mc$first_month), lang) else "—"
+  # How each source counts: unit, where, date, revisions, known breaks (from the modules' metadata; "—" when the module says nothing)
+  dash <- function(x) if (is.null(x) || is.na(x) || !nzchar(x)) "—" else x
+  mrows <- c(
+    unlist(lapply(names(COUNTRIES), function(cc) { e <- COUNTRIES[[cc]]; ms <- e$SRC_META[e$SRC_META$source == "main" | e$SRC_META$source %in% e$ALT_SOURCES$source, ]
+      lapply(seq_len(nrow(ms)), function(i) { m <- ms[i, ]
+        list(paste0(m$source_name, " (", e$CNAME(lang), ")"), dash(if (nzchar(m$count_noun_en %||% "")) m$count_noun_en else t("gl_recorded_unit")), dash(m$method_where), dash(m$method_date), dash(m$method_revisions), dash(m$notes_en)) }) }), recursive = FALSE),
+    lapply(names(cities), function(city) { m <- RAW[[city]]$meta
+      list(paste0(m$source_name, " (", cities[[city]]$CITY_NAME, ")"), t("k_calls", city = city), dash(m$method_where), dash(m$method_date), dash(m$method_revisions), dash(if (nzchar(m$note_break_key %||% "")) t(m$note_break_key) else "")) }))
+  method_table <- tags$table(class = "table table-sm small",
+    tags$thead(tags$tr(lapply(c("about_col_source", "about_col_unit", "about_col_where", "about_col_date", "about_col_revisions", "about_col_breaks"), function(k) tags$th(t(k))))),
+    tags$tbody(lapply(mrows, function(r) tags$tr(lapply(r, function(v) tags$td(v))))))
   bslib::page_navbar(
     title = paste(t("app_title"), "·", t("nav_about")), lang = lang, theme = bslib::bs_theme(version = 5), id = "nav",
     header = tags$head(tags$style(HTML(CSS))),
@@ -1507,6 +1615,12 @@ ui_about <- function(lang, cities) {
       h1(class = "h3", t("nav_about")),
       p(t("about_intro_1")), p(t("about_intro_2")),
       h2(t("about_h_sources")), table,
+      if (has_rows(CITY_SURVEY_META)) tagList(h2(t("about_h_surveys")), p(t("about_surveys_intro")), tags$table(class = "table table-sm",
+        tags$thead(tags$tr(tags$th(t("about_col_source")), tags$th(t("about_col_measures")), tags$th(t("about_col_period")), tags$th(t("about_col_licence")))),
+        tags$tbody(lapply(seq_len(nrow(CITY_SURVEY_META)), function(i) { s <- CITY_SURVEY_META[i, ]; cname <- if (!is.null(cities[[s$city]])) cities[[s$city]]$CITY_NAME else s$city
+          tags$tr(tags$td(tags$b(paste0(s$name_en, " (", cname, ")")), if (!is.null(link(s$url))) tagList(tags$br(), link(s$url))), tags$td(s$measure), tags$td(paste(s$first_year, "–", s$last_year)), tags$td(paste(s$licence, "·", s$publisher))) })))),
+      h2(t("about_h_method")), p(t("about_method_intro")), method_table,
+      h2(t("about_h_glossary")), tags$dl(class = "row", lapply(c("recorded", "dark_figure", "rate", "lq", "percentile", "cumulative", "revision", "threshold"), function(g) tagList(tags$dt(class = "col-sm-3", t(paste0("gl_", g, "_t"))), tags$dd(class = "col-sm-9", t(paste0("gl_", g, "_d")))))),
       h2(t("about_h_rules")), tags$ul(lapply(c(t("about_rule_1"), t("about_rule_2"), t("about_rule_3", MARTS$threshold, MARTS$threshold), t("about_rule_4"), t("about_rule_5"), t("about_rule_6")), function(x) tags$li(HTML(x)))),
       h2(t("about_h_why")), tags$ul(lapply(c(t("about_why_1"), t("about_why_2"), if (!is.null(mb)) t("about_why_bcn"), t("about_why_3"), t("about_why_4"), t("about_why_5"), t("about_why_6"), t("about_why_7", first_calls, if (!is.null(COUNTRIES[[DEFAULT_COUNTRY]])) min(COUNTRIES[[DEFAULT_COUNTRY]]$CB$year) else NA), t("about_why_8"), if (length(COUNTRIES) > 1 || has_rows(CRATES)) t("about_why_countries")), function(x) tags$li(HTML(x)))),
       h2(t("about_h_limits")), tags$ul(lapply(c(t("about_limit_1"), t("about_limit_2"), t("about_limit_3"), t("about_limit_4")), function(x) tags$li(x))),

@@ -106,6 +106,7 @@ register_country(list(
   not_published = c("Fewer than 20,000 inhabitants: the Ministry does not publish its figures", "Menos de 20.000 habitantes: el Ministerio no publica sus cifras"),
   not_published_key = "sp_no_data_small", not_published_legend_key = "sp_legend_small",   # translated in every language of the app
   short_name = c("Ministry (municipalities > 20,000 inh.)", "Ministerio (municipios > 20.000 hab.)"), short_name_key = "sp_source_ministry",   # label of the source switch (R/72_es_mossos.R)
+  method = list(where = "Where the offence was committed, as recorded by the police force", date = "Date the offence became known to the police; cumulative from 1 January to the end of each quarter", revisions = "Every quarterly publication revises the previous year; the most recent publication of each period is kept"),
   notes_en = "Municipalities above 20,000 inhabitants and islands only (above 30,000 in 2019). The Ministry revises the previous year in each publication. The Mossos d'Esquadra and Ertzaintza figures are inside the regional totals.",
   default_region = "ES-13", zoom_widths = c(region = 11, province = 7),
   download = es_download, ingest = es_ingest, territory = es_territory, population = es_population

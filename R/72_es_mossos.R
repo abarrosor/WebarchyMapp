@@ -120,6 +120,7 @@ register_source("ES", list(
   covers = ES_MOSSOS_REGION,
   measure_labels = list(kind = "known_offences", title = c("Recorded offences (Mossos)", "Hechos conocidos (Mossos)"), noun = c("recorded offences", "hechos conocidos")),
   title_key = "sp_title_mossos", help_key = "sp_source_help", notes_key = "sp_mossos_note", source_text_key = "sp_source_mossos_text", breakdown_note_key = "sp_breakdown_mossos_note",
+  method = list(where = "Basic police area (ABP) that handled the case; online reports without a place go to the 'ABP Virtual' (left out of the Catalonia total)", date = "Month the offence became known to the Mossos (fet conegut); complete quarters only", revisions = "Yearly files republished; the most recent file is kept"),
   notes_en = "An ABP is a county or a group of municipalities (in Barcelona, a district): the figure does not belong to any single municipality. Online reports with no place (ABP Virtual) are left out of the Catalonia total.",
   population_source = "INE register by municipality, added up by police area (Barcelona districts share the city's figure by the city register)",
   population_source_local = "Padrón INE por municipio, sumado por área policial (los distritos de Barcelona reparten la cifra de la ciudad según el padrón municipal)",
