@@ -49,6 +49,8 @@ save_city_territory <- function(con, districts, neighbourhoods, upper, gpkg) {
   DBI::dbWithTransaction(con, {
     ids <- paste(DBI::dbQuoteString(con, tbl$territory_id), collapse = ", ")
     DBI::dbExecute(con, paste0("DELETE FROM dim_territory WHERE territory_id IN (", ids, ")"))
+    # districts and neighbourhoods of an earlier build that no longer exist (a changed boundaries file) go too
+    for (u in unique(upper$territory_id)) DBI::dbExecute(con, paste0("DELETE FROM dim_territory WHERE level IN ('district', 'neighbourhood') AND territory_id LIKE ", DBI::dbQuoteString(con, paste0(u, "-%"))))
     DBI::dbAppendTable(con, "dim_territory", as.data.frame(
       tbl[, c("territory_id", "level", "parent_id", "country", "official_code", "code_scheme", "name",
               "name_norm", "area_m2", "valid_from", "valid_to", "file", "loaded_at")]))

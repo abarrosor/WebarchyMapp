@@ -177,17 +177,30 @@ london_scan_population <- function(x) {
 
 london_population <- function(con) {
   dir <- london_dir("population")
-  manual <- london_source("population_manual"); if (!is.na(manual) && length(list.files(dir)) == 0) attempt("London population download", download_versioned(manual, dir))
-  files <- newest_first(list.files(dir, "\\.(csv|xlsx|xls)$", full.names = TRUE))
+  files <- newest_first(list.files(dir, full.names = TRUE)); files <- files[!dir.exists(files)]
+  manual <- london_source("population_manual")
+  if (!is.na(manual) && length(files) == 0) {        # the ONS URL ends in "file?uri=...": name the copy by the extension inside the uri
+    ext <- regmatches(manual, regexpr("\\.(xlsx|xls|csv|zip)(?=[^./]*$)", manual, perl = TRUE)); if (!length(ext)) ext <- ".xlsx"
+    attempt("London population download", download_versioned(manual, dir, name = paste0("ons_ward_population", ext)))
+    files <- newest_first(list.files(dir, full.names = TRUE)); files <- files[!dir.exists(files)]
+  }
   if (length(files) == 0) stop("no ward population file in ", dir, " (ONS mid-year ward estimates or Census 2021 by ward): counts only, no rates")
-  f <- files[1]; pop <- NULL
-  if (grepl("\\.csv$", f)) pop <- london_scan_population(readr::read_csv(f, col_names = FALSE, col_types = readr::cols(.default = "c"), progress = FALSE, show_col_types = FALSE))
-  else for (sh in readxl::excel_sheets(f)) { pop <- london_scan_population(readxl::read_excel(f, sheet = sh, col_names = FALSE, col_types = "text")); if (!is.null(pop) && nrow(pop) > 100) break }
+  f <- files[1]; pop <- NULL; sheet_year <- NA_character_
+  is_csv <- grepl("\\.csv$", f, ignore.case = TRUE) || (!grepl("\\.(xlsx|xls)$", f, ignore.case = TRUE) && is.na(tryCatch(readxl::excel_format(f), error = function(e) NA)))
+  if (is_csv) pop <- london_scan_population(readr::read_csv(f, col_names = FALSE, col_types = readr::cols(.default = "c"), progress = FALSE, show_col_types = FALSE))
+  else {
+    # the ONS workbooks hold one sheet per year and sex: the latest year, persons (not males / females)
+    sheets <- readxl::excel_sheets(f); skip <- grepl("male|female|contents|notes|metadata|terms", sheets, ignore.case = TRUE) & !grepl("persons|total|all", sheets, ignore.case = TRUE)
+    # the year of the estimate is the one after "Mid-" ("Mid-2022 Ward 2023" = mid-2022 estimates on 2023 wards)
+    year_of <- function(x) { y <- ifelse(grepl("mid[- ]?20[0-9]{2}", x, ignore.case = TRUE), sub("^.*[Mm][Ii][Dd][- ]?(20[0-9]{2}).*$", "\\1", x), ifelse(grepl("20[0-9]{2}", x), sub("^.*?(20[0-9]{2}).*$", "\\1", x), NA)); suppressWarnings(as.integer(y)) }
+    yrs <- year_of(sheets); ord <- order(skip, -ifelse(is.na(yrs), 0L, yrs))
+    for (sh in sheets[ord]) { cand <- london_scan_population(suppressMessages(readxl::read_excel(f, sheet = sh, col_names = FALSE, col_types = "text", .name_repair = "minimal"))); if (!is.null(cand) && nrow(cand) > 100) { pop <- cand; sheet_year <- as.character(year_of(sh)); message("  population sheet: ", sh); break } }
+  }
   if (is.null(pop) || nrow(pop) == 0) stop("no column of ward codes (E05...) with a population next to it in ", basename(f))
   known <- DBI::dbGetQuery(con, paste0("SELECT territory_id, official_code FROM dim_territory WHERE level = 'neighbourhood' AND territory_id LIKE ", DBI::dbQuoteString(con, paste0(ID_LONDON, "-%"))))
   pop$territory_id <- known$territory_id[match(pop$code, known$official_code)]; lost <- sum(is.na(pop$territory_id)); pop <- pop[!is.na(pop$territory_id), ]
   if (nrow(pop) == 0) stop("none of the ward codes of ", basename(f), " is a ward of the data (different ward vintage?)")
-  yr <- regmatches(basename(f), regexpr("20[0-9]{2}", basename(f))); ref <- as.Date(sprintf("%s-06-30", if (length(yr)) yr else format(Sys.Date(), "%Y")))
+  yr <- if (length(sheet_year) && !is.na(sheet_year)) sheet_year else regmatches(basename(f), regexpr("20[0-9]{2}", basename(f))); ref <- as.Date(sprintf("%s-06-30", if (length(yr)) yr else format(Sys.Date(), "%Y")))
   DBI::dbWithTransaction(con, {
     DBI::dbExecute(con, paste0("DELETE FROM ref_population WHERE territory_id LIKE ", DBI::dbQuoteString(con, paste0(ID_LONDON, "-%"))))
     DBI::dbAppendTable(con, "ref_population", data.frame(territory_id = pop$territory_id, ref_date = ref, population = as.integer(round(pop$population)), file = basename(f)))
