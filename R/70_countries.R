@@ -162,8 +162,13 @@ save_country_territory <- function(con, cc, tbl, scheme = "official") {
                                                                      country = cc, code_scheme = "ISO 3166-1", name_norm = normalize_text(COUNTRY_MODULES[[cc]]$name_en),
                                                                      area_m2 = NA, valid_from = NA, valid_to = NA, file = NA, loaded_at = Sys.time()), tbl)
   tbl <- tbl[!duplicated(tbl$territory_id), ]
+  # The rows of the city modules of this country (their districts and neighbourhoods, and a city node of their own
+  # such as PE-LIMACALLAO) belong to the city framework and are not touched
+  city_ids <- vapply(Filter(function(m) identical(m$country, cc), CITY_MODULES), function(m) m$id, "")
+  keep <- if (length(city_ids)) paste0(" AND territory_id NOT IN (", paste(DBI::dbQuoteString(con, city_ids), collapse = ", "), ")") else ""
+  tbl <- tbl[!tbl$territory_id %in% city_ids | tbl$level == "municipality", ]   # a real municipality that is also a city node (Paris) is written as the country sees it
   DBI::dbWithTransaction(con, {
-    DBI::dbExecute(con, paste0("DELETE FROM dim_territory WHERE country = ", DBI::dbQuoteString(con, cc)))
+    DBI::dbExecute(con, paste0("DELETE FROM dim_territory WHERE country = ", DBI::dbQuoteString(con, cc), " AND level NOT IN ('district', 'neighbourhood')", keep))
     DBI::dbAppendTable(con, "dim_territory", tbl[, c("territory_id", "level", "parent_id", "country", "official_code", "code_scheme", "name",
                                                      "name_norm", "area_m2", "valid_from", "valid_to", "file", "loaded_at")])
   })
@@ -416,8 +421,9 @@ country_steps <- function(con, download = TRUE, only = NULL, force = !is.null(on
 update_countries <- function(download = TRUE, only = NULL, force = !is.null(only)) {
   with_db(function(con) {
     city_codes <- vapply(CITY_MODULES, function(m) m$code, ""); cities <- intersect(only, city_codes); others <- setdiff(only, city_codes)
-    if (length(cities)) city_steps(con, download, cities)
+    if (length(cities)) city_steps(con, download, cities, after_countries = FALSE)
     if (is.null(only) || length(others)) country_steps(con, download, if (is.null(only)) NULL else others, force)
+    if (length(cities)) city_steps(con, download, cities, after_countries = TRUE)    # cities built on a country's data run after it
     if (is.null(only) && exists("eurostat_rates_update", mode = "function")) eurostat_rates_update(con, download)
     step("Tables for the app")
     build_marts(con)
