@@ -1,0 +1,59 @@
+source_code,block,sensitive,name_local,name_en
+Diefstal/inbraak woning,public_safety,no,Diefstal/inbraak woning,Residential burglary
+Diefstal/inbraak box/garage/schuur,public_safety,no,Diefstal/inbraak box/garage/schuur,Burglary of garages and sheds
+Diefstal uit/vanaf motorvoertuigen,public_safety,no,Diefstal uit/vanaf motorvoertuigen,Theft from motor vehicles
+Diefstal van motorvoertuigen,public_safety,no,Diefstal van motorvoertuigen,Theft of motor vehicles
+"Diefstal van brom-, snor-, fietsen",public_safety,no,"Diefstal van brom-, snor-, fietsen",Theft of bicycles and mopeds
+Zakkenrollerij,public_safety,no,Zakkenrollerij,Pickpocketing
+Diefstal af/uit/van ov. voertuigen,public_safety,no,Diefstal af/uit/van ov. voertuigen,Theft from other vehicles
+Ongevallen (weg),traffic,no,Ongevallen (weg),Road accidents (offences)
+Zedenmisdrijf,public_safety,yes,Zedenmisdrijf,Sexual offences
+"Moord, doodslag",public_safety,yes,"Moord, doodslag",Homicide and manslaughter
+Openlijk geweld (persoon),public_safety,no,Openlijk geweld (persoon),Public violence against persons
+Bedreiging,public_safety,no,Bedreiging,Threats
+Mishandeling,public_safety,no,Mishandeling,Assault
+Straatroof,public_safety,no,Straatroof,Street robbery
+Overval,public_safety,no,Overval,Robbery (hold-up)
+Diefstallen (water),public_safety,no,Diefstallen (water),Theft (waterways)
+Brand/ontploffing,public_safety,no,Brand/ontploffing,Arson and explosions
+Overige vermogensdelicten,public_safety,no,Overige vermogensdelicten,Other property offences
+Mensenhandel,public_safety,yes,Mensenhandel,Human trafficking
+Drugs/drankoverlast,coexistence,no,Drugs/drankoverlast,Drug and alcohol nuisance
+Vernieling cq. zaakbeschadiging,coexistence,no,Vernieling cq. zaakbeschadiging,Vandalism and criminal damage
+Burengerucht (relatieproblemen),coexistence,no,Burengerucht (relatieproblemen),Neighbour disturbance
+Huisvredebreuk,public_safety,no,Huisvredebreuk,Trespass
+Diefstal/inbraak bedrijven enz.,public_safety,no,Diefstal/inbraak bedrijven enz.,Burglary of businesses
+Winkeldiefstal,public_safety,no,Winkeldiefstal,Shoplifting
+Inrichting Wet Milieubeheer,administrative,no,Inrichting Wet Milieubeheer,Environmental Management Act (premises)
+Bijzondere wetten,administrative,no,Bijzondere wetten,Special laws
+Leefbaarheid (overig),coexistence,no,Leefbaarheid (overig),Liveability (other)
+Drugshandel,public_safety,no,Drugshandel,Drug trafficking
+Mensensmokkel,public_safety,yes,Mensensmokkel,People smuggling
+Wapenhandel,public_safety,no,Wapenhandel,Arms trafficking
+Kinderporno,public_safety,yes,Kinderporno,Child sexual abuse material
+Kinderprostitutie,public_safety,yes,Kinderprostitutie,Child prostitution
+Onder invloed (lucht),traffic,no,Onder invloed (lucht),Under the influence (air)
+Lucht (overig),traffic,no,Lucht (overig),Air traffic (other)
+Onder invloed (water),traffic,no,Onder invloed (water),Under the influence (water)
+Onder invloed (weg),traffic,no,Onder invloed (weg),Drink and drug driving
+Weg (overig),traffic,no,Weg (overig),Road traffic (other)
+Aantasting openbare orde,coexistence,no,Aantasting openbare orde,Public order offences
+Discriminatie,public_safety,no,Discriminatie,Discrimination
+Vreemdelingenzorg,administrative,no,Vreemdelingenzorg,Immigration law
+Maatschappelijke integriteit (overig),administrative,no,Maatschappelijke integriteit (overig),Social integrity (other)
+Cybercrime,public_safety,no,Cybercrime,Cybercrime
+Horizontale fraude,public_safety,no,Horizontale fraude,Fraud against citizens and businesses
+Verticale fraude,public_safety,no,Verticale fraude,Fraud against the public sector
+Fraude (overig),public_safety,no,Fraude (overig),Fraud (other)
+Bodem,environment,no,Bodem,Soil (environmental law)
+Water,environment,no,Water,Water (environmental law)
+Afval,environment,no,Afval,Waste (environmental law)
+Bouwstoffen,environment,no,Bouwstoffen,Building materials (environmental law)
+Mest,environment,no,Mest,Manure (environmental law)
+Transport gevaarlijke stoffen,environment,no,Transport gevaarlijke stoffen,Transport of dangerous goods
+Vuurwerk,environment,no,Vuurwerk,Fireworks
+Bestrijdingsmiddelen,environment,no,Bestrijdingsmiddelen,Pesticides
+Natuur en landschap,environment,no,Natuur en landschap,Nature and landscape
+Ruimtelijke ordening,environment,no,Ruimtelijke ordening,Spatial planning
+Dieren,environment,no,Dieren,Animals (environmental law)
+Voedselveiligheid,environment,no,Voedselveiligheid,Food safety

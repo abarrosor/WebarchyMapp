@@ -136,6 +136,7 @@ register_country(list(
   population_source = "KSH STADAT 22.1.2.1 resident population on 1 January by county", boundaries_attribution = "© EuroGeographics for the administrative boundaries (Eurostat GISCO NUTS 2024)",
   not_published = c("Not published by KSH for this county and year", "A KSH erre a vármegyére és évre nem közöl adatot"),
   notes_en = "The national total includes crimes with unknown or foreign location (higher than the sum of the counties); statistics system change in 2018; drug abuse was counted under public nuisance until 2012; only 6 offence types are published by county.",
+  method = list(where = "County (vármegye) where the crime was committed; unknown or foreign location in the national total only", date = "Year the investigation closed (registration in ENyÜBS), not the year of the event", revisions = "Yearly STADAT tables; earlier years updated when the prosecution service revises them; statistics system change in 2018"),
   default_region = "HU-BU",
   download = hu_download, ingest = hu_ingest, territory = hu_territory, population = hu_population
 ))

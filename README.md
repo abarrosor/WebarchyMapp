@@ -2,7 +2,7 @@
 
 Code under the [MIT License](LICENSE) · data not distributed (see below) · personal, non-commercial project
 
-A personal, non-commercial map of **official crime and police figures** by territory: 47 countries of Europe and the Americas (48 sources: Spain carries the Mossos d'Esquadra as a second one) and 3 cities by neighbourhood (Madrid, Barcelona, Lima and Callao), built with R, DuckDB and Shiny from open data. Every source is shown on its own, with its unit, territory, period and licence; figures of different sources, countries or cities are **never added together or compared**, and the app gives no "safety score".
+A personal, non-commercial map of **official crime and police figures** by territory: 47 countries of Europe and the Americas (48 sources: Spain carries the Mossos d'Esquadra as a second one) and 7 cities by neighbourhood (Madrid, Barcelona, Lima and Callao, Paris, Amsterdam, London, Mexico City), built with R, DuckDB and Shiny from open data. Every source is shown on its own, with its unit, territory, period and licence; figures of different sources, countries or cities are **never added together or compared**, and the app gives no "safety score".
 
 The code, the reference tables (the project's own equivalence tables) and the documentation are what this repository holds. **The data is not distributed**: the pipeline downloads every file from its official portal under the portal's own terms, and `data/` (raw files, the DuckDB database, the GeoPackages) stays out of the repository.
 
@@ -81,6 +81,12 @@ Read from each module's metadata (`register_country()` / `register_city()`); the
 | Madrid | Calls received by the Municipal Police central dispatch | Madrid City Council - Municipal Police | CC BY 4.0 | datos.madrid.es |
 | Barcelona | Incidents handled by the Guardia Urbana in the city of Barcelona | Barcelona City Council - Guardia Urbana | CC BY 4.0 | opendata-ajuntament.barcelona.cat |
 | Lima and Callao | Police complaints (SIDPOL) by distrito | Ministerio del Interior (MININTER) / Policía Nacional del Perú, Plataforma Nacional de Datos Abiertos | Open Data Commons Attribution License (ODC-BY) | www.datosabiertos.gob.pe |
+| Paris | Recorded crime by arrondissement (SSMSI communal base), yearly | Ministère de l'Intérieur, SSMSI (data.gouv.fr); boundaries Ville de Paris (ODbL) | Licence Ouverte 2.0 | www.data.gouv.fr |
+| Amsterdam | Registered crimes by wijk, monthly (table 47022NED) | Politie, through Centraal Bureau voor de Statistiek (dataderden.cbs.nl); boundaries and residents CBS Wijk- en buurtkaart | CC BY 4.0 | dataderden.cbs.nl |
+| London | Metropolitan Police recorded crime by ward (London Datastore) | Greater London Authority / Metropolitan Police Service; boundaries ONS Open Geography | Open Government Licence | data.london.gov.uk |
+| Mexico City | Investigation files of the FGJ (carpetas de investigación) by colonia | Fiscalía General de Justicia de la Ciudad de México, Portal de Datos Abiertos | Open data of Mexico City (see the terms of the portal) | datos.cdmx.gob.mx |
+
+Any other Dutch gemeente is one line in `R/65_city_nl.R` (`register_city(nl_city_module(...))`). Madrid and Barcelona also carry extra panels (Municipal Police activity and arrests by motive; Mossos d'Esquadra by district) and Barcelona a victimisation survey, all declared by their modules through the shared panel and survey contracts.
 
 ## Licence
 

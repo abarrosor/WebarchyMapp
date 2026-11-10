@@ -1,0 +1,17 @@
+source_code,block,sensitive,name_local,name_en
+DELITO DE BAJO IMPACTO,public_safety,no,Delitos de bajo impacto,Low-impact offences
+ROBO A TRANSEUNTE EN VIA PUBLICA CON Y SIN VIOLENCIA,public_safety,no,Robo a transeúnte en vía pública,Robbery and theft from pedestrians
+ROBO DE VEHICULO CON Y SIN VIOLENCIA,public_safety,no,Robo de vehículo,Vehicle theft
+ROBO A NEGOCIO CON VIOLENCIA,public_safety,no,Robo a negocio con violencia,Violent robbery of businesses
+ROBO A CASA HABITACION CON VIOLENCIA,public_safety,no,Robo a casa habitación con violencia,Violent burglary of dwellings
+ROBO A PASAJERO A BORDO DE MICROBUS CON Y SIN VIOLENCIA,public_safety,no,Robo a pasajero a bordo de microbús,Robbery of bus passengers
+ROBO A PASAJERO A BORDO DEL METRO CON Y SIN VIOLENCIA,public_safety,no,Robo a pasajero a bordo del Metro,Robbery of Metro passengers
+ROBO A PASAJERO A BORDO DE TAXI CON VIOLENCIA,public_safety,no,Robo a pasajero a bordo de taxi,Violent robbery of taxi passengers
+ROBO A REPARTIDOR CON Y SIN VIOLENCIA,public_safety,no,Robo a repartidor,Robbery of delivery workers
+ROBO A TRANSPORTISTA CON Y SIN VIOLENCIA,public_safety,no,Robo a transportista,Robbery of freight carriers
+ROBO A CUENTAHABIENTE SALIENDO DEL CAJERO CON VIOLENCIA,public_safety,no,Robo a cuentahabiente saliendo del cajero,Violent robbery at cash machines
+LESIONES DOLOSAS POR DISPARO DE ARMA DE FUEGO,public_safety,no,Lesiones dolosas por disparo de arma de fuego,Intentional firearm injuries
+HOMICIDIO DOLOSO,public_safety,yes,Homicidio doloso,Intentional homicide
+SECUESTRO,public_safety,yes,Secuestro,Kidnapping
+VIOLACION,public_safety,yes,Violación,Rape
+HECHO NO DELICTIVO,exclude,no,Hecho no delictivo,Non-criminal event

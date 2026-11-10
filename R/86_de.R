@@ -275,6 +275,7 @@ register_country(list(
   boundaries_attribution = "© GeoBasis-DE / BKG (2026), VG250, dl-de/by-2-0",
   not_published = c("Not published by the BKA", "Vom BKA nicht veröffentlicht"),
   notes_en = "Offences are counted where committed (Tatort), so commuter and tourist hubs show high rates; the BKA warns against ranking areas. No municipal level nationwide (cities of 100,000+ only; Berlin publishes Bezirksregionen separately). Kreis reforms (e.g. Göttingen 2016) change units; PKS-Ausland separated from 2024.",
+  method = list(where = "Kreis or Land where the offence was committed (Tatort)", date = "Year the case was handed over to the public prosecutor (Ausgangsstatistik), which may be later than the offence", revisions = "No revision after publication: the yearly PKS is final; definitions change by year (PKS-Ausland separated from 2024)"),
   default_region = "DE-11",
   download = de_download, ingest = de_ingest, territory = de_territory, population = de_population
 ))

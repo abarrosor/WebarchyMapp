@@ -224,6 +224,7 @@ register_country(list(
   measure_labels = list(kind = "complaints", title = c("Reported offences (complaints)", "Delitos denunciados"), noun = c("complaints", "denuncias")),
   not_published = c("Not published", "No publicado"),
   notes_en = "Seccional boundaries changed over the period and some complaints have no seccional (counted in the departamento only); rates exist for departamentos only (no population by seccional); homicide victims are a separate series.",
+  method = list(where = "Seccional policial (police jurisdiction) recorded in the complaint; complaints without a seccional count in the departamento only", date = "Month of the event (fecha del hecho) as stated in the complaint", revisions = "The Observatorio republishes the series; recent months are updated"),
   default_region = "UY-1",
   download = uy_download, ingest = uy_ingest, territory = uy_territory, population = uy_population
 ))

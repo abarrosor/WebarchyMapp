@@ -12,6 +12,10 @@ A personal R/RStudio project that downloads official open data about citizen saf
 | **Cities › Madrid** | Calls received by the Municipal Police by neighbourhood; police activity by district; arrests by motive (city) | Month | Madrid City Council (datos.madrid.es) |
 | **Cities › Barcelona** | Incidents handled by the City Police by neighbourhood; recorded crime by district (Mossos) | Month | Barcelona City Council (Open Data BCN); Mossos |
 | **Cities › Lima and Callao** | Police complaints by distrito (the 50 distritos of Lima Metropolitana and the Callao) | Month | Ministry of the Interior of Peru (SIDPOL) |
+| **Cities › Paris** | Recorded crime by arrondissement, 15 SSMSI indicators (yearly figures: the source publishes no months) | Year | Ministère de l'Intérieur, SSMSI (data.gouv.fr) |
+| **Cities › Amsterdam** | Crimes registered by the police by wijk and stadsdeel; any other Dutch gemeente can be added the same way | Month | Politie / CBS (table 47022NED) |
+| **Cities › London** | Offences recorded by the Metropolitan Police by ward and borough (the City of London is not included) | Month | Greater London Authority, London Datastore |
+| **Cities › Mexico City** | Investigation files (carpetas de investigación) of the prosecution service by colonia and alcaldía | Month | Fiscalía General de Justicia de la CDMX (datos.cdmx.gob.mx) |
 
 Every figure is shown with its source, what it measures and its limitations. Different sources are **never added together or compared with each other**: a call is not a crime, and Madrid's categories are not Barcelona's.
 
@@ -35,7 +39,7 @@ Every figure is shown with its source, what it measures and its limitations. Dif
 | 5 | Install or complete the R packages |
 | 6 | Test the datos.madrid.es API |
 | 7 | Download the official boundaries again and reload districts and neighbourhoods |
-| 8 | **Update only the cities** (every city module: Madrid, Barcelona); option 1 includes them |
+| 8 | **Update only the cities** (every city module: Madrid, Barcelona, Lima and Callao, Paris, Amsterdam, London, Mexico City, with their panels and surveys); option 1 includes them |
 | 9 | Schedule the automatic weekly update (Windows Task Scheduler; runs `Rscript` without opening RStudio) |
 | 10 | Remove the automatic update |
 | 11 | Check whether the update is scheduled and how the last run went (`reports/update_*.log`) |
@@ -94,7 +98,8 @@ Quality reports of every load are in `reports/quality_<source>_*.csv`.
 ```
 WEBARCHYMAPP.R              the menu
 R/                      the code: the two frameworks (60_cities.R, 70_countries.R), one file per city module
-                        (61_city_madrid, 62_city_barcelona, 63_city_lima) and per country module (71_es.R is Spain,
+                        (61_city_madrid, 62_city_barcelona, 63_city_lima, 64_city_paris, 65_city_nl (Amsterdam and any
+                        gemeente), 66_city_london, 67_city_cdmx) and per country module (71_es.R is Spain,
                         72_es_mossos.R its second source; 7x, 8x, 9x the others), the readers the Spanish modules
                         use (10_, 11_, 20_, 21_, 22_, 30_, 31_), the marts (50_), the pipeline (60_pipeline.R),
                         the checks (94_); 00_config.R has the folders, reference/<cc>_sources.csv the URLs
@@ -106,7 +111,10 @@ data/raw/country_es/    Spain: crime_balance, ine_population, municipal_boundari
 data/raw/city_madrid/   Madrid: calls, activity, districts, neighbourhoods, census
 data/raw/city_barcelona/ Barcelona: incidents, boundaries, census, survey (victimisation survey by district, CSV
                         transcribed from the yearly report or exported from the Portal de Dades; see its README.txt)
-                        (Lima and Callao use the Peru files)
+                        (Lima and Callao use the Peru files; Paris the France communal file plus city_paris/boundaries)
+data/raw/city_amsterdam/ Amsterdam: OData pages of table 47022NED by year, wijken GeoJSON, gebieden (stadsdelen) files
+data/raw/city_london/   London: crime (ward CSVs), boundaries (ONS ward chunks), population (a ward population file you add)
+data/raw/city_cdmx/     Mexico City: carpetas (the cumulative FGJ file, hundreds of MB, one copy per month), colonias
 data/raw/shared/        GISCO, geoBoundaries, Natural Earth, Eurostat files used by several countries
 
 data/webarchymapp.duckdb    the database (rebuildable from data/raw)
@@ -123,7 +131,9 @@ Countries whose module could not be tested against the real files (the first dow
 
 ## 8b. Adding a city
 
-A city is one R file (`R/6x_city_<key>.R`) that registers itself with `register_city()` (code, key, municipality id, names, language, country, source, and the four functions `download()`, `territory(con)`, `ingest(con)`, `population(con)`). The territory step writes the districts and neighbourhoods into `dim_territory` and `data/territory_<key>.gpkg` (layer `territory`); the ingest step calls `publish_city_events()` with a view of monthly events by official neighbourhood and a type table (`type, block, sensitive, name_es, name_en`); the population step fills `ref_population` with the city register by neighbourhood. The framework (`R/60_cities.R`) builds `mart_city_events`, `mart_city_event_types` and `mart_city_meta`, and the app shows the city with the same map, filters and profile as Madrid and Barcelona. City-specific texts go in `translations.csv` as `key@<key>` variants. A city may also carry a **survey** (victimisation, perception of security): `register_city_survey(key, list(id, name, publisher, url, licence, measure, ingest))`, whose `ingest(con)` calls `publish_city_survey()` with yearly values by city or district and the indicator definitions; the app shows it in the profile as a measure of its own (Barcelona's Enquesta de Victimització is the model, at the end of `R/62_city_barcelona.R`). Use `R/62_city_barcelona.R` as the model (the Madrid one carries two extra panels of its own), or `R/63_city_lima.R` for a city built on a country module's own data (it runs after the countries: `after_countries = TRUE`).
+A city is one R file (`R/6x_city_<key>.R`) that registers itself with `register_city()` (code, key, municipality id, names, language, country, source, and the four functions `download()`, `territory(con)`, `ingest(con)`, `population(con)`). The territory step writes the districts and neighbourhoods into `dim_territory` and `data/territory_<key>.gpkg` (layer `territory`); the ingest step calls `publish_city_events()` with a view of monthly events by official neighbourhood and a type table (`type, block, sensitive, name_es, name_en`); the population step fills `ref_population` with the city register by neighbourhood. The framework (`R/60_cities.R`) builds `mart_city_events`, `mart_city_event_types` and `mart_city_meta`, and the app shows the city with the same map, filters and profile as Madrid and Barcelona. City-specific texts go in `translations.csv` as `key@<key>` variants. A city may also carry a **survey** (victimisation, perception of security): `register_city_survey(key, list(id, name, publisher, url, licence, measure, ingest))`, whose `ingest(con)` calls `publish_city_survey()` with yearly values by city or district and the indicator definitions; the app shows it in the profile as a measure of its own (Barcelona's Enquesta de Victimització is the model, at the end of `R/62_city_barcelona.R`). Use `R/62_city_barcelona.R` as the model, `R/63_city_lima.R` for a city built on a country module's own data (it runs after the countries: `after_countries = TRUE`), `R/64_city_paris.R` for a **yearly source** (`time_unit = "year"`: the app shows years instead of months and no seasonal profile), `R/65_city_nl.R` for a **generator** that describes many cities of one source (`register_city(nl_city_module(code, key, gm, name, id))`: one line per Dutch gemeente), `R/66_city_london.R` and `R/67_city_cdmx.R` for sources read from CSV files with their own portals. Module fields that change the texts: `measure_kind` ("calls", "incidents", "complaints", "offences", "cases") picks the set of texts the app uses when a key has no `key@<city>` variant (`key@offences`...), and `boundaries_attribution` is the credit under the map when `translations.csv` has no `boundaries_source@<key>`. A city may also carry **panels** (a second monthly dataset by district or for the whole city: police activity, arrests by motive, a regional police by district): `register_city_panel(key, list(id, kind = "district" | "city", name, publisher, url, licence, measure, ingest, ...))`, whose `ingest(con)` calls `publish_city_panel()` with monthly values by territory and indicator plus the indicator table; the app shows a "district" panel in the neighbourhood profile and a "city" panel in the statistics tab, with the translation keys the panel names or generic texts. The panels of Madrid (`R/61_city_madrid.R`) and Barcelona (`R/62_city_barcelona.R`) are the models.
+
+Cities whose module was written without the real files (Paris, Amsterdam, London, Mexico City) print a clear message when a file does not match what was documented: `nl_city_inspect("amsterdam")`, `london_inspect()` and `cdmx_inspect()` show what was downloaded and the headers; the URLs and dataset ids live in `reference/london_sources.csv` and `reference/cdmx_sources.csv`, the type equivalences in `reference/nl_city_event_types.csv` and `reference/cdmx_event_types.csv`. London has no population in its source: put a ward population file (ONS mid-year estimates or Census 2021, any CSV/XLSX with a ward code column and a total) in `data/raw/city_london/population/` to get rates. Mexico City's colonias have no official population: rates exist for the alcaldías and the city only.
 
 ## 9. Adding a language
 

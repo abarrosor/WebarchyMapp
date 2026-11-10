@@ -134,6 +134,7 @@ register_country(list(
   population_source = "Eurostat demo_r_pjangrp3 (population on 1 January, NUTS 3 = kraje)", boundaries_attribution = "© EuroGeographics for the administrative boundaries (Eurostat GISCO NUTS 2024)",
   not_published = c("Not published by ČSÚ for this region and year", "ČSÚ tento údaj za kraj a rok nezveřejňuje"),
   notes_en = "Offences are counted where the Police registered them, not where they happened; the 2016 national total includes offences of the Foreign Police Directorate (higher than the sum of the kraje); the theft damage threshold doubled on 1 October 2020 (property crime fell by up to a quarter).",
+  method = list(where = "Kraj where the Police registered the offence (place of registration, not of commission)", date = "Year of registration", revisions = "Yearly; the Police Presidium's figures are final at publication; 2016 national total includes the Foreign Police; theft threshold doubled on 1 October 2020"),
   default_region = "CZ-10",
   download = cz_download, ingest = cz_ingest, territory = cz_territory, population = cz_population
 ))

@@ -270,6 +270,7 @@ register_country(list(
   population_source = "GUS Bank Danych Lokalnych (ludność ogółem, 31 XII)", boundaries_attribution = "© EuroGeographics for the administrative boundaries (Eurostat GISCO LAU, dissolved into powiaty)",
   not_published = c("Not published by GUS for this unit and period", "Brak danych GUS dla tej jednostki i okresu"),
   notes_en = "Offences are counted when the preparatory proceeding closes, not when they are reported. Two classifications: 2016-2024 by Criminal Code chapter (life and health, property, family...), from 2025 a list of selected offences (homicide, rape, robbery, theft, burglary, car theft, corruption, cybercrime, other) that does not add up to the total; the official total (ogółem) exists in both. Detection-rate indicators are not loaded.",
+  method = list(where = "Powiat where the offence was committed, as recorded by the Police", date = "Quarter in which the preparatory proceeding closed, not the report or event date", revisions = "Cumulative quarterly figures replaced by the yearly ones; classification changed in 2025"),
   default_region = "PL-14",
   download = pl_download, ingest = pl_ingest, territory = pl_territory, population = pl_population
 ))

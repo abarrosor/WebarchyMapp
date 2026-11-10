@@ -40,10 +40,10 @@ nl_newest <- function(pattern) { f <- newest_first(list.files(nl_dir(), pattern,
 nl_feed_url <- function(table, period, select) sprintf("%s/%s/TypedDataSet?$format=json&$filter=Perioden%%20eq%%20'%s'&$select=%s", NL_FEED, table, period, select)
 
 # Download all pages of an OData answer as <name>_p01.json, _p02.json ... (versioned copies)
-nl_odata_pages <- function(url, name, page_size = 10000) {
+nl_odata_pages <- function(url, name, page_size = 10000, dir = nl_dir()) {
   files <- character(); k <- 1L; skip <- 0L; u <- url
   repeat {
-    f <- download_versioned(u, nl_dir(), name = sprintf("%s_p%02d.json", name, k)); files <- c(files, f)
+    f <- download_versioned(u, dir, name = sprintf("%s_p%02d.json", name, k)); files <- c(files, f)
     j <- nl_json(f); n <- NROW(j$value); skip <- skip + n
     nxt <- j[["odata.nextLink"]]
     if (!is.null(nxt) && nzchar(nxt[1])) u <- nxt[1] else if (n >= page_size) u <- paste0(url, "&$skip=", skip) else break
@@ -53,14 +53,14 @@ nl_odata_pages <- function(url, name, page_size = 10000) {
 }
 
 # Newest copy of each page of a prefix (e.g. "83648NED_2025"), rows of all pages bound together
-nl_pages <- function(prefix) {
-  f <- list.files(nl_dir(), paste0("_", prefix, "_p[0-9]+\\.json$"), full.names = TRUE)
+nl_pages <- function(prefix, dir = nl_dir()) {
+  f <- list.files(dir, paste0("_", prefix, "_p[0-9]+\\.json$"), full.names = TRUE)
   if (!length(f)) return(character())
   k <- sub(".*_p([0-9]+)\\.json$", "\\1", f)
   unname(vapply(split(f, k), function(x) newest_first(x)[1], ""))
 }
-nl_read_pages <- function(prefix) {
-  parts <- lapply(nl_pages(prefix), function(f) { v <- nl_json(f)$value; if (NROW(v)) nl_trim(as.data.frame(v, stringsAsFactors = FALSE)) else NULL })
+nl_read_pages <- function(prefix, dir = nl_dir()) {
+  parts <- lapply(nl_pages(prefix, dir), function(f) { v <- nl_json(f)$value; if (NROW(v)) nl_trim(as.data.frame(v, stringsAsFactors = FALSE)) else NULL })
   parts <- parts[!vapply(parts, is.null, TRUE)]
   if (!length(parts)) return(NULL)
   d <- do.call(rbind, parts)
@@ -283,6 +283,7 @@ register_country(list(
   boundaries_attribution = "© CBS / Kadaster, Gebiedsindelingen via PDOK (CC BY 4.0)",
   not_published = c("Not published: unknown, unreliable or secret (CBS symbol '.')", "Niet gepubliceerd: onbekend, onvoldoende betrouwbaar of geheim (CBS-teken '.')"),
   notes_en = "Yearly figures by gemeente of the reporting year (dissolved gemeenten keep their own years); counts rounded to multiples of 5; attempts count as offences (homicide figures are far above completed killings); series break in July 2018 (several offences per registration); online WhatsApp-fraud reporting from April 2020; 2024-2025 provisional, revised every March.",
+  method = list(where = "Municipality where the offence was committed (pleegplaats), as registered by the police", date = "Year the offence was registered by the police (report filed)", revisions = "The two most recent years are provisional and revised each spring; dissolved municipalities keep their own years"),
   default_region = "NL-PV27",
   download = nl_download, ingest = nl_ingest, territory = nl_territory, population = nl_population
 ))

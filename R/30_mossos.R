@@ -253,28 +253,5 @@ mossos_ingest <- function(con) {
   invisible(TRUE)
 }
 
-# Marts of the Barcelona city panel: by district and month per offence group ('total' includes ALL
-# offences, sensitive ones too). Catalonia by police area lives in the shared country tables (R/72_es_mossos.R).
-mossos_marts <- function(con) {
-  DBI::dbExecute(con, paste0("
-    CREATE OR REPLACE TABLE mart_mossos_bcn_month AS
-    SELECT month, territory_id, group_id, sum(known)::INTEGER AS known
-    FROM v_mossos WHERE territory_id LIKE '", ID_BARCELONA, "%' AND NOT sensitive GROUP BY ALL
-    UNION ALL
-    SELECT month, territory_id, 'total', sum(known)::INTEGER
-    FROM v_mossos WHERE territory_id LIKE '", ID_BARCELONA, "%' GROUP BY ALL
-    ORDER BY ALL"))
-  DBI::dbExecute(con, "CREATE OR REPLACE TABLE mart_mossos_groups AS SELECT * FROM ref_mossos_groups ORDER BY sort_order")
-
-  DBI::dbExecute(con, paste0("
-    CREATE OR REPLACE TABLE mart_mossos_meta AS
-    SELECT 'Known and solved criminal offences and arrests (Mossos d''Esquadra)' AS source,
-           'Government of Catalonia - Department of the Interior and Public Safety' AS publisher,
-           '", CONFIG$sources$mossos$page, "' AS url, 'See the terms of use of the portal' AS licence,
-           (SELECT min(month) FROM mart_mossos_bcn_month) AS first_month,
-           (SELECT max(month) FROM mart_mossos_bcn_month) AS last_month,
-           (SELECT max(loaded_at) FROM ingest_log WHERE source = 'mossos') AS loaded_at,
-           (SELECT sum(known) FROM v_mossos WHERE upper(abp) = 'ABP VIRTUAL'
-              AND year(month) = (SELECT max(year(month)) FROM stg_mossos)) AS virtual_last_year"))
-  invisible(TRUE)
-}
+# The Barcelona panel reads v_mossos through the shared panel tables (R/62_city_barcelona.R, P-035);
+# Catalonia by police area lives in the shared country tables (R/72_es_mossos.R).

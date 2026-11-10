@@ -147,6 +147,7 @@ register_country(list(
   boundaries_attribution = "© EuroGeographics for the administrative boundaries (Eurostat GISCO LAU)",
   not_published = c("Not published by Statistics Denmark", "Ikke offentliggjort af Danmarks Statistik"),
   notes_en = "Quarters follow the date of the offence, so the latest quarters are revised later. Sexual-offence provisions changed on 1 July 2013 (break). 2023 under-counts animal/hunting laws by about 1,700 reports. Christiansø and the small islands have tiny populations: their rates are noisy. 'Own calculations based on data from Statistics Denmark'.",
+  method = list(where = "Municipality where the offence was committed (gerningssted)", date = "Quarter of the offence date (gerningstidspunkt), not of the report", revisions = "The latest quarters are revised as late reports arrive; sexual-offence provisions changed on 1 July 2013"),
   default_region = "DK-084",
   download = dk_download, ingest = dk_ingest, territory = dk_territory, population = dk_population
 ))

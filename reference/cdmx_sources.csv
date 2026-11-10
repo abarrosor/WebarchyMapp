@@ -1,0 +1,6 @@
+key,url,notes
+carpetas_dataset,carpetas-de-investigacion-fgj-de-la-ciudad-de-mexico,"CKAN dataset id on datos.cdmx.gob.mx (Fiscalía General de Justicia): investigation files (carpetas de investigación), one cumulative CSV (zip) republished every month, 2016 onwards, ~2 million rows. The module takes the most recent CSV/zip resource."
+carpetas_manual,,"Optional: a direct URL of the cumulative CSV or zip when the API answer cannot be read."
+colonias_dataset,coloniascdmx,"CKAN dataset id of the colonias layer (catalogue of colonias with alcaldía codes); the module takes a GeoJSON / shapefile zip resource. Change the id if the portal renames it (run cdmx_inspect())."
+colonias_manual,,"Optional: a direct URL of the colonias GeoJSON or shapefile zip."
+ckan_api,https://datos.cdmx.gob.mx/api/3/action,"CKAN API of the Mexico City open-data portal."

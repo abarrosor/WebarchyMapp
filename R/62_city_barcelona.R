@@ -1,7 +1,7 @@
 # Barcelona (BCN): incidents handled by the Guardia Urbana (F5), by neighbourhood ------------------------
 # City module of the shared city framework (R/60_cities.R). Readers: R/31_bcn_incidents.R (incidents),
 # R/04_territory.R (districts, neighbourhoods and the city register). The Mossos by district panel of the
-# Barcelona page reads the Mossos tables of the Spain module (R/30_mossos.R, R/72_es_mossos.R).
+# Barcelona page (below) reads the Mossos tables of the Spain module (R/30_mossos.R, R/72_es_mossos.R).
 
 bcn_city_download <- function() {
   attempt("Barcelona boundaries download", bcn_territory_download())
@@ -31,11 +31,38 @@ register_city(list(
                 publisher = "Barcelona City Council - Guardia Urbana",
                 url = "https://opendata-ajuntament.barcelona.cat/data/en/dataset/incidents-gestionats-gub", licence = "CC BY 4.0",
                 measure = "Incidents handled by the city police according to its internal coding, by month, neighbourhood and type. They are neither offences nor comparable with the Madrid calls."),
-  panels = "mossos_districts",
   method = list(where = "Neighbourhood where the Guardia Urbana handled the incident", date = "Date of the incident", revisions = "Yearly files; the public-safety block was recoded in 2024 (break in the series)"),
   note_break = list(block = "public_safety", date = "2024-01-01", key = "break_2024"),
   about_source_key = "about_src_bcn", about_measures_key = "about_bcn_measures", about_territory_key = "about_bcn_territory",
   download = bcn_city_download, territory = bcn_city_territory, ingest = bcn_city_ingest, population = bcn_city_population
+))
+
+# --- Panel: crime known to the Mossos d'Esquadra by district (shared panel contract, R/60_cities.R) -------
+# The Mossos files (R/30_mossos.R, also the second source of Spain in R/72_es_mossos.R) give the offences
+# known by basic police area; in Barcelona one ABP is one district. Shown in the profile of a neighbourhood
+# as its district against the city, by offence group; the total counts every offence, sensitive ones too.
+bcn_mossos_panel_ingest <- function(con) {
+  mossos_ingest(con)                                         # stg_mossos / v_mossos (incremental; the Spain source runs it as well)
+  if (!"v_mossos" %in% DBI::dbListTables(con)) stop("v_mossos missing: no Mossos file loaded yet")
+  like <- DBI::dbQuoteString(con, paste0(ID_BARCELONA, "%"))
+  v <- DBI::dbGetQuery(con, paste0("
+    SELECT month, territory_id, group_id AS indicator, sum(known) AS value FROM v_mossos WHERE territory_id LIKE ", like, " AND NOT sensitive GROUP BY ALL
+    UNION ALL
+    SELECT month, territory_id, 'total', sum(known) FROM v_mossos WHERE territory_id LIKE ", like, " GROUP BY ALL"))
+  if (nrow(v) == 0) stop("no Mossos rows for Barcelona (ref_mossos_abp_map: are the Barcelona ABP mapped to districts?)")
+  g <- DBI::dbGetQuery(con, "SELECT group_id, name_en, name_es, sort_order FROM ref_mossos_groups WHERE group_id NOT IN ('sensitive', 'unmapped') ORDER BY sort_order")
+  ind <- rbind(data.frame(indicator = g$group_id, name_en = g$name_en, name_local = g$name_es, name_key = "", sort_order = g$sort_order, is_total = FALSE, stringsAsFactors = FALSE),
+               data.frame(indicator = "total", name_en = "Total (all offences)", name_local = "Total (todos los delitos)", name_key = "mossos_total", sort_order = 999L, is_total = TRUE, stringsAsFactors = FALSE))
+  publish_city_panel(con, "barcelona", "mossos_districts", v, ind, "stg_mossos")
+}
+
+register_city_panel("barcelona", list(
+  id = "mossos_districts", kind = "district", name = "Mossos d'Esquadra: offences known by district", name_local = "Mossos d'Esquadra: fets penals coneguts per districte",
+  publisher = "Government of Catalonia, Department of the Interior (open data)", url = CONFIG$sources$mossos$page, licence = "Open data of the Government of Catalonia (see the terms of use of the portal)",
+  measure = "Criminal offences known to the Mossos d'Esquadra by month and district of Barcelona (one basic police area per district), in 13 groups; sensitive offences count in the total only.",
+  top_n = 6, title_key = "mossos_title", note_key = "mossos_note", col_key = "mossos_col_type", other_period_key = "mossos_other_period", source_key = "mossos_source", source_label = "analisi.transparenciacatalunya.cat",
+  about_source_key = "about_src_mossos", about_measures_key = "about_mossos_measures", about_territory_key = "about_mossos_territory", about_licence_key = "about_mossos_licence", about_unless_country_source = "ES:mossos",
+  download = function() { attempt("Mossos download", mossos_download()); invisible(TRUE) }, ingest = bcn_mossos_panel_ingest
 ))
 
 # --- Survey: Enquesta de Victimització de Barcelona (EVB), by district ---------------------------------

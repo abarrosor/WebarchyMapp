@@ -249,6 +249,7 @@ register_country(list(
   boundaries_attribution = "Instituto Geográfico Nacional (IGN) de la República Argentina, capas SIG (WFS)",
   not_published = c("Not reported to SNIC by the jurisdiction for this year", "No informado al SNIC por la jurisdicción en este año"),
   notes_en = "Departments/partidos are the smallest SNIC unit (no municipalities). Coverage depends on each province reporting to SNIC; some provinces have gaps in some years. Road-traffic deaths and injuries (culposos) are excluded from the total.",
+  method = list(where = "Departamento / partido where the alleged offence was registered by the reporting police force", date = "Calendar year of registration", revisions = "Yearly publication; provinces may correct earlier years in later editions"),
   default_region = "AR-02",
   download = ar_download, ingest = ar_ingest, territory = ar_territory, population = ar_population
 ))

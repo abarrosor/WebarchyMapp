@@ -304,6 +304,7 @@ register_country(list(
   measure_labels = list(kind = "reported_cases", title = c("Reported cases (SIEDCO)", "Casos reportados (SIEDCO)"), noun = c("reported cases", "casos reportados")),
   not_published = c("Every recorded case is published (no suppression); a municipality without a row had no recorded case", "Se publican todos los casos registrados (sin supresión); un municipio sin fila no tuvo casos registrados"),
   notes_en = "Figures are provisional until March of the following year and are revised retroactively. Hurto a residencias exists in the open data only from 2024, so the summed total jumps that year; the commercial-theft series doubles in 2017 (new complaint-validation method with the Fiscalía). Hurto a personas, homicide, extortion and kidnapping are missing from the open-data portal. Bogotá (20 localidades, women victims only) and Medellín (comunas) have separate city datasets not loaded here.",
+  method = list(where = "Municipio where the event happened, as registered by the Policía Nacional in SIEDCO", date = "Month of the event (fecha del hecho)", revisions = "Provisional until March of the following year; revised retroactively as complaints are validated with the Fiscalía"),
   default_region = "CO-11",
   download = co_download, ingest = co_ingest, territory = co_territory, population = co_population
 ))

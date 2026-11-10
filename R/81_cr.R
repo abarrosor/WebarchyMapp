@@ -243,6 +243,7 @@ register_country(list(
   measure_labels = list(kind = "complaint_records", title = c("Complaints (OIJ)", "Denuncias (OIJ)"), noun = c("complaint records", "registros de denuncias")),
   not_published = c("Not published", "No publicado"),
   notes_en = "OIJ complaints only (not Fuerza Pública incidents); records, not incidents; distritos identified by name (no official code list), cantones created after 2015 (Río Cuarto, Monteverde, Puerto Jiménez) appear from their creation.",
+  method = list(where = "Cantón or distrito where the event occurred, as stated in the complaint to the OIJ", date = "Month of the event (fecha del hecho)", revisions = "The dataset is republished with the whole series; recent months fill in later"),
   default_region = "CR-1",
   download = cr_download, ingest = cr_ingest, territory = cr_territory, population = cr_population
 ))

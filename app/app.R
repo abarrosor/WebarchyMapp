@@ -54,11 +54,9 @@ RAW <- lapply(CITY_SOURCES, function(x) {
   list(base = base, meta = x$meta, types = types)
 })
 
-MOSSOS  <- q("SELECT * FROM mart_mossos_bcn_month")          # Mossos, Barcelona by district
-MGROUPS <- q("SELECT * FROM mart_mossos_groups")
-MMETA   <- q("SELECT * FROM mart_mossos_meta")
-ACT     <- q("SELECT * FROM mart_madrid_activity"); ACTMETA <- q("SELECT * FROM mart_madrid_activity_meta")
-ARR     <- q("SELECT * FROM mart_madrid_arrests");  ARRNAMES <- q("SELECT * FROM mart_madrid_arrest_motives")
+CITY_PANELS <- q("SELECT * FROM mart_city_panels")                       # extra monthly panels of a city (police activity, arrests by motive, Mossos by district...), P-035
+CITY_PANEL_VALUES <- q("SELECT * FROM mart_city_panel_values")
+CITY_PANEL_IND <- q("SELECT * FROM mart_city_panel_indicators")
 CCRIME  <- q("SELECT * FROM mart_country_crime")                         # every country, Spain included (R/70_countries.R)
 CPOP    <- q("SELECT * FROM mart_country_population")
 CMETA   <- q("SELECT * FROM mart_country_meta")                          # one row per country and source ('main' + second sources)
@@ -81,9 +79,6 @@ polygon_boxes <- function(g) {
 name_of   <- setNames(TERRITORY$name, TERRITORY$territory_id)
 parent_of <- setNames(TERRITORY$parent_id, TERRITORY$territory_id)
 level_of  <- setNames(TERRITORY$level, TERRITORY$territory_id)
-HAS_MOSSOS <- has_rows(MOSSOS) && !is.null(MGROUPS)
-HAS_ACT    <- has_rows(ACT)
-HAS_ARR    <- has_rows(ARR) && !is.null(ARRNAMES)
 # A single-province region (Madrid, Asturias...) may have no province row in the source: the
 # province takes the figures of its region (it is the same territory)
 fill_single_provinces <- function(crime) {
@@ -289,7 +284,7 @@ nav_switcher <- function(view, lang, cities, countries = COUNTRIES) {
 
 figure <- function(n, lang) ifelse(is.na(n), tr("less_than", lang, THRESHOLD), fmt_n(n, lang))
 type_name <- function(x, lang) {
-  n <- unname(if (lang == "es") NAME_ES[x] else NAME_EN[x])
+  n <- unname(if (lang == (meta$lang %||% "es")) NAME_ES[x] else NAME_EN[x])
   if (length(n) != length(x)) n <- rep(NA_character_, length(x))
   ifelse(!is.na(n) & nzchar(ifelse(is.na(n), "", n)), n, readable_type(x))
 }
@@ -352,7 +347,7 @@ ui_city <- function(lang) {
                                   grid = FALSE, force_edges = TRUE, width = "100%"),
     div(class = "map-only",
         radioButtons("shade", tagList(t("shade_by"), info(HTML(t("shade_help")))), inline = TRUE,
-                     choices = shade_options(lang, HAS_RATES), selected = shade_default(HAS_RATES))),
+                     choices = shade_options(lang, HAS_NB_RATES), selected = shade_default(HAS_NB_RATES))),
     if (!HAS_RATES) div(class = "alert alert-warning small py-2 mb-0", HTML(t("missing_population")))
   )
 
@@ -379,11 +374,11 @@ ui_city <- function(lang) {
       uiOutput("stats_notes"),
       tags$hr(), uiOutput("season_title"),
       bslib::layout_columns(col_widths = c(7, 5), fill = FALSE, plotOutput("season_plot", height = "260px"), uiOutput("season_notes")),
-      if ("madrid_arrests" %in% PANELS && HAS_ARR) tagList(
-        tags$hr(), uiOutput("arr_title"),
-        bslib::layout_columns(col_widths = c(5, 7), fill = FALSE, div(class = "table-sp", uiOutput("arr_table")),
-                              div(uiOutput("arr_evol_head"), plotOutput("arr_evol", height = "260px"))),
-        uiOutput("arr_notes"))
+      lapply(panel_ids("city"), function(id) tagList(
+        tags$hr(), uiOutput(paste0("pn_", id, "_title")),
+        bslib::layout_columns(col_widths = c(5, 7), fill = FALSE, div(class = "table-sp", uiOutput(paste0("pn_", id, "_table"))),
+                              div(uiOutput(paste0("pn_", id, "_evol_head")), plotOutput(paste0("pn_", id, "_evol"), height = "260px"))),
+        uiOutput(paste0("pn_", id, "_notes"))))
     ),
     !!!nav_switcher(CITY, lang, CITIES)
   )
@@ -464,13 +459,13 @@ server_city <- function(input, output, session, lang) {
   output$map <- renderLeaflet({
     bb <- sf::st_bbox(geo_nb)
     leaflet(options = leafletOptions(minZoom = 10)) |>
-      addTiles(attribution = paste(ATTRIBUTION_OSM, "·", t("boundaries_by", t("boundaries_source")))) |>
-      layer_neighbourhoods(isolate(data()), isolate(input$shade) %||% shade_default(HAS_RATES), isolate(selection_text()), isolate(range()), lang) |>
+      addTiles(attribution = paste(ATTRIBUTION_OSM, "·", t("boundaries_by", boundaries_credit(lang)))) |>
+      layer_neighbourhoods(isolate(data()), isolate(input$shade) %||% shade_default(HAS_NB_RATES), isolate(selection_text()), isolate(range()), lang) |>
       fitBounds(bb[["xmin"]], bb[["ymin"]], bb[["xmax"]], bb[["ymax"]])
   })
   observeEvent(list(data(), input$shade), {
     leafletProxy("map") |>
-      layer_neighbourhoods(data(), input$shade %||% shade_default(HAS_RATES), selection_text(), range(), lang) |>
+      layer_neighbourhoods(data(), input$shade %||% shade_default(HAS_NB_RATES), selection_text(), range(), lang) |>
       layer_selection(isolate(input$neighbourhood))
   }, ignoreInit = TRUE)
   observeEvent(input$map_shape_click, {
@@ -502,7 +497,7 @@ server_city <- function(input, output, session, lang) {
     ratio <- if (HAS_RATES) row$rate / d$city$rate else NA
     div(class = "profile",
       div(class = "profile-head", h4(name_of[[id]]), actionLink("close_profile", HTML("&#10005;"), title = t("close_profile"), class = "text-muted")),
-      div(class = "sub", t("district_of", name_of[[dis_id]]), " · ", selection_text(), " · ", fmt_range(r, lang)),
+      div(class = "sub", if (!SINGLE_DISTRICT) tagList(t("district_of", name_of[[dis_id]]), " · "), selection_text(), " · ", fmt_range(r, lang)),
       div(class = "kpis",
           kpi(figure(row$n, lang), t("k_calls")),
           if (HAS_RATES) kpi(if (is.na(row$rate)) "—" else fmt_r(row$rate, lang), t("k_rate")),
@@ -517,7 +512,7 @@ server_city <- function(input, output, session, lang) {
         div(class = "alert alert-warning", t(NOTE_BREAK$key)),
       if (nzchar(NOTE_TERRITORY$pattern) && grepl(NOTE_TERRITORY$pattern, name_of[[id]], ignore.case = TRUE)) div(class = "alert alert-warning", t(NOTE_TERRITORY$key)),
       rates_block(id, dis_id, d, lang),
-      h6(t("by_month"), info(t("noise_note"))),
+      h6(t(if (TIME_UNIT == "year") "arrests_by_year" else "by_month"), info(t("noise_note"))),
       plotOutput("evolution", height = "120px"),
       h6(t("types_in_period")),
       if (nrow(types) == 0) p(class = "note", t("no_calls")) else
@@ -525,8 +520,7 @@ server_city <- function(input, output, session, lang) {
           tags$tr(tags$td(type_name(types$call_type[i], lang),
                           if (!is.na(type_note(types$call_type[i], lang))) info(type_note(types$call_type[i], lang))),
                   tags$td(class = "text-end", figure(types$n[i], lang)))))),
-      if ("mossos_districts" %in% PANELS && HAS_MOSSOS) mossos_block(dis_id, r, lang),
-      if ("madrid_activity" %in% PANELS && HAS_ACT) activity_block(dis_id, r, lang),
+      lapply(panel_ids("district"), function(id) panel_block(id, dis_id, r, lang)),
       reading_block(lang), source_block(lang)
     )
   })
@@ -539,7 +533,7 @@ server_city <- function(input, output, session, lang) {
     n <- d$n[match(months, d$month)]; n[is.na(n)] <- 0
     low <- n < THRESHOLD; height <- ifelse(low, THRESHOLD, n)
     op <- par(mar = c(1.8, 2.6, 0.3, 0.3), las = 1, cex.axis = 0.75, mgp = c(2, 0.4, 0)); on.exit(par(op))
-    b <- barplot(height, names.arg = month_names(lang)[as.integer(format(months, "%m"))], col = ifelse(low, NA, "#64748b"),
+    b <- barplot(height, names.arg = if (TIME_UNIT == "year") format(months, "%Y") else month_names(lang)[as.integer(format(months, "%m"))], col = ifelse(low, NA, "#64748b"),
                  border = ifelse(low, "#94a3b8", NA), density = ifelse(low, 15, -1), angle = 45, ylim = c(0, max(height, THRESHOLD) * 1.18))
     if (any(low)) text(b[low], height[low], paste0("<", THRESHOLD), pos = 3, cex = 0.65, col = "#475569")
   }, res = 96)
@@ -560,6 +554,7 @@ server_city <- function(input, output, session, lang) {
   # --- Seasonal profile at city level: average events by calendar month over the complete years, for the chosen types ---
   season <- reactive({
     req(length(selected_types()) > 0)
+    if (TIME_UNIT == "year") return(NULL)                     # no calendar months in a yearly source
     d <- base[base$block == input$block & base$call_type %in% selected_types(), ]
     if (nrow(d) == 0) return(NULL)
     m <- d |> group_by(month) |> summarise(n = sum(events), .groups = "drop")
@@ -609,45 +604,49 @@ server_city <- function(input, output, session, lang) {
       p(class = "note mt-2", t("stats_note", fmt_n(x$city$n, lang), if (HAS_RATES) t("stats_total_rate", fmt_r(x$city$rate, lang)) else "")))
   })
 
-  # --- Madrid: people arrested or investigated by motive (whole city) ---
-  if ("madrid_arrests" %in% PANELS && HAS_ARR) {
-    motive_name <- local_name(ARRNAMES, "motive_id", lang)
-    motive_sel <- reactiveVal("domestic_gender_violence")
-    observeEvent(input$arr_click, motive_sel(input$arr_click))
-    arr_months <- sort(unique(ARR$month))
-    arr_period <- reactive({
-      r <- range(); sel <- arr_months[arr_months >= r[1] & arr_months <= r[2]]
-      if (length(sel) == 0) sel <- utils::tail(arr_months, max(1, sum(MONTHS >= r[1] & MONTHS <= r[2])))
+  # --- Panels of kind "city" (whole-city figures by indicator, e.g. Madrid arrests by motive) ---
+  for (id in panel_ids("city")) local({
+    pid <- id; p <- panel_meta(pid); out <- function(x) paste0("pn_", pid, "_", x)
+    V <- panel_values(pid); IND <- panel_indicators(pid); V <- V[V$territory_id == CITY_ID, ]
+    iname <- function(x) panel_names(IND, lang)[x]
+    first <- if (nzchar(p$default_indicator) && p$default_indicator %in% IND$indicator) p$default_indicator else IND$indicator[!IND$is_total][1]
+    sel_ind <- reactiveVal(first)
+    observeEvent(input[[out("click")]], sel_ind(input[[out("click")]]))
+    pmonths <- sort(unique(V$month))
+    pperiod <- reactive({
+      r <- range(); sel <- pmonths[pmonths >= r[1] & pmonths <= r[2]]
+      if (length(sel) == 0) sel <- utils::tail(pmonths, max(1, sum(MONTHS >= r[1] & MONTHS <= r[2])))
       sel
     })
-    output$arr_title <- renderUI(h5(class = "mt-2 mb-1", tags$b(t("arrests_title")), " · ", t("city"), " · ", fmt_range(base::range(arr_period()), lang)))
-    output$arr_table <- renderUI({
-      sel <- arr_period(); d <- ARR[ARR$month %in% sel, ]
-      n <- tapply(d$people, d$motive_id, sum)
-      tot <- n[["total"]] %||% sum(n[names(n) != "total"])
-      n <- sort(n[names(n) != "total"], decreasing = TRUE)
-      prev <- ARR[ARR$month < min(sel) & ARR$month >= min(sel) - 366, ]
-      np <- if (nrow(prev) > 0) tapply(prev$people, prev$motive_id, sum) * length(sel) / length(unique(prev$month)) else NULL
-      row <- function(m) tags$tr(class = if (identical(m, motive_sel())) "sel",
-        tags$td(tags$a(onclick = sprintf("Shiny.setInputValue('arr_click', '%s', {priority: 'event'})", m), motive_name[m] %||% m)),
+    output[[out("title")]] <- renderUI(h5(class = "mt-2 mb-1", tags$b(panel_text(p, "title_key", panel_name(p, lang), lang)), " · ", t("city"), " · ", fmt_range(base::range(pperiod()), lang)))
+    output[[out("table")]] <- renderUI({
+      sel <- pperiod(); d <- V[V$month %in% sel, ]
+      n <- tapply(d$value, d$indicator, sum)
+      totals <- IND$indicator[IND$is_total]
+      tot <- if (length(totals) && totals[1] %in% names(n)) n[[totals[1]]] else sum(n[!names(n) %in% totals])
+      n <- sort(n[!names(n) %in% totals], decreasing = TRUE)
+      prev <- V[V$month < min(sel) & V$month >= min(sel) - 366, ]
+      np <- if (nrow(prev) > 0) tapply(prev$value, prev$indicator, sum) * length(sel) / length(unique(prev$month)) else NULL
+      row <- function(m) tags$tr(class = if (identical(m, sel_ind())) "sel",
+        tags$td(tags$a(onclick = sprintf("Shiny.setInputValue('%s', '%s', {priority: 'event'})", out("click"), m), iname(m) %||% m)),
         tags$td(class = "text-end", fmt_n(n[[m]], lang)),
-        tags$td(class = "text-end text-muted", style = "white-space:nowrap", if (tot > 0) paste0(fmt_r(100 * n[[m]] / tot, lang), " %") else "—"),
+        tags$td(class = "text-end text-muted", style = "white-space:nowrap", if (tot > 0) paste0(fmt_r(100 * n[[m]] / tot, lang), " %") else "—"),
         tags$td(class = "text-end text-muted", if (is.null(np) || is.na(np[m])) "—" else fmt_n(round(np[[m]]), lang)))
       tags$table(class = "table table-sm",
-        tags$thead(tags$tr(tags$th(t("arrests_col_motive")), tags$th(class = "text-end", t("arrests_col_people")), tags$th(class = "text-end", "%"),
+        tags$thead(tags$tr(tags$th(panel_text(p, "col_key", t("panel_col_indicator"), lang)), tags$th(class = "text-end", panel_text(p, "value_key", t("panel_col_value"), lang)), tags$th(class = "text-end", "%"),
                            tags$th(class = "text-end", t("arrests_col_before"), info(t("arrests_before_help"))))),
-        tags$tbody(lapply(names(n), row), tags$tr(class = "ref", tags$td(t("mossos_total")), tags$td(class = "text-end", fmt_n(tot, lang)), tags$td(), tags$td())))
+        tags$tbody(lapply(names(n), row), tags$tr(class = "ref", tags$td(t("panel_total")), tags$td(class = "text-end", fmt_n(tot, lang)), tags$td(), tags$td())))
     })
-    output$arr_evol_head <- renderUI(h6(class = "mb-0", t("arrests_by_year"), " · ", motive_name[motive_sel()] %||% motive_sel()))
-    output$arr_evol <- renderPlot({
-      d <- ARR[ARR$motive_id == motive_sel(), ]; req(nrow(d) > 0); d <- d[order(d$month), ]
-      year <- as.integer(format(d$month, "%Y")); v <- tapply(d$people, year, sum); nm <- tapply(d$month, year, length)
+    output[[out("evol_head")]] <- renderUI(h6(class = "mb-0", t("arrests_by_year"), " · ", iname(sel_ind()) %||% sel_ind()))
+    output[[out("evol")]] <- renderPlot({
+      d <- V[V$indicator == sel_ind(), ]; req(nrow(d) > 0); d <- d[order(d$month), ]
+      year <- as.integer(format(d$month, "%Y")); v <- tapply(d$value, year, sum); nm <- tapply(d$month, year, length)
       op <- par(mar = c(2.4, 3.2, 0.5, 0.5), las = 1, cex.axis = 0.8, mgp = c(2, 0.5, 0)); on.exit(par(op))
       b <- barplot(v, names.arg = ifelse(nm < 12, paste0(names(v), "*"), names(v)), col = ifelse(nm < 12, "#9ecae1", "#3182bd"), border = NA, ylim = c(0, max(v) * 1.15))
       text(b, v, fmt_n(v, lang), pos = 3, cex = 0.7, col = "#475569")
     }, res = 96)
-    output$arr_notes <- renderUI(div(class = "note mt-1", p(HTML(t("arrests_note"))), p(t("arrests_year_note"))))
-  }
+    output[[out("notes")]] <- renderUI(div(class = "note mt-1", if (nzchar(p$note_key)) p(HTML(t(p$note_key))) else p(panel_measure(p, lang)), if (nzchar(p$note2_key)) p(t(p$note2_key))))
+  })
 }
 
 # --- Map layers --------------------------------------------------------------------
@@ -717,79 +716,73 @@ rates_block <- function(id, dis_id, d, lang) {
   t <- function(k, ...) tr(k, lang, ...)
   if (!HAS_RATES) return(p(class = "note", t("no_population_short")))
   b <- d$neighbourhoods[d$neighbourhoods$territory_id == id, ]; di <- d$districts[d$districts$territory_id == dis_id, ]
+  nb_pop <- unname(pop_of[id]); if (is.na(nb_pop)) b$rate <- NA     # no register for this neighbourhood: its row shows no rate
   maxv <- suppressWarnings(max(c(b$rate, di$rate, d$city$rate), na.rm = TRUE))
-  bar <- function(lbl, v, strong = FALSE) tags$tr(
+  bar <- function(lbl, v, strong = FALSE, na_text = NULL) tags$tr(
     tags$td(style = "width:38%", if (strong) tags$b(lbl) else lbl),
-    tags$td(style = "width:44%;vertical-align:middle", if (is.na(v)) span(class = "note", t("less_than_calls", THRESHOLD)) else
+    tags$td(style = "width:44%;vertical-align:middle", if (is.na(v)) span(class = "note", na_text %||% t("less_than_calls", THRESHOLD)) else
       div(style = paste0("height:10px;border-radius:3px;background:", if (strong) "#3182bd" else "#94a3b8", ";width:", max(2, round(100 * v / maxv)), "%"))),
     tags$td(class = "text-end", style = "width:18%", if (is.na(v)) "—" else fmt_r(v, lang)))
   tagList(
-    h6(t("rates_title"), info(t("residents", fmt_n(pop_of[[id]], lang), fmt_date(meta$population_date, lang)))),
+    h6(t("rates_title"), info(if (is.na(nb_pop)) t("no_population_short") else t("residents", fmt_n(nb_pop, lang), fmt_date(meta$population_date, lang)))),
     tags$table(class = "table table-sm table-borderless", tags$tbody(
-      bar(name_of[[id]], b$rate, TRUE), bar(t("district_x", name_of[[dis_id]]), di$rate), bar(t("city"), d$city$rate))))
+      bar(name_of[[id]], b$rate, TRUE, na_text = if (is.na(nb_pop)) t("no_population_nb") else NULL), if (!SINGLE_DISTRICT) bar(t("district_x", name_of[[dis_id]]), di$rate), bar(t("city"), d$city$rate))))
 }
 
-# Barcelona: crime known to the Mossos in the neighbourhood's district, same period
-mossos_block <- function(dis_id, r, lang) {
-  t <- function(k, ...) tr(k, lang, ...)
-  mm <- sort(unique(MOSSOS$month)); sel <- mm[mm >= r[1] & mm <= r[2]]; warn <- NULL
-  if (length(sel) == 0) { sel <- utils::tail(mm, max(1, sum(MONTHS >= r[1] & MONTHS <= r[2]))); warn <- t("mossos_other_period", fmt_range(range(sel), lang)) }
-  if (length(sel) == 0) return(tagList(h6(t("mossos_title")), p(class = "note", t("mossos_none"))))
-  d <- MOSSOS[MOSSOS$month %in% sel, ]
-  total <- function(x, g) { v <- tapply(x$known, x$group_id, sum); v[g] }
-  groups <- MGROUPS$group_id[!MGROUPS$group_id %in% c("sensitive", "unmapped")]
-  in_dis <- total(d[d$territory_id == dis_id, ], groups); in_dis[is.na(in_dis)] <- 0
-  in_city <- total(d, groups); in_city[is.na(in_city)] <- 0
-  ord <- order(-in_dis)[seq_len(min(6, length(groups)))]
-  tot_dis <- sum(d$known[d$territory_id == dis_id & d$group_id == "total"]); tot_city <- sum(d$known[d$group_id == "total"])
-  p_dis <- pop_of[dis_id]; p_city <- pop_of[CITY_ID]
-  rate <- function(n, p) if (is.na(p) || is.na(n)) NA else 1000 * n / p
-  gname <- local_name(MGROUPS, "group_id", lang)
-  row <- function(lbl, n, nc, strong = FALSE) {
-    n <- apply_threshold(n, THRESHOLD)
-    tags$tr(tags$td(if (strong) tags$b(lbl) else lbl), tags$td(class = "text-end", figure(n, lang)),
-            tags$td(class = "text-end", if (is.na(n)) "—" else fmt_r(rate(n, p_dis), lang)),
-            tags$td(class = "text-end text-muted", fmt_r(rate(nc, p_city), lang)))
-  }
-  tagList(
-    h6(t("mossos_title"), info(t("mossos_note"))),
-    div(class = "sub note", name_of[[dis_id]], " · ", fmt_range(range(sel), lang)),
-    if (!is.null(warn)) p(class = "note", warn),
-    tags$table(class = "table table-sm",
-      tags$thead(tags$tr(tags$th(t("mossos_col_type")), tags$th(class = "text-end", t("mossos_col_district")),
-                         tags$th(class = "text-end", t("mossos_col_rate")), tags$th(class = "text-end", t("mossos_col_city")))),
-      tags$tbody(lapply(ord, function(i) row(gname[[groups[i]]], in_dis[[i]], in_city[[i]])), row(t("mossos_total"), tot_dis, tot_city, TRUE))))
+# Credit of the boundaries under the map: the city's own text when translations.csv has one, else the module's attribution
+boundaries_credit <- function(lang) {
+  k <- paste0("boundaries_source@", CITY)
+  if (!identical(TR(k, "en"), k)) tr("boundaries_source", lang) else if (nzchar(meta$boundaries_attribution %||% "")) meta$boundaries_attribution else tr("boundaries_source", lang)
 }
 
-# Madrid: Municipal Police activity in the district (F2), same period
-ACT_INDICATORS <- c("arrested_investigated", "losc_people", "losc_property", "losc_drug_possession", "losc_drug_use", "losc_weapons",
-                    "drinking_in_public_adults", "venue_reports", "street_vending_counterfeit", "street_vending_food", "accidents_with_casualties")
-activity_block <- function(dis_id, r, lang) {
+# --- Panels (P-035): a city's extra monthly datasets, declared by its module (mart_city_panels) ----------
+panel_ids <- function(kind) if (has_rows(PANELS)) PANELS$panel_id[PANELS$kind == kind] else character()
+panel_meta <- function(id) PANELS[PANELS$panel_id == id, ][1, ]
+panel_values <- function(id) PANEL_VALUES[PANEL_VALUES$panel_id == id, ]
+panel_indicators <- function(id) { x <- PANEL_IND[PANEL_IND$panel_id == id, ]; x[order(x$is_total, x$sort_order), ] }
+# A text of the panel: its translation key when the module names one, else the default
+panel_text <- function(p, field, default, lang) { k <- p[[field]] %||% ""; if (nzchar(k) && !identical(TR(k, "en"), k)) tr(k, lang) else default }
+panel_name <- function(p, lang) if (lang == (meta$lang %||% "es")) p$name_local else p$name_en
+panel_measure <- function(p, lang) p$measure
+panel_names <- function(ind, lang) {
+  n <- ifelse(nzchar(ind$name_key) & vapply(ind$name_key, function(k) nzchar(k) && !identical(TR(k, "en"), k), logical(1)),
+              vapply(ind$name_key, function(k) if (nzchar(k)) TR(k, lang) else "", ""), if (lang == (meta$lang %||% "es")) ind$name_local else ind$name_en)
+  setNames(n, ind$indicator)
+}
+
+# Kind "district": the neighbourhood's district against the city for the same period, by indicator
+panel_block <- function(id, dis_id, r, lang) {
   t <- function(k, ...) tr(k, lang, ...)
-  mm <- sort(unique(ACT$month)); sel <- mm[mm >= r[1] & mm <= r[2]]; warn <- NULL
-  if (length(sel) == 0) { sel <- utils::tail(mm, max(1, sum(MONTHS >= r[1] & MONTHS <= r[2]))); warn <- t("activity_other_period", fmt_range(range(sel), lang)) }
+  p <- panel_meta(id); V <- panel_values(id); IND <- panel_indicators(id)
+  ptext <- function(field, default) panel_text(p, field, default, lang)
+  mm <- sort(unique(V$month)); sel <- mm[mm >= r[1] & mm <= r[2]]; warn <- NULL
+  if (length(sel) == 0) { sel <- utils::tail(mm, max(1, sum(MONTHS >= r[1] & MONTHS <= r[2]))); if (length(sel)) warn <- ptext("other_period_key", t("panel_other_period", fmt_range(range(sel), lang))) }
   if (length(sel) == 0) return(NULL)
-  d <- ACT[ACT$month %in% sel & ACT$indicator %in% ACT_INDICATORS, ]
-  total <- function(id) { v <- tapply(d$value[d$territory_id == id], d$indicator[d$territory_id == id], sum); v[ACT_INDICATORS] }
-  in_dis <- total(dis_id); in_city <- total(CITY_ID)
+  if (!is.null(warn) && nzchar(p$other_period_key)) warn <- t(p$other_period_key, fmt_range(range(sel), lang))
+  d <- V[V$month %in% sel, ]
+  totals <- IND$indicator[IND$is_total]; regular <- IND$indicator[!IND$is_total]
+  sum_by <- function(x) { v <- tapply(x$value, x$indicator, sum); v[c(regular, totals)] }
+  in_dis <- sum_by(d[d$territory_id == dis_id, ]); in_city <- sum_by(d)   # the city: every row (districts plus what has no district, under the city's id)
   p_dis <- pop_of[dis_id]; p_city <- pop_of[CITY_ID]
   rate <- function(n, p) if (is.na(p) || is.na(n)) NA else 1000 * n / p
-  row <- function(k) {
-    n <- apply_threshold(in_dis[[k]], THRESHOLD)
-    tags$tr(tags$td(t(paste0("act_", k))), tags$td(class = "text-end", figure(n, lang)),
+  names_of <- panel_names(IND, lang)
+  shown <- regular[!is.na(in_dis[regular])]
+  if (!is.na(p$top_n) && length(shown) > p$top_n) { x <- in_dis[shown]; x[is.na(x)] <- 0; shown <- shown[order(-x)][seq_len(p$top_n)] }
+  if (length(shown) == 0 && length(totals) == 0) return(NULL)
+  row <- function(k, strong = FALSE) {
+    n <- apply_threshold(in_dis[[k]], THRESHOLD); nc <- in_city[[k]]
+    tags$tr(tags$td(if (strong) tags$b(names_of[[k]]) else names_of[[k]]), tags$td(class = "text-end", figure(n, lang)),
             tags$td(class = "text-end", if (is.na(n) || !HAS_RATES) "—" else fmt_r(rate(n, p_dis), lang)),
-            tags$td(class = "text-end text-muted", if (!HAS_RATES || is.na(in_city[[k]])) "—" else fmt_r(rate(in_city[[k]], p_city), lang)))
+            tags$td(class = "text-end text-muted", if (!HAS_RATES || is.na(nc)) "—" else fmt_r(rate(nc, p_city), lang)))
   }
-  with_data <- ACT_INDICATORS[!is.na(in_dis)]
-  if (length(with_data) == 0) return(NULL)
   tagList(
-    h6(t("activity_title"), info(t("activity_note"))),
+    h6(ptext("title_key", panel_name(p, lang)), info(ptext("note_key", p$measure))),
     div(class = "sub note", name_of[[dis_id]], " · ", fmt_range(range(sel), lang)),
     if (!is.null(warn)) p(class = "note", warn),
     tags$table(class = "table table-sm",
-      tags$thead(tags$tr(tags$th(t("activity_col")), tags$th(class = "text-end", t("mossos_col_district")),
+      tags$thead(tags$tr(tags$th(ptext("col_key", t("panel_col_indicator"))), tags$th(class = "text-end", t("mossos_col_district")),
                          tags$th(class = "text-end", t("mossos_col_rate")), tags$th(class = "text-end", t("mossos_col_city")))),
-      tags$tbody(lapply(with_data, row))))
+      tags$tbody(lapply(shown, row), lapply(totals[!is.na(in_dis[totals])], row, strong = TRUE))))
 }
 
 reading_block <- function(lang, open = FALSE) {
@@ -804,15 +797,14 @@ source_block <- function(lang) {
     tags$li(t("data_from", fmt_month(meta$first_month, lang), fmt_month(meta$last_month, lang), fmt_date(meta$loaded_at, lang))),
     tags$li(t("pct_without_neighbourhood", fmt_r(meta$pct_without_neighbourhood, lang))),
     if (HAS_RATES) tags$li(t("source_register", fmt_date(meta$population_date, lang))),
-    if ("madrid_activity" %in% PANELS && HAS_ACT && !is.null(ACTMETA))
-      tags$li(t("activity_source", fmt_month(ACTMETA$first_month, lang), fmt_month(ACTMETA$last_month, lang)), " · ", tags$a(href = ACTMETA$url, target = "_blank", "datos.madrid.es")),
-    if ("mossos_districts" %in% PANELS && HAS_MOSSOS && !is.null(MMETA))
-      tags$li(t("mossos_source", fmt_month(MMETA$first_month, lang), fmt_month(MMETA$last_month, lang)), " · ", tags$a(href = MMETA$url, target = "_blank", "analisi.transparenciacatalunya.cat"))))
+    lapply(panel_ids("district"), function(id) { p <- panel_meta(id); m0 <- fmt_month(as.Date(p$first_month), lang); m1 <- fmt_month(as.Date(p$last_month), lang)
+      tags$li(if (nzchar(p$source_key) && !identical(TR(p$source_key, "en"), p$source_key)) t(p$source_key, m0, m1) else t("panel_source", panel_name(p, lang), p$publisher, m0, m1),
+              " · ", tags$a(href = p$url, target = "_blank", if (nzchar(p$source_label)) p$source_label else sub("^https?://([^/]+).*$", "\\1", p$url))) })))
 }
 
 CITY_FUNCTIONS <- c("figure", "type_name", "month_labels", "view_months", "view_label", "compute", "ui_city", "server_city",
-                    "neighbourhood_labels", "layer_neighbourhoods", "layer_selection", "rates_block", "mossos_block", "activity_block",
-                    "reading_block", "source_block", "survey_block")
+                    "neighbourhood_labels", "layer_neighbourhoods", "layer_selection", "rates_block", "panel_ids", "panel_meta", "panel_values",
+                    "panel_indicators", "panel_text", "panel_name", "panel_measure", "panel_names", "panel_block", "reading_block", "source_block", "survey_block", "boundaries_credit")
 
 # Prepare the environment of a city (NULL if data or boundaries are missing)
 make_city <- function(key) {
@@ -822,9 +814,17 @@ make_city <- function(key) {
   e <- new.env(parent = app_env)
   e$CITY <- key; e$CITY_ID <- f$id; e$CITY_NAME <- unname(name_of[f$id]) %||% x$meta$name_en %||% key
   e$base <- x$base; e$meta <- x$meta
-  # Extra panels the module declares (each one has its own tables and code below), and the notes it asks for
-  e$PANELS <- strsplit(x$meta$panels %||% "", ";")[[1]]
+  # Extra panels the module declares (mart_city_panels, P-035), and the notes it asks for
+  e$PANELS <- if (has_rows(CITY_PANELS)) CITY_PANELS[CITY_PANELS$city == key, ] else NULL
+  e$PANEL_VALUES <- if (has_rows(CITY_PANEL_VALUES)) CITY_PANEL_VALUES[CITY_PANEL_VALUES$city == key, ] else data.frame(panel_id = character(), month = as.Date(character()), territory_id = character(), indicator = character(), value = integer())
+  e$PANEL_IND <- if (has_rows(CITY_PANEL_IND)) CITY_PANEL_IND[CITY_PANEL_IND$city == key, ] else data.frame(panel_id = character(), indicator = character(), name_local = character(), name_en = character(), name_key = character(), sort_order = integer(), is_total = logical())
   e$STATS_LEVEL <- if (identical(x$meta$stats_level, "neighbourhood")) "neighbourhood" else "district"   # level the statistics tab ranks by default
+  e$TIME_UNIT <- if (identical(x$meta$time_unit, "year")) "year" else "month"                               # a yearly source: "months" are 1 January of each year
+  e$MEASURE_KIND <- x$meta$measure_kind %||% "calls"                                                        # which set of texts (key@kind) the app falls back to
+  if (e$TIME_UNIT == "year") {                                                                                # yearly cities print years wherever a month would appear
+    e$fmt_month <- function(d, lang) format(as.Date(d), "%Y")
+    e$fmt_range <- function(r, lang) if (format(r[1], "%Y") == format(r[2], "%Y")) format(r[1], "%Y") else paste(format(r[1], "%Y"), "–", format(r[2], "%Y"))
+  }
   e$SURVEY <- if (has_rows(CITY_SURVEY)) CITY_SURVEY[CITY_SURVEY$city == key, ] else NULL
   e$SURVEY_META <- if (has_rows(CITY_SURVEY_META) && key %in% CITY_SURVEY_META$city) CITY_SURVEY_META[CITY_SURVEY_META$city == key, ][1, ] else NULL
   e$HAS_SURVEY <- has_rows(e$SURVEY)
@@ -835,13 +835,15 @@ make_city <- function(key) {
   geo <- sf::st_read(path(f$gpkg), quiet = TRUE)
   e$geo_nb <- geo[geo$level == "neighbourhood", ]; e$geo_di <- geo[geo$level == "district", ]
   e$geo_nb$district <- unname(name_of[e$geo_nb$parent_id])
+  e$SINGLE_DISTRICT <- nrow(e$geo_di) <= 1          # a city whose source has no level between the city and the neighbourhoods (Paris): no district rows
   pop <- POP_ALL[POP_ALL$territory_id == f$id | startsWith(POP_ALL$territory_id, paste0(f$id, "-")), ]
   e$HAS_RATES <- nrow(pop) > 0 && f$id %in% pop$territory_id
   e$pop_of <- if (e$HAS_RATES) setNames(pop$population, pop$territory_id) else c()
+  e$HAS_NB_RATES <- e$HAS_RATES && any(e$geo_nb$territory_id %in% names(e$pop_of))   # a register by district only (Mexico City): no neighbourhood rates, no shading by rate
   e$BLOCKS <- MARTS$blocks[MARTS$blocks %in% unique(x$base$block)]   # only the categories this city's source publishes
   e$THRESHOLD <- x$meta$threshold[1] %||% MARTS$threshold
   e$MONTHS <- sort(unique(x$base$month))
-  e$tr <- function(key, lang, ...) TR(key, lang, ..., city = CITY)
+  e$tr <- function(key, lang, ...) TR(key, lang, ..., city = CITY, kind = MEASURE_KIND)
   environment(e$tr) <- e
   for (fn in CITY_FUNCTIONS) { g <- get(fn, envir = app_env); environment(g) <- e; assign(fn, g, envir = e) }
   e
@@ -857,7 +859,7 @@ make_city <- function(key) {
 
 # --- City survey block: the latest value of each indicator for the district and the city, and the last years ---
 survey_block <- function(dis_id, lang) {
-  t <- function(k, ...) TR(k, lang, ..., city = CITY)
+  t <- function(k, ...) TR(k, lang, ..., city = CITY, kind = MEASURE_KIND)
   s <- SURVEY; if (!has_rows(s)) return(NULL)
   loc <- function(en, local) if (lang == "es" || lang == "ca") local else en
   blocks <- lapply(unique(s$indicator), function(ind) {
@@ -1573,11 +1575,15 @@ ui_about <- function(lang, cities) {
   months <- function(m) if (is.null(m) || all(is.na(m))) "" else { d <- as.Date(m); paste(fmt_month(min(d), lang), "–", fmt_month(max(d), lang)) }
   # One row per city (source, what it counts, territory, months, licence: the module's About keys when it names them), then its extra panels
   key_or <- function(k, default) if (nzchar(k %||% "") && !identical(TR(k, "en"), k)) t(k) else default
-  panels_of <- function(city) cities[[city]]$PANELS %||% character()
+  # Panels with an About row: those that name About keys, unless the same data is already a country source (about_unless_country_source)
+  panel_rows <- function(city, cname) { pm <- cities[[city]]$PANELS; if (!has_rows(pm)) return(NULL)
+    lapply(seq_len(nrow(pm)), function(i) { p <- pm[i, ]
+      if (!nzchar(p$about_source_key)) return(NULL)
+      if (nzchar(p$about_unless_country_source)) { cs <- strsplit(p$about_unless_country_source, ":")[[1]]; if (has_rows(CMETA) && any(CMETA$country == cs[1] & CMETA$source == cs[2])) return(NULL) }
+      list(key_or(p$about_source_key, paste0(p$name_en, " (", cname, ")")), key_or(p$about_measures_key, p$measure), key_or(p$about_territory_key, cname), months(c(p$first_month, p$last_month)), key_or(p$about_licence_key, p$licence), p$url) }) }
   rows <- unlist(lapply(names(cities), function(city) { m <- RAW[[city]]$meta; cname <- cities[[city]]$CITY_NAME
     c(list(list(key_or(m$about_source_key, paste0(m$source_name, " (", cname, ")")), key_or(m$about_measures_key, m$measure), key_or(m$about_territory_key, cname), months(c(m$first_month, m$last_month)), m$licence, m$url)),
-      if ("madrid_activity" %in% panels_of(city) && HAS_ACT && !is.null(ACTMETA)) list(list(t("about_src_act"), t("about_act_measures"), t("about_act_territory"), months(c(ACTMETA$first_month, ACTMETA$last_month)), ACTMETA$licence, ACTMETA$url)),
-      if ("mossos_districts" %in% panels_of(city) && HAS_MOSSOS && !any(CMETA$source == "mossos")) list(list(t("about_src_mossos"), t("about_mossos_measures"), t("about_mossos_territory"), if (!is.null(MMETA)) months(c(MMETA$first_month, MMETA$last_month)) else "", t("about_mossos_licence"), MMETA$url %||% NA))) }), recursive = FALSE)
+      Filter(Negate(is.null), panel_rows(city, cname))) }), recursive = FALSE)
   mc <- if (length(cities)) RAW[[names(cities)[1]]]$meta else NULL; mb <- if ("barcelona" %in% names(cities)) RAW$barcelona$meta else NULL
   # One row per country (the first one is DEFAULT_COUNTRY): source, measure and notes, levels, period, licence, population and boundaries
   # One row per country and source (main source first, then its second sources)
@@ -1604,7 +1610,7 @@ ui_about <- function(lang, cities) {
       lapply(seq_len(nrow(ms)), function(i) { m <- ms[i, ]
         list(paste0(m$source_name, " (", e$CNAME(lang), ")"), dash(if (nzchar(m$count_noun_en %||% "")) m$count_noun_en else t("gl_recorded_unit")), dash(m$method_where), dash(m$method_date), dash(m$method_revisions), dash(m$notes_en)) }) }), recursive = FALSE),
     lapply(names(cities), function(city) { m <- RAW[[city]]$meta
-      list(paste0(m$source_name, " (", cities[[city]]$CITY_NAME, ")"), t("k_calls", city = city), dash(m$method_where), dash(m$method_date), dash(m$method_revisions), dash(if (nzchar(m$note_break_key %||% "")) t(m$note_break_key) else "")) }))
+      list(paste0(m$source_name, " (", cities[[city]]$CITY_NAME, ")"), t("k_calls", city = city, kind = m$measure_kind %||% "calls"), dash(m$method_where), dash(m$method_date), dash(m$method_revisions), dash(if (nzchar(m$note_break_key %||% "")) t(m$note_break_key) else "")) }))
   method_table <- tags$table(class = "table table-sm small",
     tags$thead(tags$tr(lapply(c("about_col_source", "about_col_unit", "about_col_where", "about_col_date", "about_col_revisions", "about_col_breaks"), function(k) tags$th(t(k))))),
     tags$tbody(lapply(mrows, function(r) tags$tr(lapply(r, function(v) tags$td(v))))))

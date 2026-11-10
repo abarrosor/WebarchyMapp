@@ -153,30 +153,4 @@ madrid_activity_ingest <- function(con) {
   invisible(n_new)
 }
 
-# Marts: district x month x indicator (plus the city total, which includes rows
-# without district) and city-wide arrests by motive
-madrid_activity_marts <- function(con) {
-  if (!DBI::dbExistsTable(con, "stg_madrid_activity")) return(invisible(FALSE))
-  DBI::dbExecute(con, paste0("
-    CREATE OR REPLACE TABLE mart_madrid_activity AS
-    SELECT month, '", ID_MADRID, "-D' || district_code AS territory_id, block, indicator, value::INTEGER AS value
-    FROM stg_madrid_activity WHERE district_code IS NOT NULL AND value IS NOT NULL
-    UNION ALL
-    SELECT month, '", ID_MADRID, "', block, indicator, sum(value)::INTEGER
-    FROM stg_madrid_activity WHERE value IS NOT NULL AND block <> 'arrest_motives' GROUP BY ALL
-    ORDER BY ALL"))
-  DBI::dbExecute(con, "
-    CREATE OR REPLACE TABLE mart_madrid_arrests AS
-    SELECT month, indicator AS motive_id, value::INTEGER AS people
-    FROM stg_madrid_activity WHERE block = 'arrest_motives' AND value IS NOT NULL ORDER BY ALL")
-  motives <- read_reference("madrid_arrest_motives.csv")
-  motives <- motives[!duplicated(motives$motive_id), c("motive_id", "name_en", "name_es")]
-  DBI::dbWriteTable(con, "mart_madrid_arrest_motives", as.data.frame(motives), overwrite = TRUE)
-  DBI::dbExecute(con, "
-    CREATE OR REPLACE TABLE mart_madrid_activity_meta AS
-    SELECT 'Municipal Police activity statistics' AS source, 'Madrid City Council' AS publisher,
-           'https://datos.madrid.es/dataset/212616-0-policia-estadisticas' AS url, 'CC BY 4.0' AS licence,
-           (SELECT min(month) FROM stg_madrid_activity) AS first_month, (SELECT max(month) FROM stg_madrid_activity) AS last_month,
-           (SELECT max(loaded_at) FROM ingest_log WHERE source = 'madrid_activity') AS loaded_at")
-  invisible(TRUE)
-}
+# The marts of this source are the shared panel tables: see the panels of R/61_city_madrid.R (P-035).

@@ -124,6 +124,7 @@ register_country(list(
   boundaries_attribution = "",
   not_published = c("Not available in the CSO table for this division and quarter", "Not available in the CSO table for this division and quarter"),
   notes_en = "Garda Divisions (New Operating Model, 2025) are policing areas, not counties, and have no open boundaries; statistics 2015-2023 were published 'Under Reservation'; fraud (09) from 2023Q3 covers only public reports (not comparable with earlier quarters); drink and drug driving are merged from 2025Q1.",
+  method = list(where = "Garda Division where the incident was recorded (a policing area, not a county)", date = "Quarter in which the incident was recorded on PULSE", revisions = "Each quarterly release revises earlier quarters (late recording, reclassification); 2015-2023 published 'Under Reservation'"),
   default_region = "IE-400",
   download = ie_download, ingest = ie_ingest, territory = ie_territory, population = ie_population
 ))

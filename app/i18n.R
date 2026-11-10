@@ -23,14 +23,15 @@ TRANSLATIONS <- local({
   out
 })
 
-# Text of a key; with ... applies sprintf. `city`: its own version first ("key@city").
-tr <- function(key, lang, ..., city = NULL) {
+# Text of a key; with ... applies sprintf. `city`: its own version first ("key@city"), then the version of
+# the city's kind of measure ("key@offences", "key@complaints"...), then the base key.
+tr <- function(key, lang, ..., city = NULL, kind = NULL) {
   pick <- function(k) {
     x <- TRANSLATIONS[[lang]][k]
     if (is.na(x) || !nzchar(x)) x <- TRANSLATIONS$en[k]
     if (is.na(x) || !nzchar(x)) NULL else unname(x)
   }
-  x <- (if (!is.null(city)) pick(paste0(key, "@", city))) %||% pick(key) %||% key
+  x <- (if (!is.null(city)) pick(paste0(key, "@", city))) %||% (if (!is.null(kind) && nzchar(kind)) pick(paste0(key, "@", kind))) %||% pick(key) %||% key
   if (...length() > 0) sprintf(x, ...) else x
 }
 

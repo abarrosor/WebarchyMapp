@@ -280,6 +280,7 @@ register_country(list(
   boundaries_attribution = "Direção-Geral do Território, CAOP 2025 (CC BY 4.0); geoBoundaries (CC BY 4.0) as fallback",
   not_published = c("Not published: confidential cell (statistical secrecy) or figure not available (INE)", "Não publicado: dado confidencial (segredo estatístico) ou não disponível (INE)"),
   notes_en = "Series starts in 2021 (NUTS 2024 geography; earlier years exist only under NUTS 2013 in indicator 0008073). Detailed sub-categories (homicide, assault, domestic violence, vehicle theft, street robbery, drink-driving, driving without a licence) are parts of the seven main DGPJ categories; the Portuguese Immigration Service (SEF) left the totals after 2023.",
+  method = list(where = "Município where the crime occurred; crimes with no known place count in the national total only", date = "Year the crime was recorded by the police authority (participação)", revisions = "Yearly publication; the previous year may be revised with the next release"),
   default_region = "PT-1A",
   download = pt_download, ingest = pt_ingest, territory = pt_territory, population = pt_population
 ))

@@ -263,6 +263,7 @@ register_country(list(
   boundaries_attribution = "Tilastokeskus (Statistics Finland) municipal and regional boundaries 1:4 500 000, CC BY 4.0",
   not_published = c("Not published by Statistics Finland", "Tilastokeskus ei julkaise"),
   notes_en = "Yearly data (quarter 4 = whole year). Offences abroad or in an unknown municipality are only in the national figure. Breaks: Road Traffic Act 2020 (traffic infractions became administrative), sexual offence law 2023, PC chapters 12-13 not published from 2023. Åland is included as a region.",
+  method = list(where = "Municipality where the offence was committed; offences abroad or in an unknown place in the national total only", date = "Year the offence became known to the authorities (recorded), not when it was committed", revisions = "Yearly final data each spring; breaks in 2020 (Road Traffic Act) and 2023 (sexual offences)"),
   default_region = "FI-01",
   download = fi_download, ingest = fi_ingest, territory = fi_territory, population = fi_population
 ))

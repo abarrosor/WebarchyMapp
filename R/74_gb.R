@@ -550,6 +550,7 @@ register_country(list(
   population_source = GB_POP_SOURCE, boundaries_attribution = "Contains OS data © Crown copyright and database right; Source: Office for National Statistics licensed under the Open Government Licence v3.0",
   not_published = GB_NOT_PUBLISHED,
   notes_en = "Quarters are financial-year quarters (April-March); year = the year the financial year ends in. Recording practice changed in 2014 (HMICFRS) and burglary was reclassified in April 2017; quarterly figures before 2019 can be negative (corrections). Some CSPs are parts of a local authority and have no population (no rates).",
+  method = list(where = "Community Safety Partnership (local authority area) where the offence was recorded by the police force", date = "Financial-year quarter in which the offence was recorded, not when it happened", revisions = "Each quarterly release revises the earlier quarters of the series (corrections can make a quarter negative before 2019); recording practice changed in 2014 and 2017"),
   default_region = "GBE-E23000001",
   download = gbe_download, ingest = gbe_ingest, territory = gbe_territory, population = gbe_population
 ))
@@ -564,6 +565,7 @@ register_country(list(
   population_source = GB_POP_SOURCE, boundaries_attribution = "Contains OS data © Crown copyright and database right; Source: Office for National Statistics licensed under the Open Government Licence v3.0",
   not_published = GB_NOT_PUBLISHED,
   notes_en = "Scottish counting rules differ from those of England and Wales and Northern Ireland: never compare. 'Crimes' (more serious) and 'offences' are separate official totals; the classification was revised in 2023/24.",
+  method = list(where = "Council area where the crime was recorded by Police Scotland", date = "Financial year (April to March) in which the crime was recorded", revisions = "Yearly national statistics; the previous year is revised in the next bulletin; classification revised in 2023/24"),
   default_region = "GBS-S12000036",
   download = gbs_download, ingest = gbs_ingest, territory = gbs_territory, population = gbs_population
 ))
@@ -578,6 +580,7 @@ register_country(list(
   population_source = GB_POP_SOURCE, boundaries_attribution = "Contains OS data © Crown copyright and database right; Source: Office for National Statistics licensed under the Open Government Licence v3.0",
   not_published = GB_NOT_PUBLISHED,
   notes_en = "Monthly data since April 2001 (complete calendar quarters only); burglary was reclassified in April 2017. The OpenDataNI dataset was last updated in January 2022 (data to December 2021): PSNI now publishes the monthly figures by policing district only as PDF bulletins, so later years are not loaded.",
+  method = list(where = "Policing district where the crime was recorded by the PSNI", date = "Month in which the crime was recorded", revisions = "Monthly figures revised in later releases; the open dataset stopped in January 2022"),
   default_region = "GBN-N09000003",
   download = gbn_download, ingest = gbn_ingest, territory = gbn_territory, population = gbn_population
 ))

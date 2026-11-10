@@ -19,10 +19,15 @@
 # Module fields: code ("MAD"), key ("madrid"), id (municipality id), name_en, name_local, lang, country,
 # source = list(name, publisher, url, licence, measure), download(), territory(con), ingest(con),
 # population(con). Optional: after_countries = TRUE (the city is built on a country module's data and runs
-# after the countries), panels (ids of extra panels the app knows: "madrid_activity",
-# "madrid_arrests", "mossos_districts"), note_territory = list(pattern, key) (a warning on territories
+# after the countries), note_territory = list(pattern, key) (a warning on territories
 # whose name matches), note_break = list(block, date, key) (a series break), about_*_key (About page texts),
-# stats_level ("district" or "neighbourhood": what the statistics tab ranks by default).
+# stats_level ("district" or "neighbourhood": what the statistics tab ranks by default), time_unit ("month",
+# the default, or "year" for a source that only publishes yearly figures: stg_city_events.month = 1 January of
+# the year and the app shows years), measure_kind (which set of texts the app uses when a key has no city
+# variant: "calls" (default), "incidents", "complaints", "offences", "cases"...: keys "k@<kind>" in
+# translations.csv), boundaries_attribution (credit under the map when no "boundaries_source@<key>" text
+# exists). Extra datasets of a
+# city go in through register_city_survey() (yearly surveys) and register_city_panel() (monthly panels), below.
 
 CITY_MODULES <- list()
 
@@ -50,6 +55,14 @@ city_init <- function(con) {
   DBI::dbExecute(con, "
     CREATE TABLE IF NOT EXISTS ref_city_survey_indicators (
       city VARCHAR, indicator VARCHAR, name_local VARCHAR, name_en VARCHAR, unit VARCHAR, definition_en VARCHAR, definition_local VARCHAR, higher_is VARCHAR)")
+  # Panels: a second monthly dataset of a city by district or for the whole city (police activity, arrests
+  # by motive, a regional police by district...), never mixed with the events (P-035)
+  DBI::dbExecute(con, "
+    CREATE TABLE IF NOT EXISTS stg_city_panel_values (
+      city VARCHAR, panel_id VARCHAR, month DATE, territory_id VARCHAR, indicator VARCHAR, value INTEGER, file VARCHAR)")
+  DBI::dbExecute(con, "
+    CREATE TABLE IF NOT EXISTS ref_city_panel_indicators (
+      city VARCHAR, panel_id VARCHAR, indicator VARCHAR, name_local VARCHAR, name_en VARCHAR, name_key VARCHAR, sort_order INTEGER, is_total BOOLEAN)")
   invisible(TRUE)
 }
 
@@ -73,6 +86,52 @@ publish_city_survey <- function(con, key, values, indicators, file) {
                   definition_en = indicators$definition_en, definition_local = indicators$definition_local %||% indicators$definition_en, higher_is = indicators$higher_is %||% "worse", stringsAsFactors = FALSE)
   replace_city_rows(con, "ref_city_survey_indicators", key, i)
   message(sprintf("  %s survey: %d values, %d indicators, %d-%d, %d territories", key, nrow(v), nrow(i), min(v$year), max(v$year), length(unique(v$territory_id))))
+  invisible(v)
+}
+
+# --- Panels: a second monthly dataset of a city ---------------------------------------------------------
+# register_city_panel(key, list(id, kind, name, name_local, publisher, url, licence, measure, ingest, ...)):
+# ingest(con) fills stg_city_panel_values (month, territory_id = the city or one of its districts, indicator,
+# value) and ref_city_panel_indicators through publish_city_panel(). Two kinds:
+#   "district"  shown in the profile of a neighbourhood: its district against the city, per indicator (count,
+#               per 1,000 residents, city rate), threshold applied; top_n keeps the indicators with most
+#               events in the district (else every indicator with data, in sort order). Rows with the city's
+#               own id hold what has no district; the city figure is the sum of every row of the panel
+#   "city"      shown in the statistics tab, whole-city figures: table by indicator (count, share, average of
+#               the 12 months before) and a yearly bar chart of the chosen indicator (default_indicator)
+# Optional: download(), top_n, default_indicator, and translation keys the app uses when present: title_key,
+# note_key (tooltip of the title; "city" kind: a note under the table), note2_key (second note), col_key (first
+# column), value_key (count column, "city" kind), other_period_key, source_key (line of the source block,
+# "%s to %s" months), source_label (the host shown as a link), about_source_key / about_measures_key /
+# about_territory_key / about_licence_key (About page row), about_unless_country_source = "CC:source" (no
+# About row when that country source is loaded: the same data already has one). Without keys the app uses
+# generic texts and the panel's English / local names. Indicators: indicator, name_en, name_local, name_key
+# (translation key, optional), sort_order, is_total (the total row, shown last and in bold).
+register_city_panel <- function(key, p) {
+  if (is.null(CITY_MODULES[[key]])) stop("register_city_panel: city ", key, " is not registered")
+  needed <- c("id", "kind", "name", "publisher", "url", "licence", "measure", "ingest")
+  missing <- setdiff(needed, names(p)); if (length(missing)) stop("Panel ", p$id %||% "?", " of ", key, " lacks: ", toString(missing))
+  if (!p$kind %in% c("district", "city")) stop("Panel ", p$id, " of ", key, ": kind must be 'district' or 'city'")
+  CITY_MODULES[[key]]$panel_defs[[p$id]] <<- p
+  invisible(p)
+}
+
+publish_city_panel <- function(con, key, panel_id, values, indicators, file) {
+  v <- data.frame(city = key, panel_id = panel_id, month = as.Date(values$month), territory_id = values$territory_id, indicator = values$indicator,
+                  value = as.integer(round(values$value)), file = file, stringsAsFactors = FALSE)
+  v <- v[!is.na(v$value) & !is.na(v$territory_id), ]
+  i <- data.frame(city = key, panel_id = panel_id, indicator = indicators$indicator, name_local = indicators$name_local %||% indicators$name_en, name_en = indicators$name_en,
+                  name_key = indicators$name_key %||% "", sort_order = as.integer(indicators$sort_order %||% seq_len(nrow(indicators))),
+                  is_total = as.logical(indicators$is_total %||% FALSE), stringsAsFactors = FALSE)
+  i <- i[!duplicated(i$indicator), ]
+  where <- paste0(" WHERE city = ", DBI::dbQuoteString(con, key), " AND panel_id = ", DBI::dbQuoteString(con, panel_id))
+  DBI::dbWithTransaction(con, {
+    DBI::dbExecute(con, paste0("DELETE FROM stg_city_panel_values", where)); if (nrow(v)) DBI::dbAppendTable(con, "stg_city_panel_values", v)
+    DBI::dbExecute(con, paste0("DELETE FROM ref_city_panel_indicators", where)); if (nrow(i)) DBI::dbAppendTable(con, "ref_city_panel_indicators", i)
+  })
+  if (nrow(v)) log_ingest(con, paste0("panel_", key, "_", panel_id), file, NA, paste(format(range(v$month), "%Y-%m"), collapse = " to "), nrow(v), sum(v$value))
+  message(sprintf("  %s panel %s: %s values, %d indicators, %s to %s, %d territories", key, panel_id, fmt_int(nrow(v)), nrow(i),
+                  if (nrow(v)) format(min(v$month), "%m/%Y") else "-", if (nrow(v)) format(max(v$month), "%m/%Y") else "-", length(unique(v$territory_id))))
   invisible(v)
 }
 
@@ -118,7 +177,8 @@ city_marts <- function(con, threshold = MARTS$threshold) {
     data.frame(city = m$key, code = m$code, territory_id = m$id, country = m$country, name_en = m$name_en, name_local = m$name_local, lang = m$lang,
                source_name = m$source$name, source_local = m$source$name_local %||% m$source$name, publisher = m$source$publisher, url = m$source$url, licence = m$source$licence, measure = m$source$measure,
                first_month = per$first_month, last_month = per$last_month, loaded_at = loaded, pct_without_neighbourhood = pct, threshold = as.integer(threshold),
-               population_date = popd, gpkg = m$gpkg, panels = paste(m$panels %||% character(), collapse = ";"), stats_level = m$stats_level %||% "district",
+               population_date = popd, gpkg = m$gpkg, panels = paste(unique(c(m$panels %||% character(), names(m$panel_defs %||% list()))), collapse = ";"), stats_level = m$stats_level %||% "district",
+               time_unit = m$time_unit %||% "month", measure_kind = m$measure_kind %||% "calls", boundaries_attribution = m$boundaries_attribution %||% "",
                note_territory_pattern = m$note_territory$pattern %||% "", note_territory_key = m$note_territory$key %||% "",
                note_break_block = m$note_break$block %||% "", note_break_date = m$note_break$date %||% "", note_break_key = m$note_break$key %||% "",
                about_source_key = m$about_source_key %||% "", about_measures_key = m$about_measures_key %||% "", about_territory_key = m$about_territory_key %||% "",
@@ -138,6 +198,28 @@ city_marts <- function(con, threshold = MARTS$threshold) {
     if (is.na(per$y0)) return(NULL)
     data.frame(city = m$key, survey_id = s$id, name_en = s$name, name_local = s$name_local %||% s$name, publisher = s$publisher, url = s$url, licence = s$licence, measure = s$measure,
                first_year = per$y0, last_year = per$y1, values = per$n, stringsAsFactors = FALSE) })
+  # Panels: values and indicators as published, and one metadata row per panel (texts, keys, period)
+  DBI::dbExecute(con, "
+    CREATE OR REPLACE TABLE mart_city_panel_values AS
+    SELECT v.city, v.panel_id, v.month, v.territory_id, v.indicator, sum(v.value)::INTEGER AS value
+    FROM stg_city_panel_values v JOIN ref_city_panel_indicators i ON i.city = v.city AND i.panel_id = v.panel_id AND i.indicator = v.indicator GROUP BY ALL ORDER BY ALL")
+  DBI::dbExecute(con, "CREATE OR REPLACE TABLE mart_city_panel_indicators AS SELECT * FROM ref_city_panel_indicators ORDER BY city, panel_id, sort_order")
+  prows <- unlist(lapply(CITY_MODULES, function(m) lapply(m$panel_defs %||% list(), function(p) {
+    per <- DBI::dbGetQuery(con, paste0("SELECT min(month) AS m0, max(month) AS m1, count(*) AS n FROM stg_city_panel_values WHERE city = ", DBI::dbQuoteString(con, m$key), " AND panel_id = ", DBI::dbQuoteString(con, p$id)))
+    if (is.na(per$m0)) return(NULL)
+    loaded <- DBI::dbGetQuery(con, paste0("SELECT max(loaded_at) AS t FROM ingest_log WHERE source = ", DBI::dbQuoteString(con, paste0("panel_", m$key, "_", p$id))))$t
+    k <- function(f) p[[f]] %||% ""
+    data.frame(city = m$key, panel_id = p$id, kind = p$kind, name_en = p$name, name_local = p$name_local %||% p$name, publisher = p$publisher, url = p$url, licence = p$licence, measure = p$measure,
+               title_key = k("title_key"), note_key = k("note_key"), note2_key = k("note2_key"), col_key = k("col_key"), value_key = k("value_key"), other_period_key = k("other_period_key"),
+               source_key = k("source_key"), source_label = k("source_label"), about_source_key = k("about_source_key"), about_measures_key = k("about_measures_key"),
+               about_territory_key = k("about_territory_key"), about_licence_key = k("about_licence_key"), about_unless_country_source = k("about_unless_country_source"),
+               top_n = as.integer(p$top_n %||% NA), default_indicator = k("default_indicator"), first_month = per$m0, last_month = per$m1, loaded_at = loaded, stringsAsFactors = FALSE) })), recursive = FALSE)
+  prows <- Filter(Negate(is.null), prows)
+  if (length(prows)) DBI::dbWriteTable(con, "mart_city_panels", do.call(rbind, prows), overwrite = TRUE) else
+    DBI::dbExecute(con, "CREATE OR REPLACE TABLE mart_city_panels (city VARCHAR, panel_id VARCHAR, kind VARCHAR, name_en VARCHAR, name_local VARCHAR, publisher VARCHAR, url VARCHAR, licence VARCHAR, measure VARCHAR, title_key VARCHAR, note_key VARCHAR, note2_key VARCHAR, col_key VARCHAR, value_key VARCHAR, other_period_key VARCHAR, source_key VARCHAR, source_label VARCHAR, about_source_key VARCHAR, about_measures_key VARCHAR, about_territory_key VARCHAR, about_licence_key VARCHAR, about_unless_country_source VARCHAR, top_n INTEGER, default_indicator VARCHAR, first_month DATE, last_month DATE, loaded_at TIMESTAMP)")
+  # The per-panel marts of the old layout (P-035): superseded by the three tables above
+  for (tb in c("mart_madrid_activity", "mart_madrid_arrests", "mart_madrid_arrest_motives", "mart_madrid_activity_meta", "mart_mossos_bcn_month", "mart_mossos_groups", "mart_mossos_meta"))
+    DBI::dbExecute(con, paste0("DROP TABLE IF EXISTS ", tb))
   srows <- Filter(Negate(is.null), srows)
   DBI::dbWriteTable(con, "mart_city_survey_meta", if (length(srows)) do.call(rbind, srows) else data.frame(city = character(), survey_id = character(), name_en = character(), name_local = character(), publisher = character(), url = character(), licence = character(), measure = character(), first_year = integer(), last_year = integer(), values = integer()), overwrite = TRUE)
   invisible(TRUE)
@@ -160,6 +242,10 @@ city_steps <- function(con, download = TRUE, only = NULL, after_countries = NULL
     if (!is.null(m$survey)) {
       if (!is.null(m$survey$download)) fetch(paste(m$code, "survey"), m$survey$download())
       attempt(paste(m$code, "survey not loaded"), m$survey$ingest(con))
+    }
+    for (p in m$panel_defs %||% list()) {
+      if (!is.null(p$download)) fetch(paste(m$code, "panel", p$id), p$download())
+      attempt(paste(m$code, "panel", p$id, "not loaded (the panel stays as it was)"), p$ingest(con))
     }
   }
   invisible(TRUE)
@@ -184,8 +270,11 @@ city_status <- function(con) {
     r <- x[x$city == m$key, ]
     if (nrow(r) == 0) { message("[!!] ", m$name_en, ": no data loaded yet"); next }
     pop <- DBI::dbGetQuery(con, paste0("SELECT count(*) AS n FROM ref_population WHERE territory_id LIKE ", DBI::dbQuoteString(con, paste0(m$id, "-%"))))$n
-    message(sprintf("[ok] %-18s %d months (%s to %s), %d neighbourhoods%s%s", m$name_en, r$months, format(r$m0, "%m/%Y"), format(r$m1, "%m/%Y"), r$nb,
-                    if (pop > 0) "" else " (no register: no rates)", if (file.exists(m$gpkg)) "" else " (no boundaries)"))
+    pn <- if ("stg_city_panel_values" %in% DBI::dbListTables(con)) DBI::dbGetQuery(con, paste0("SELECT panel_id, max(month) AS m1 FROM stg_city_panel_values WHERE city = ", DBI::dbQuoteString(con, m$key), " GROUP BY 1 ORDER BY 1")) else NULL
+    yearly <- identical(m$time_unit, "year")
+    message(sprintf("[ok] %-18s %d %s (%s to %s), %d neighbourhoods%s%s%s", m$name_en, r$months, if (yearly) "years" else "months", format(r$m0, if (yearly) "%Y" else "%m/%Y"), format(r$m1, if (yearly) "%Y" else "%m/%Y"), r$nb,
+                    if (pop > 0) "" else " (no register: no rates)", if (file.exists(m$gpkg)) "" else " (no boundaries)",
+                    if (!is.null(pn) && nrow(pn)) paste0("; panels: ", paste(sprintf("%s to %s", pn$panel_id, format(pn$m1, "%m/%Y")), collapse = ", ")) else ""))
   }
   invisible(x)
 }

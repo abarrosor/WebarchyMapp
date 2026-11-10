@@ -196,6 +196,7 @@ register_country(list(
   boundaries_attribution = "swissBOUNDARIES3D © swisstopo (open government data)",
   not_published = c("Not published by the BFS", "Vom BFS nicht publiziert"),
   notes_en = "Canton level only nationwide (municipal open data exist only for Kanton Zürich). Series breaks from legal changes (e.g. Art. 260ter 2021, Art. 261bis 2020); the 2020 figures reflect the pandemic. Offences are counted where committed.",
+  method = list(where = "Canton where the offence was committed (Tatortkanton)", date = "Year the offence was registered by the police", revisions = "Yearly publication in March; earlier years revised only for method changes; legal changes break some series (2020, 2021)"),
   default_region = "CH-BE",
   download = ch_download, ingest = ch_ingest, territory = ch_territory, population = ch_population
 ))

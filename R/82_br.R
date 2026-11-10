@@ -301,6 +301,7 @@ register_country(list(
   measure_labels = list(kind = "recorded_events", title = c("Recorded events (SINESP VDE)", "Ocorrências registradas (SINESP VDE)"), noun = c("recorded events", "ocorrências")),
   not_published = c("Not reported by the state for this month/event", "Não informado pelo gestor estadual neste mês/evento"),
   notes_en = "Figures are reported by each state (gestor estadual) under its own definitions; coverage gaps and revisions by state are listed on the MJSP page. Municipalities are matched by name to IBGE codes; unmatched names stay in the state totals only.",
+  method = list(where = "Município where the occurrence was registered by the state civil police, as reported by each state", date = "Month of reference reported by each state (usually the month of the occurrence)", revisions = "The whole base is republished monthly; states revise their figures and some stop reporting (gaps listed on the MJSP page)"),
   default_region = "BR-53",
   download = br_download, ingest = br_ingest, territory = br_territory, population = br_population
 ))

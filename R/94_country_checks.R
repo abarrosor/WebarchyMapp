@@ -141,7 +141,8 @@ city_checks <- function(con, only = NULL) {
     terr <- q("SELECT territory_id, level, parent_id, name FROM dim_territory WHERE territory_id LIKE %s OR territory_id = %s", DBI::dbQuoteString(con, paste0(m$id, "-%")), DBI::dbQuoteString(con, m$id))
     dup <- sum(duplicated(ev[, c("month", "neighbourhood_id", "district_id", "event_type")])); if (dup) add(cc, "duplicate_keys", "error", dup)
     # months: gaps inside the series, and a month in the future
-    mo <- sort(unique(ev$month)); all_mo <- seq(min(mo), max(mo), by = "month"); gap <- setdiff(format(all_mo, "%Y-%m"), format(mo, "%Y-%m"))
+    by <- if (identical(m$time_unit, "year")) "year" else "month"   # a yearly source has one "month" per year
+    mo <- sort(unique(ev$month)); all_mo <- seq(min(mo), max(mo), by = by); gap <- setdiff(format(all_mo, "%Y-%m"), format(mo, "%Y-%m"))
     if (length(gap)) add(cc, "months_missing", "warning", length(gap), paste(utils::head(gap, 6), collapse = ", "))
     if (max(mo) > as.Date(format(Sys.Date(), "%Y-%m-01"))) add(cc, "future_month", "warning", 1, format(max(mo), "%Y-%m"))
     # territories named in the data but absent from dim_territory
@@ -157,7 +158,9 @@ city_checks <- function(con, only = NULL) {
     # population of the neighbourhoods (city register)
     pop <- q("SELECT territory_id, max(ref_date) AS d FROM ref_population WHERE territory_id LIKE %s GROUP BY 1", DBI::dbQuoteString(con, paste0(m$id, "-%")))
     nbs <- terr$territory_id[terr$level == "neighbourhood"]; nop <- setdiff(nbs, pop$territory_id)
+    by_district_only <- nrow(pop) > 0 && !any(nbs %in% pop$territory_id) && any(terr$territory_id[terr$level == "district"] %in% pop$territory_id)
     if (nrow(pop) == 0) add(cc, "no_population", "warning", 0, "no register loaded: counts only, no rates")
+    else if (by_district_only) add(cc, "population_by_district_only", "info", length(nbs), "the register exists by district only (no neighbourhood rates, no shading by rate)")
     else if (length(nop)) add(cc, "neighbourhoods_without_population", if (length(nop) > 0.2 * length(nbs)) "warning" else "info", length(nop), paste(utils::head(nop, 4), collapse = ", "))
     if (nrow(pop) && max(pop$d) < Sys.Date() - 730) add(cc, "population_old", "info", as.integer(Sys.Date() - max(pop$d)), sprintf("latest register %s", format(max(pop$d))))
     # polygons

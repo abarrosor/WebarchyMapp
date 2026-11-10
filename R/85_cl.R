@@ -297,6 +297,7 @@ register_country(list(
   boundaries_attribution = "Biblioteca del Congreso Nacional de Chile (BCN), mapas vectoriales – comunas",
   not_published = c("Not in the exported table", "No incluido en la tabla exportada"),
   notes_en = "Casos policiales mix complaints and flagrancy arrests and are attributed to the comuna of registration; figures are provisional and revised by CEAD. The data must be exported by hand from the CEAD tool (no download endpoint).",
+  method = list(where = "Comuna of the police unit that registered the complaint or the flagrancy arrest, not necessarily where the facts happened", date = "Month the case was registered (complaint filed or arrest made)", revisions = "Provisional figures revised by CEAD; the table is exported by hand, so the loaded version is as recent as the export"),
   default_region = "CL-13",
   download = cl_download, ingest = cl_ingest, territory = cl_territory, population = cl_population
 ))

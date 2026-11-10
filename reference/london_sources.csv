@@ -1,0 +1,6 @@
+key,url,notes
+dataset_page,https://data.london.gov.uk/dataset/recorded_crime_summary,"London Datastore: MPS Recorded Crime: Geographic Breakdown (OGL v2/v3). Ward-level CSVs (most recent 24 months and historical)."
+dataset_api,https://data.london.gov.uk/api/dataset/recorded_crime_summary,"London Datastore API (JSON: resources keyed by id with title, format, url, temporal_coverage_to); the module takes the newest ward-level CSVs (most recent 24 months, and historical)."
+ward_csv_manual,,"Optional: a direct URL of a ward-level CSV when the API answer cannot be read (the module downloads it as it is)."
+wards_service,https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Wards_December_2024_Boundaries_UK_BGC/FeatureServer/0/query,"ONS Open Geography portal (OGL): generalised ward boundaries. Change the service name when ONS publishes a new vintage (the field names WDyyCD / WDyyNM follow)."
+population_manual,,"Optional: a URL of a CSV/XLSX with ward population (ONS mid-year ward estimates or Census 2021 TS001); otherwise put the file by hand in data/raw/city_london/population/ (columns: a ward code E05... and a total population)."

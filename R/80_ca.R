@@ -247,6 +247,7 @@ register_country(list(
   boundaries_attribution = "Source: Statistics Canada, 2021 Census cartographic boundary file (provinces and territories), Statistics Canada Open Licence",
   not_published = c("Not published: suppressed by Statistics Canada (status x or F)", "Non publié : supprimé par Statistique Canada (statut x ou F)"),
   notes_en = "Units are police services (municipal forces, RCMP/OPP/SQ detachments), not municipalities: a city may have several units and a detachment may cover several towns. Figures are revised one year back each July; unfounded incidents and new violation codes changed the series in 2009, 2014 and 2017. Neighbourhood-level data exist for Toronto (158 neighbourhoods, OGL Ontario) and Montreal (PDQ), outside this module.",
+  method = list(where = "Police service (municipal force or RCMP / OPP / SQ detachment) that recorded the incident, not the municipality where it happened", date = "Calendar year the incident was reported to the police", revisions = "Each July release revises the previous year; counting changes in 2009, 2014 and 2017"),
   default_region = "CA-35",
   download = ca_download, ingest = ca_ingest, territory = ca_territory, population = ca_population
 ))

@@ -96,6 +96,7 @@ er_make <- function(row) {
     population_source = "Eurostat demo_r_pjangrp3 (1 January)", boundaries_attribution = "© EuroGeographics for the administrative boundaries (Eurostat GISCO NUTS)",
     not_published = c("Not reported to Eurostat for this region", "Not reported to Eurostat for this region"),
     notes_en = "Regional detail and starting years differ by country; some countries report NUTS 2 or the country only.",
+    method = list(where = "NUTS 2 / NUTS 3 region as defined by each national authority (usually where the offence was committed; some countries use the place of registration)", date = "Calendar year under each country's own counting date (report, recording or closure of the case)", revisions = "Yearly Eurostat update; countries revise their earlier years and Eurostat replaces the whole series"),
     default_region = if (nzchar(row$default_region)) paste(cc, row$default_region, sep = "-") else NULL,
     download = function() er_download(),
     territory = function(con) {
