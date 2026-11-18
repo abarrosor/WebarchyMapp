@@ -96,3 +96,12 @@ test_that("the download layer keeps files it completes, refuses HTML pages and n
   srv$set("a,b\n1,2")
   expect_error(download_safely(url, dest), "never overwritten")
 })
+
+test_that("de_count reads the whole numbers of the German tables and never takes a thousands mark for a decimal", {
+  expect_equal(de_count(c("572,173", "1,282,441", "5,555,520", "401", "0")), c(572173, 1282441, 5555520, 401, 0))
+  expect_equal(de_count(c("572.173", "1.282.441", " 74 524 ", "186894")), c(572173, 1282441, 74524, 186894))
+  expect_equal(de_count(c("", "-", "...", NA, "n/a")), rep(NA_real_, 5))
+  d <- data.frame(Schluessel = "------", Straftat = "Straftaten insgesamt", Bundesland = "Nordrhein-Westfalen", check.names = FALSE, stringsAsFactors = FALSE)
+  d[["erfasste Faelle"]] <- "1,282,441"
+  expect_equal(de_standardise(d, "land")$value, 1282441)
+})

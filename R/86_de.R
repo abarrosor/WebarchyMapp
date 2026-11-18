@@ -97,6 +97,17 @@ de_inspect <- function() {
     if (nrow(miss)) { message("Keys in ", basename(k[1]), " without a row in reference/de_offence_types.csv (add them if wanted):"); print(miss, row.names = FALSE) } }
 }
 
+# Whole numbers as the BKA writes them: a comma between thousands in its CSV ("1,282,441"), a dot in German-format
+# tables ("1.282.441"), or plain digits from a workbook. A thousands mark is never read as a decimal mark: until
+# November 2026 the Spanish reader was used here, which turned "572,173" into 572.173 and "1,282,441" into nothing.
+de_count <- function(x) {
+  x <- gsub("\\s", "", as.character(x))
+  x[x %in% c("", ".", "..", "...", "-")] <- NA
+  grouped <- !is.na(x) & grepl("^-?[0-9]{1,3}([.,][0-9]{3})+$", x)
+  x[grouped] <- gsub("[.,]", "", x[grouped])
+  suppressWarnings(as.numeric(sub(",", ".", x, fixed = TRUE)))
+}
+
 # Standardise one table to: key, label, code (AGS or Land name), name, value, pop
 de_standardise <- function(d, level) {
   nm <- names(d); col <- lapply(DE_COLUMNS, de_pick, nm = nm)
@@ -104,10 +115,10 @@ de_standardise <- function(d, level) {
   if (is.na(col$key) || is.na(col$value) || (level == "kreis" && is.na(col$ags)) || (level == "land" && is.na(col$name) && is.na(col$ags)))
     stop("Unexpected columns in the German ", level, " table: ", paste(nm, collapse = " | "), "\nRun de_inspect() and adjust DE_COLUMNS in R/86_de.R")
   out <- data.frame(key = trimws(d[[col$key]]), label = if (!is.na(col$label)) trimws(d[[col$label]]) else NA_character_,
-                    value = parse_es_number(d[[col$value]]), stringsAsFactors = FALSE)
+                    value = de_count(d[[col$value]]), stringsAsFactors = FALSE)
   out$code <- if (!is.na(col$ags)) gsub("[^0-9]", "", d[[col$ags]]) else NA_character_
   out$name <- if (!is.na(col$name)) trimws(d[[col$name]]) else NA_character_
-  out$pop <- if (!is.na(col$pop)) parse_es_number(d[[col$pop]]) else NA_real_
+  out$pop <- if (!is.na(col$pop)) de_count(d[[col$pop]]) else NA_real_
   out$key <- gsub("\\s", "", out$key)
   out[!is.na(out$key) & nzchar(out$key), ]
 }
