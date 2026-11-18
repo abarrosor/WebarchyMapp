@@ -99,7 +99,7 @@ mx_download <- function(days = 25) {
   for (what in c("municipal", "municipal_series", "estatal")) {
     prev <- if (what == "municipal_series") { x <- mx_files("municipal"); x <- x[grepl("_delitos_", basename(x))]; if (length(x)) newest_first(x)[1] else NA_character_ } else mx_file(what)
     if (what == "municipal_series" && is.na(mx_source_url(what)) && is.na(mx_source_url("page"))) next
-    if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < days) { message("= MX ", what, " file downloaded less than ", days, " days ago"); next }
+    if (!is.na(prev) && file_age_days(prev) < days) { message("= MX ", what, " file downloaded less than ", days, " days ago"); next }
     url <- mx_source_url(what)                      # an explicit link in reference/mx_sources.csv wins over the scrape
     if (!is.na(url)) message("  ", what, " link from reference/mx_sources.csv: ", url)
     if (is.na(url) && what %in% c("municipal", "municipal_series") && !is.na(page <- mx_source_url("page"))) {
@@ -370,7 +370,7 @@ mx_population <- function(con) {
     ext <- if (grepl("\\.xlsx?($|\\?)", s$url[i], ignore.case = TRUE)) "xlsx" else if (grepl("\\.zip($|\\?)", s$url[i], ignore.case = TRUE)) "zip" else "csv"
     name <- paste0("mx_", s$key[i], ".", ext)
     prev <- newest_first(list.files(m$dir_raw, paste0("_", name, "$"), full.names = TRUE))
-    if (!length(prev) || difftime(Sys.time(), file.mtime(prev[1]), units = "days") > 365)
+    if (!length(prev) || file_age_days(prev[1]) > 365)
       prev <- tryCatch(download_versioned(s$url[i], m$dir_raw, name = name), error = function(e) { message("  population download failed (", s$key[i], "): ", conditionMessage(e)); prev })
     if (length(prev)) files <- c(files, prev[1])
   }

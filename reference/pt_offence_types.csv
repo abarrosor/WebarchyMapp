@@ -5,10 +5,10 @@ T,total,Total de crimes registados,Total crimes recorded (official total),,no
 3,crimes_against_cultural_identity,Crimes contra a identidade cultural e integridade pessoal,Crimes against cultural identity and personal integrity,total,no
 4,crimes_against_society,Crimes contra a vida em sociedade,Crimes against life in society,total,no
 5,crimes_against_state,Crimes contra o Estado,Crimes against the State,total,no
-6,special_legislation_offences,Crimes previstos em legislação avulsa,"Offences under special legislation (drugs, weapons, driving without a licence...)",total,no
+6,special_legislation_offences,Crimes previstos em legislação avulsa,"Crimes under special legislation (drugs, weapons, driving without a licence...)",total,no
 10,animal_cruelty,Crimes contra animais de companhia,Crimes against companion animals,total,no
 111,homicide,Crimes de homicídio voluntário consumado,Completed intentional homicide,crimes_against_persons,yes
-12,physical_integrity_offences,Crimes contra a integridade física,Offences against physical integrity (incl. domestic violence),crimes_against_persons,no
+12,physical_integrity_offences,Crimes contra a integridade física,Crimes against physical integrity (incl. domestic violence),crimes_against_persons,no
 127,assault,Ofensa à integridade física voluntária simples,Simple intentional assault,physical_integrity_offences,no
 12194,domestic_violence,Violência doméstica contra cônjuge ou análogos,Domestic violence against spouse or partner,physical_integrity_offences,yes
 2831_2832,theft_of_or_from_vehicle,Furto de veículo e em veículo motorizado,Theft of and from motor vehicles,property_crime,no

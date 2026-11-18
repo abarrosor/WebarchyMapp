@@ -11,7 +11,7 @@ ine_population_download <- function(days = 30) {
   src <- CONFIG$sources$ine_population
   previous <- newest_first(list.files(src$dir_raw, "29005\\.csv$", full.names = TRUE))
   # The INE updates it once a year (December-January): no need to fetch it every run
-  if (length(previous) > 0 && difftime(Sys.time(), file.mtime(previous[1]), units = "days") < days) {
+  if (length(previous) > 0 && file_age_days(previous[1]) < days) {
     message("= INE population downloaded less than ", days, " days ago (", basename(previous[1]), ")")
     return(invisible(previous[1]))
   }

@@ -51,7 +51,7 @@ ch_download <- function(days = 60) {
   m <- COUNTRY_MODULES$CH
   # A saved answer counts as recent only if it is a JSON-stat dataset (an error page saved by an earlier run is downloaded again)
   is_dataset <- function(f) tryCatch({ js <- jsonlite::fromJSON(f, simplifyVector = FALSE); !is.null(js$id) || !is.null(js$dataset) }, error = function(e) FALSE)
-  recent <- function(pattern) { f <- ch_file(pattern); !is.na(f) && difftime(Sys.time(), file.mtime(f), units = "days") < days && is_dataset(f) }
+  recent <- function(pattern) { f <- ch_file(pattern); !is.na(f) && file_age_days(f) < days && is_dataset(f) }
   # 1. Crime: the codes of reference/ch_offence_types.csv, all cantons, totals of Ausführungs-/Aufklärungsgrad, years in chunks
   vals <- function(v) vapply(v$values, as.character, ""); txts <- function(v) vapply(v$valueTexts, as.character, "")
   total_of <- function(v) { x <- vals(v)[grepl("Total", txts(v))]; if (length(x)) x[1] else vals(v)[1] }   # the "Total" code of a variable

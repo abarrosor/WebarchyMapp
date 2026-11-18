@@ -1,0 +1,3 @@
+key,url,notes
+portal,https://data.tps.ca/,"Toronto Police Service Public Safety Data Portal (Open Government Licence – Ontario). Dataset 'Neighbourhood Crime Rates Open Data': counts and rates per 100,000 by neighbourhood (158) and year since 2014, nine categories."
+layer_query,https://services.arcgis.com/S9th0jAJ7bqgIRjw/ArcGIS/rest/services/Neighbourhood_Crime_Rates_Open_Data/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=geojson,"ArcGIS FeatureServer query of the layer as GeoJSON with the polygons (fields checked 2026-11-10: AREA_NAME, HOOD_ID, <CATEGORY>_<year>, <CATEGORY>_RATE_<year>, POPULATION_2025). The module adds resultOffset / resultRecordCount to page through the 158 features."

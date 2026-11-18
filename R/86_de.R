@@ -41,7 +41,7 @@ de_download <- function(days = 90) {
   for (i in seq_len(nrow(src))) {
     prev <- de_file(src$level[i], src$year[i])
     # yearly tables do not change once published: re-download only the two latest editions, every `days`
-    if (!is.na(prev) && (src$year[i] < this_year - 2 || difftime(Sys.time(), file.mtime(prev), units = "days") < days)) next
+    if (!is.na(prev) && (src$year[i] < this_year - 2 || file_age_days(prev) < days)) next
     name <- sprintf("de_%s_%d.%s", src$level[i], src$year[i], src$format[i])
     tryCatch(download_versioned(src$url[i], m$dir_raw, name = name),
              error = function(e) message("  PKS ", src$year[i], " ", src$level[i], " not downloaded (", conditionMessage(e), "): check the URL in reference/de_sources.csv"))
@@ -50,7 +50,7 @@ de_download <- function(days = 90) {
   if (is.na(de_vg250_zip())) tryCatch(download_versioned(DE_VG250, m$dir_raw), error = function(e) message("  BKG VG250 not available (", conditionMessage(e), "); GISCO NUTS will be used"))
   for (lv in c("nuts1", "nuts3")) {   # Eurostat population (small JSON files), refreshed every `days`
     prev <- newest_first(list.files(m$dir_raw, sprintf("_de_pop_%s\\.json$", lv), full.names = TRUE))
-    if (length(prev) && difftime(Sys.time(), file.mtime(prev[1]), units = "days") < days) next
+    if (length(prev) && file_age_days(prev[1]) < days) next
     tryCatch(download_versioned(sprintf(DE_EUROSTAT, lv), m$dir_raw, name = sprintf("de_pop_%s.json", lv)), error = function(e) message("  Eurostat population not available (", conditionMessage(e), ")"))
   }
 }

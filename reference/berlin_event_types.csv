@@ -1,0 +1,18 @@
+source_code,block,sensitive,name_local,name_en
+Straftaten -insgesamt-,aggregate,no,Straftaten insgesamt,All offences of the atlas
+Raub,public_safety,no,Raub,Robbery
+"Straßenraub, Handtaschenraub",detail,no,"Straßenraub, Handtaschenraub","Street robbery, bag snatching (part of robbery)"
+Körperverletzungen -insgesamt-,public_safety,no,Körperverletzungen,Bodily harm
+Gefährl. und schwere Körperverletzung,detail,no,Gefährliche und schwere Körperverletzung,Dangerous and grievous bodily harm (part of bodily harm)
+"Freiheitsberaubung, Nötigung, Bedrohung, Nachstellung",public_safety,no,"Freiheitsberaubung, Nötigung, Bedrohung, Nachstellung","False imprisonment, coercion, threats, stalking"
+Diebstahl -insgesamt-,public_safety,no,Diebstahl,Theft
+Diebstahl von Kraftwagen,detail,no,Diebstahl von Kraftwagen,Theft of motor cars (part of theft)
+Diebstahl an/aus Kfz,detail,no,Diebstahl an/aus Kfz,Theft from or of parts of motor vehicles (part of theft)
+Fahrraddiebstahl,detail,no,Fahrraddiebstahl,Bicycle theft (part of theft)
+Wohnraumeinbruch,detail,no,Wohnraumeinbruch,Residential burglary (part of theft)
+Branddelikte -insgesamt-,public_safety,no,Branddelikte,Arson and fire offences
+Brandstiftung,detail,no,Brandstiftung,Arson (part of fire offences)
+Sachbeschädigung -insgesamt-,coexistence,no,Sachbeschädigung,Criminal damage
+Sachbeschädigung durch Graffiti,detail,no,Sachbeschädigung durch Graffiti,Graffiti (part of criminal damage)
+Rauschgiftdelikte,public_safety,no,Rauschgiftdelikte,Drug offences
+Kieztaten,aggregate,no,Kieztaten,"Neighbourhood offences (the atlas's own aggregate)"

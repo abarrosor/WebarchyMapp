@@ -72,7 +72,7 @@ pe_manual_note <- function(what, page) sprintf(paste0("Download it by hand: open
 pe_download <- function(days = 30) {
   m <- COUNTRY_MODULES$PE
   try_get <- function(key, name, have) {
-    if (!is.na(have) && difftime(Sys.time(), file.mtime(have), units = "days") < days) { message("= PE ", key, " downloaded less than ", days, " days ago"); return(invisible()) }
+    if (!is.na(have) && file_age_days(have) < days) { message("= PE ", key, " downloaded less than ", days, " days ago"); return(invisible()) }
     url <- pe_source(key); if (is.na(url)) return(invisible())
     tryCatch(download_versioned(url, m$dir_raw, name = name),
              error = function(e) message("  PE ", key, ": the portal refused the automated download (", conditionMessage(e), ")\n  ", pe_manual_note(if (key == "denuncias") "CSV" else "zip", pe_source(paste0("page_", key)))))
@@ -135,7 +135,7 @@ pe_cod_layers <- function() {
   dir <- file.path(pe_dir(), "cod"); dir.create(dir, recursive = TRUE, showWarnings = FALSE)
   for (lv in 1:3) {
     have <- newest_first(list.files(dir, sprintf("_pe_cod_adm%d\\.geojson$", lv), full.names = TRUE))
-    if (length(have) && difftime(Sys.time(), file.mtime(have[1]), units = "days") < 3650) next
+    if (length(have) && file_age_days(have[1]) < 3650) next
     meta <- get_text(paste0(base, "?f=pjson")); if (is.null(meta)) stop("COD service not reachable")
     layers <- jsonlite::fromJSON(meta)$layers
     if (is.null(layers)) stop("COD service has no layers")

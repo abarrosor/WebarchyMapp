@@ -4,23 +4,29 @@ PACKAGES <- c(
   "httr2",        # API calls and downloads
   "readr",        # CSV reading
   "dplyr",        # data transformation
-  "stringr",      # text
   "digest",       # SHA-256 fingerprint of every downloaded file
   "DBI",          # common database interface
   "duckdb",       # single-file database
   "sf",           # geographic data: boundaries
-  "readxl",       # Excel files (Madrid police activity)
+  "readxl",       # Excel files (Madrid police activity, London population, Mexico, Colombia)
   "shiny",        # the app
   "bslib",        # app layout
   "leaflet",      # interactive map (OpenStreetMap tiles)
   "shinyWidgets", # period slider
-  "jsonlite",     # JSON-stat answers of statistical APIs (Eurostat and other countries)
-  "readODS"       # England and Wales crime tables (ODS format)
+  "jsonlite"      # JSON answers of statistical APIs (Eurostat, CBS, London Datastore...)
 )
+# Needed by one module only: missing, that module reports it and the rest of the update runs
+PACKAGES_OPTIONAL <- c(readODS = "England and Wales crime tables (ODS format, R/74_gb.R)", testthat = "the automated tests (menu option 16, tests/run_tests.R)", writexl = "the button that downloads the figures of a page as an Excel file (without it the app has no such button), and the automated tests")
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0 || all(is.na(a))) b else a
 
-step <- function(title) message("\n-- ", title, " ", strrep("-", max(3, 64 - nchar(title))))
+# A step of an update: a title line, and the place the run journal (R/05_journal.R) files the next lines under.
+# `place` is a short stable id (a module's code) and `label` the name shown in the summary; both default to the title.
+step <- function(title, place = NULL, label = NULL) {
+  message("\n-- ", title, " ", strrep("-", max(3, 64 - nchar(title))))
+  journal_place(place %||% title, label %||% title)
+  invisible(NULL)
+}
 
 check_packages <- function() {
   missing <- setdiff(PACKAGES, rownames(utils::installed.packages()))
@@ -33,9 +39,10 @@ check_packages <- function() {
 }
 
 install_packages <- function() {
-  missing <- setdiff(PACKAGES, rownames(utils::installed.packages()))
+  wanted <- c(PACKAGES, names(PACKAGES_OPTIONAL))
+  missing <- setdiff(wanted, rownames(utils::installed.packages()))
   if (length(missing) > 0) utils::install.packages(missing) else message("All packages are already installed.")
-  for (p in PACKAGES) message(sprintf("%-13s %s", p, as.character(utils::packageVersion(p))))
+  for (p in wanted) message(sprintf("%-13s %s", p, if (requireNamespace(p, quietly = TRUE)) as.character(utils::packageVersion(p)) else "not installed"))
 }
 
 # Upper case, no accents, single spaces; empty-like values become NA.

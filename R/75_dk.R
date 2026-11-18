@@ -43,7 +43,7 @@ dk_download <- function(days = 30) {
   m <- COUNTRY_MODULES$DK
   for (nm in names(DK_RESOURCES)) {
     prev <- dk_file(nm)
-    if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < days) { message("= DK ", nm, " downloaded less than ", days, " days ago"); next }
+    if (!is.na(prev) && file_age_days(prev) < days) { message("= DK ", nm, " downloaded less than ", days, " days ago"); next }
     download_versioned(DK_RESOURCES[[nm]], m$dir_raw, name = paste0("dk_", nm, ".csv"))
   }
 }

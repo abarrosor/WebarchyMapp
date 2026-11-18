@@ -1,8 +1,8 @@
 source_code,offence_type_id,name_local,name_en,included_in,sensitive
 TOTAL_SNIC,total,"Suma de los hechos publicados (no es un total oficial)","Sum of the published offences (not an official total)",,no
 Homicidios dolosos,homicide,Homicidios dolosos,Intentional homicide,total,yes
-Homicidios dolosos en grado de tentativa,attempted_homicide,Homicidios dolosos en grado de tentativa,Attempted homicide,total,yes
-Lesiones dolosas,assault,Lesiones dolosas,Intentional bodily harm,total,no
+Homicidios dolosos en grado de tentativa,attempted_homicide,Homicidios dolosos en grado de tentativa,Attempted intentional homicide,total,yes
+Lesiones dolosas,assault,Lesiones dolosas,Intentional injuries,total,no
 Otros delitos contra las personas,other,Otros delitos contra las personas,Other offences against persons,total,no
 Robos (excluye los agravados por el resultado de lesiones y/o muertes),robbery_violence,Robos,Robbery,total,no
 Robos agravados por el resultado de lesiones y/o muertes,robbery_violence,Robos agravados por lesiones y/o muertes,Robbery aggravated by injury or death,total,yes
@@ -21,14 +21,14 @@ Ley 23.737 (estupefacientes),drug_offences,Infracciones a la ley 23.737 (estupef
 Infracciones a la ley de estupefacientes,drug_offences,Infracciones a la ley de estupefacientes,Drug-law offences,total,no
 Otros delitos previstos en leyes especiales,other,Otros delitos previstos en leyes especiales,Other offences under special laws,total,no
 Homicidios culposos en accidentes viales,unmapped,Homicidios culposos en accidentes viales,Negligent homicide in road accidents,,yes
-Muertes en siniestros viales,unmapped,Muertes en siniestros viales,Road-traffic deaths,,yes
+Muertes en siniestros viales,unmapped,Muertes en siniestros viales,Road traffic deaths,,yes
 Homicidios culposos por otros hechos,unmapped,Homicidios culposos por otros hechos,Other negligent homicide,,yes
-Lesiones culposas en accidentes viales,unmapped,Lesiones culposas en accidentes viales,Negligent injury in road accidents,,no
-Lesiones en siniestros viales,unmapped,Lesiones en siniestros viales,Road-traffic injuries,,no
-Lesiones culposas por otros hechos,unmapped,Lesiones culposas por otros hechos,Other negligent injury,,no
+Lesiones culposas en accidentes viales,unmapped,Lesiones culposas en accidentes viales,Negligent injuries in road accidents,,no
+Lesiones en siniestros viales,unmapped,Lesiones en siniestros viales,Road traffic injuries,,no
+Lesiones culposas por otros hechos,unmapped,Lesiones culposas por otros hechos,Other negligent injuries,,no
 Delitos contra el estado civil,unmapped,Delitos contra el estado civil,Offences against civil status,,no
 Delitos contra la seguridad de la nación,unmapped,Delitos contra la seguridad de la nación,Offences against national security,,no
-Delitos contra los poderes públicos y el orden constitucional,unmapped,Delitos contra los poderes públicos y el orden constitucional,Offences against public powers,,no
+Delitos contra los poderes públicos y el orden constitucional,unmapped,Delitos contra los poderes públicos y el orden constitucional,Offences against the public powers and the constitutional order,,no
 Delitos contra la administración pública,unmapped,Delitos contra la administración pública,Offences against public administration,,no
 Delitos contra la fe pública,unmapped,Delitos contra la fe pública,Offences against public faith (forgery),,no
 Delitos contra el orden económico y financiero,unmapped,Delitos contra el orden económico y financiero,Economic and financial offences,,no

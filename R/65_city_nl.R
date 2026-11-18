@@ -34,7 +34,7 @@ nl_city_newest <- function(key, pattern) { f <- newest_first(list.files(nl_city_
 # --- Download: metadata, one request per year (wijk rows of the gemeente), boundaries ----------------------
 nl_city_download <- function(m, days = 20) {
   dir <- nl_city_dir(m$key); dir.create(dir, recursive = TRUE, showWarnings = FALSE)
-  recent <- function(pattern, d) { f <- nl_city_newest(m$key, pattern); !is.na(f) && difftime(Sys.time(), file.mtime(f), units = "days") < d }
+  recent <- function(pattern, d) { f <- nl_city_newest(m$key, pattern); !is.na(f) && file_age_days(f) < d }
   if (recent(paste0("_", NL_CITY_TABLE, "_[0-9]{4}_p01\\.json$"), days)) message("= ", m$name_en, " crime table downloaded less than ", days, " days ago") else {
     for (meta in c("TableInfos", "Perioden", "SoortMisdrijf")) download_versioned(sprintf("%s/%s/%s", NL_CITY_API, NL_CITY_TABLE, meta), dir, name = sprintf("%s_%s.json", NL_CITY_TABLE, meta))
     # the WijkenEnBuurten dimension of the whole country is large: only the rows of this gemeente
@@ -71,12 +71,17 @@ nl_periods_file <- function(f) {
 }
 nl_years_local_dir <- function(dir, table) sort(unique(as.integer(sub(paste0(".*_", table, "_([0-9]{4})_p[0-9]+\\.json$"), "\\1", list.files(dir, paste0("_", table, "_[0-9]{4}_p[0-9]+\\.json$"))))))
 
-# --- Territory: wijken (neighbourhoods) and districts from the CBS Wijk- en buurtkaart -------------------------
-nl_city_territory <- function(m, con, force = FALSE) {
-  if (!force && city_neighbourhood_count(con, m$id) > 1 && file.exists(CITY_MODULES[[m$key]]$gpkg)) { message("= ", m$name_en, " territory kept (", city_neighbourhood_count(con, m$id), " wijken)"); return(invisible(FALSE)) }
+# --- The wijken of the gemeente in the CBS Wijk- en buurtkaart pages on disk -------------------------------------
+# Newest copy of every page, water-only parts dropped, the gemeente picked by its code. Returns the features (g, in
+# WGS84), their wijk codes, names and residents (aantal_inwoners of the edition's 1 January) and the file name.
+# Read by the territory step (boundaries) and by the population step (residents) without rebuilding anything.
+nl_city_layer_files <- function(m) {
   files <- list.files(nl_city_dir(m$key), "_wijken_[0-9]{4}_p[0-9]+\\.geojson$", full.names = TRUE)
   if (!length(files)) stop("no wijken boundaries in ", nl_city_dir(m$key), " (download: option 14 with ", m$code, ")")
-  pg <- sub(".*_p([0-9]+)\\.geojson$", "\\1", files); files <- unname(vapply(split(files, pg), function(x) newest_first(x)[1], ""))   # newest copy of every page
+  pg <- sub(".*_p([0-9]+)\\.geojson$", "\\1", files); unname(vapply(split(files, pg), function(x) newest_first(x)[1], ""))   # newest copy of every page
+}
+nl_city_layer <- function(m) {
+  files <- nl_city_layer_files(m)
   g <- do.call(rbind, lapply(files, function(x) sf::st_read(x, quiet = TRUE))); f <- files[1]; nm <- names(g)
   pick <- function(p) { i <- grep(p, nm, ignore.case = TRUE); if (length(i)) nm[i[1]] else NA_character_ }
   col_code <- pick("^wijkcode$|^statcode$"); col_name <- pick("^wijknaam$|^statnaam$"); col_pop <- pick("^aantal_?inwoners$"); col_water <- pick("^water$")
@@ -89,7 +94,20 @@ nl_city_territory <- function(m, con, force = FALSE) {
   if (nrow(g) < 3) message("  only ", nrow(g), " wijk(en) of the gemeente in the files: run nl_city_inspect('", m$key, "')")
   if (!is.na(col_pop)) { pop <- suppressWarnings(as.numeric(g[[col_pop]])); pop[!is.na(pop) & pop < 0] <- NA } else pop <- rep(NA_real_, nrow(g))
   name <- if (!is.na(col_name)) as.character(g[[col_name]]) else code
-  g <- sf::st_make_valid(sf::st_transform(g, 4326))
+  list(g = sf::st_make_valid(sf::st_transform(g, 4326)), code = code, name = name, pop = pop, file = basename(f))
+}
+
+# --- Territory: wijken (neighbourhoods) and districts from the CBS Wijk- en buurtkaart -------------------------
+# Kept when it is loaded, unless a wijken file newer than the saved boundaries has arrived (a new edition of the
+# layer: the data of every year are published in the wijken of the latest edition)
+nl_city_territory <- function(m, con, force = FALSE) {
+  gpkg <- CITY_MODULES[[m$key]]$gpkg
+  if (!force && city_neighbourhood_count(con, m$id) > 1 && file.exists(gpkg)) {
+    newer <- tryCatch(any(file.mtime(nl_city_layer_files(m)) > file.mtime(gpkg)), error = function(e) FALSE)
+    if (!newer) { message("= ", m$name_en, " territory kept (", city_neighbourhood_count(con, m$id), " wijken)"); return(invisible(FALSE)) }
+    message("  a wijken file newer than the saved boundaries: the territory is rebuilt")
+  }
+  L <- nl_city_layer(m); g <- L$g; code <- L$code; name <- L$name; pop <- L$pop; f <- L$file
   # Districts: the module's mapping (wijk code -> district code and name) or the gemeente itself
   map <- if (!is.null(m$districts)) tryCatch(m$districts(nl_city_dir(m$key), code, name), error = function(e) { message("  districts not available (", conditionMessage(e), "): one district"); NULL }) else NULL
   if (is.null(map) || !all(code %in% map$wijk_code)) { if (!is.null(map)) message("  ", sum(!code %in% map$wijk_code), " wijken without a district: one district for the whole gemeente"); map <- data.frame(wijk_code = code, district_code = "00", district_name = m$name_local, stringsAsFactors = FALSE) }
@@ -97,14 +115,14 @@ nl_city_territory <- function(m, con, force = FALSE) {
   district_id <- paste0(m$id, "-D", dcode)
   neighbourhoods <- sf::st_sf(
     territory_id = paste0(district_id, "-B", sub("^WK", "", code)), level = "neighbourhood", parent_id = district_id, country = "NL",
-    official_code = code, code_scheme = "CBS wijk", name = name, area_m2 = as.numeric(sf::st_area(g)), file = basename(f), geometry = sf::st_geometry(g))
+    official_code = code, code_scheme = "CBS wijk", name = name, area_m2 = as.numeric(sf::st_area(g)), file = f, geometry = sf::st_geometry(g))
   dis <- dissolve_territories(g, district_id)
   dname <- map$district_name[match(sub("^.*-D", "", dis$territory_id), map$district_code)]
   districts <- sf::st_sf(territory_id = dis$territory_id, level = "district", parent_id = m$id, country = "NL", official_code = sub("^.*-D", "", dis$territory_id),
-                         code_scheme = if (is.null(m$districts)) "WebarchyMapp (whole gemeente)" else "stadsdeel", name = dname, area_m2 = as.numeric(sf::st_area(dis)), file = basename(f), geometry = sf::st_geometry(dis))
+                         code_scheme = if (is.null(m$districts)) "WebarchyMapp (whole gemeente)" else "stadsdeel", name = dname, area_m2 = as.numeric(sf::st_area(dis)), file = f, geometry = sf::st_geometry(dis))
   upper <- data.frame(territory_id = m$id, level = "municipality", parent_id = sub("-[^-]+$", "", m$id), country = "NL", official_code = paste0("GM", m$gm), code_scheme = "CBS", name = m$name_local, stringsAsFactors = FALSE)
-  save_city_territory(con, districts, neighbourhoods, upper, CITY_MODULES[[m$key]]$gpkg)
-  NL_CITY_STATE[[m$key]] <- list(pop = data.frame(territory_id = neighbourhoods$territory_id, population = pop, stringsAsFactors = FALSE), file = basename(f))
+  save_city_territory(con, districts, neighbourhoods, upper, gpkg)
+  NL_CITY_STATE[[m$key]] <- list(pop = data.frame(official_code = code, population = pop, stringsAsFactors = FALSE), file = f)   # the residents, for the population step of the same run
   invisible(neighbourhoods)
 }
 NL_CITY_STATE <- new.env()
@@ -148,12 +166,19 @@ nl_city_ingest <- function(m, con) {
 }
 
 # --- Population: aantal_inwoners of the CBS wijken layer (the edition's 1 January) ---------------------------
+# The residents read by the territory step of this run, else read again from the layer on disk (the territory
+# was kept); matched to the saved wijken by their CBS code, so that the boundaries are never rebuilt here
 nl_city_population <- function(m, con) {
   st <- NL_CITY_STATE[[m$key]]
-  if (is.null(st)) { nl_city_territory(m, con, force = TRUE); st <- NL_CITY_STATE[[m$key]] }
+  if (is.null(st)) { L <- nl_city_layer(m); st <- list(pop = data.frame(official_code = L$code, population = L$pop, stringsAsFactors = FALSE), file = L$file) }
+  known <- DBI::dbGetQuery(con, paste0("SELECT territory_id, official_code FROM dim_territory WHERE level = 'neighbourhood' AND territory_id LIKE ", DBI::dbQuoteString(con, paste0(m$id, "-%"))))
   pop <- st$pop[!is.na(st$pop$population), ]
   if (nrow(pop) == 0) stop("the wijken layer has no aantal_inwoners values")
-  yr <- suppressWarnings(as.integer(sub(".*_([0-9]{4})\\.geojson$", "\\1", st$file))); if (is.na(yr)) yr <- NL_CITY_WFS_YEAR
+  pop$territory_id <- known$territory_id[match(pop$official_code, known$official_code)]
+  lost <- sum(is.na(pop$territory_id)); pop <- pop[!is.na(pop$territory_id), ]
+  if (nrow(pop) == 0) stop("none of the wijken of the layer is in the saved territory: rebuild it (option 7)")
+  if (lost) message("  ", lost, " wijk(en) of the layer not in the saved territory (a new edition?): option 7 rebuilds the boundaries")
+  yr <- suppressWarnings(as.integer(sub(".*_([0-9]{4})_p[0-9]+\\.geojson$", "\\1", st$file))); if (is.na(yr)) yr <- NL_CITY_WFS_YEAR
   DBI::dbWithTransaction(con, {
     DBI::dbExecute(con, paste0("DELETE FROM ref_population WHERE territory_id LIKE ", DBI::dbQuoteString(con, paste0(m$id, "-%"))))
     DBI::dbAppendTable(con, "ref_population", data.frame(territory_id = pop$territory_id, ref_date = as.Date(sprintf("%d-01-01", yr)), population = as.integer(round(pop$population)), file = st$file))
@@ -209,7 +234,7 @@ AMS_GEBIEDEN <- list(wijken = "https://api.data.amsterdam.nl/v1/gebieden/wijken/
 ams_districts_download <- function(dir) {
   for (k in names(AMS_GEBIEDEN)) {
     prev <- newest_first(list.files(dir, paste0("_ams_", k, "\\.json$"), full.names = TRUE))
-    if (length(prev) && difftime(Sys.time(), file.mtime(prev[1]), units = "days") < 365) next
+    if (length(prev) && file_age_days(prev[1]) < 365) next
     download_versioned(AMS_GEBIEDEN[[k]], dir, name = paste0("ams_", k, ".json"))
   }
 }
@@ -230,3 +255,10 @@ ams_districts <- function(dir, wijk_codes, wijk_names) {
 
 register_city(nl_city_module(code = "AMS", key = "amsterdam", gm = "0363", name = "Amsterdam", id = "NL-PV27-GM0363",
                              districts = ams_districts, districts_download = ams_districts_download))
+# The other large gemeenten: CBS wijken as neighbourhoods and one district each (no open wijk -> district mapping
+# was found; a function like ams_districts() can be added when a city publishes one). Province codes: PV26 Utrecht,
+# PV28 Zuid-Holland, PV30 Noord-Brabant.
+register_city(nl_city_module(code = "RTM", key = "rotterdam", gm = "0599", name = "Rotterdam", id = "NL-PV28-GM0599"))
+register_city(nl_city_module(code = "DHG", key = "denhaag", gm = "0518", name = "Den Haag", id = "NL-PV28-GM0518"))
+register_city(nl_city_module(code = "UTR", key = "utrecht", gm = "0344", name = "Utrecht", id = "NL-PV26-GM0344"))
+register_city(nl_city_module(code = "EIN", key = "eindhoven", gm = "0772", name = "Eindhoven", id = "NL-PV30-GM0772"))

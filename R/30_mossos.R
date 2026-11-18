@@ -147,7 +147,7 @@ mossos_abp_map <- function(con) {
 abp_download <- function(days = 90) {
   src <- CONFIG$sources$mossos
   previous <- newest_first(list.files(src$dir_abp, "abp_municip(ios|alities)\\.csv$", full.names = TRUE))
-  if (length(previous) > 0 && difftime(Sys.time(), file.mtime(previous[1]), units = "days") < days) {
+  if (length(previous) > 0 && file_age_days(previous[1]) < days) {
     message("= Police areas (ABP) downloaded less than ", days, " days ago")
     return(invisible(NULL))
   }

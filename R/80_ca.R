@@ -78,7 +78,7 @@ ca_download <- function(days = 90, tables = names(CA_TABLES)) {
   m <- COUNTRY_MODULES$CA
   for (tb in tables) {
     prev <- ca_zip(tb)
-    if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < days) { message("= CA ", tb, " table downloaded less than ", days, " days ago"); next }
+    if (!is.na(prev) && file_age_days(prev) < days) { message("= CA ", tb, " table downloaded less than ", days, " days ago"); next }
     pid <- CA_TABLES[[tb]]
     # The Web Data Service confirms the zip address; the known pattern is used if it does not answer
     url <- sprintf(CA_ZIP_URL, pid)
@@ -207,7 +207,7 @@ ca_population <- function(con) {
 ca_boundaries <- function() {
   dir <- COUNTRY_MODULES$CA$dir_raw
   f <- newest_first(list.files(dir, "_statcan_2021_provinces\\.geojson$", full.names = TRUE))
-  if (length(f) == 0 || difftime(Sys.time(), file.mtime(f[1]), units = "days") > 365) f <- download_versioned(CA_PROVINCES_URL, dir, name = "statcan_2021_provinces.geojson")
+  if (length(f) == 0 || file_age_days(f[1]) > 365) f <- download_versioned(CA_PROVINCES_URL, dir, name = "statcan_2021_provinces.geojson")
   g <- sf::st_read(f[1], quiet = TRUE)
   if (!"PRUID" %in% names(g) || nrow(g) < 13) stop("Unexpected provincial boundary file: ", paste(names(g), collapse = " | "))
   g$province_code <- as.character(g$PRUID)

@@ -3,7 +3,7 @@ Delitos de mayor connotación social,total,Delitos de mayor connotación social 
 SUMA_DMCS,total,"Suma de los DMCS exportados (no es el total oficial)","Sum of the exported DMCS (not the official total)",,no
 Robo con violencia o intimidación,robbery_violence,Robo con violencia o intimidación,Robbery with violence or intimidation,total,no
 Robo por sorpresa,robbery_snatch,Robo por sorpresa,Snatch robbery,total,no
-Robo de vehículo motorizado,vehicle_theft,Robo de vehículo motorizado,Motor-vehicle theft,total,no
+Robo de vehículo motorizado,vehicle_theft,Robo de vehículo motorizado,Theft of motor vehicles,total,no
 Robo de objetos de o desde vehículo,theft_from_vehicle,Robo de objetos de o desde vehículo,Theft from vehicles,total,no
 Robo en lugar habitado,burglary,Robo en lugar habitado,Residential burglary,total,no
 Robo en lugar no habitado,burglary_other,Robo en lugar no habitado,Non-residential burglary,total,no

@@ -23,11 +23,11 @@ code,description,block,sensitive,name_es,name_en
 202,RESTRICCIONS TEMPORALS DE TRÀNSIT,traffic,no,Restricciones de tráfico,Traffic restrictions
 203,SENYALS AUTOMATITZADES,traffic,no,Semáforos,Traffic lights
 204,SENYALS NO AUTOMATITZADES,traffic,no,Señales,Road signs
-210,ACCIDENTS DE TRÀNSIT SENSE FERITS,traffic,no,Accidentes sin heridos,Crashes without injuries
-211,ACCIDENTS DE TRÀNSIT AMB FERITS,traffic,yes,Accidentes con heridos,Crashes with injuries
-212,ACCIDENTS DE TRANSIT AMB MATERIES PERILLOSSES,traffic,yes,Accidentes con materias peligrosas,Crashes with hazardous materials
-213,ACCIDENTS (GUB-CME) (CME-GUB),traffic,yes,Accidentes (coordinados con emergencias),Crashes (coordinated with emergency services)
-21M,ACCIDENTS REBUTS PER PASSARELA CME,traffic,yes,Accidentes recibidos de emergencias,Crashes reported by emergency services
+210,ACCIDENTS DE TRÀNSIT SENSE FERITS,traffic,no,Accidentes sin heridos,Accidents without injuries
+211,ACCIDENTS DE TRÀNSIT AMB FERITS,traffic,yes,Accidentes con heridos,Accidents with injuries
+212,ACCIDENTS DE TRANSIT AMB MATERIES PERILLOSSES,traffic,yes,Accidentes con materias peligrosas,Accidents with hazardous materials
+213,ACCIDENTS (GUB-CME) (CME-GUB),traffic,yes,Accidentes (coordinados con emergencias),Accidents (coordinated with emergency services)
+21M,ACCIDENTS REBUTS PER PASSARELA CME,traffic,yes,Accidentes recibidos de emergencias,Accidents reported by emergency services
 220,INFRACCIONS EN GUALS I RESERVES,traffic,no,Infracciones en vados y reservas,Driveway and reserved-space offences
 221,INFRACCIONS PER ESTACIONAMENTS,traffic,no,Infracciones de estacionamiento,Parking offences
 222,INFRACCIONS EN MOVIMENT,traffic,no,Infracciones en circulación,Moving traffic offences
@@ -62,10 +62,10 @@ code,description,block,sensitive,name_es,name_en
 460,INCIDÈNCIES D'ALIMENTS,administrative,no,Incidencias con alimentos,Food incidents
 470,ALTRES INTERVENCIONS DE P. ADMINISTRATIVA,administrative,no,Otras intervenciones administrativas,Other administrative actions
 480,ALARMES D'INCENDI / ROBATORI,emergencies,no,Alarmas de incendio o robo,Fire or burglar alarms
-500,MANIFESTACIONS / CONCENTRACIONS,public_order,no,Manifestaciones y concentraciones,Demonstrations
+500,MANIFESTACIONS / CONCENTRACIONS,public_order,no,Manifestaciones y concentraciones,Demonstrations and gatherings
 510,BARALLES,public_safety,no,Peleas,Fights
-21B,ACCIDENT REBUT PEL 080 (Recodificar),traffic,yes,Accidentes recibidos de bomberos,Crashes reported by fire service
-21S,ACCIDENT PROCEDENT PASSAREL·LA SEM,traffic,yes,Accidentes recibidos de emergencias médicas,Crashes reported by medical emergencies
+21B,ACCIDENT REBUT PEL 080 (Recodificar),traffic,yes,Accidentes recibidos de bomberos,Accidents reported by the fire service
+21S,ACCIDENT PROCEDENT PASSAREL·LA SEM,traffic,yes,Accidentes recibidos de emergencias médicas,Accidents reported by the medical emergency service
 489,PROVES DEL SISTEMA,exclude,no,Pruebas del sistema,System tests
 511,VANDALISME,public_safety,no,Vandalismo,Vandalism
 512,TRIBUS URBANES,public_safety,no,Bandas juveniles,Youth gangs

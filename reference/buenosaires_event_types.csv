@@ -1,0 +1,19 @@
+source_code,block,sensitive,name_local,name_en
+Robo total,public_safety,no,Robo (total),Robbery (all)
+Robo automotor,public_safety,no,Robo automotor,Vehicle robbery
+Hurto total,public_safety,no,Hurto (total),Theft (all)
+Hurto automotor,public_safety,no,Hurto automotor,Vehicle theft
+Lesiones Dolosas,public_safety,no,Lesiones dolosas,Intentional injuries
+Lesiones Siniestro Vial,traffic,no,Lesiones en siniestro vial,Road traffic injuries
+Lesiones en siniestros viales,traffic,no,Lesiones en siniestros viales,Road traffic injuries
+Lesiones por siniestros viales,traffic,no,Lesiones por siniestros viales,Road traffic injuries
+Siniestros viales,traffic,no,Siniestros viales,Road traffic incidents
+Siniestro Vial,traffic,no,Siniestro vial,Road traffic incidents
+Homicidio Doloso,public_safety,yes,Homicidio doloso,Intentional homicide
+Homicidios dolosos,public_safety,yes,Homicidios dolosos,Intentional homicide
+Homicidio Siniestro Vial,traffic,no,Homicidio en siniestro vial,Road traffic deaths
+Muertes en siniestros viales,traffic,no,Muertes en siniestros viales,Road traffic deaths
+Muertes por siniestros viales,traffic,no,Muertes por siniestros viales,Road traffic deaths
+Femicidio,public_safety,yes,Femicidio,Femicide
+Femicidios,public_safety,yes,Femicidios,Femicide
+Amenazas,public_safety,no,Amenazas,Threats

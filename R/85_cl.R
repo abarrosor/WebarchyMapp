@@ -52,7 +52,7 @@ cl_download <- function(days = 365) {
   for (key in c("cut", "ine_comunas", "bcn_comunas")) {
     rows <- src[src$key == key & !is.na(src$url) & src$url != "", ]; if (nrow(rows) == 0) next
     prev <- cl_file(rows$name[1])
-    if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < days) { message("= CL ", rows$name[1], " downloaded less than ", days, " days ago"); next }
+    if (!is.na(prev) && file_age_days(prev) < days) { message("= CL ", rows$name[1], " downloaded less than ", days, " days ago"); next }
     ok <- FALSE
     for (i in seq_len(nrow(rows))) {
       ok <- tryCatch({ download_versioned(rows$url[i], m$dir_raw, name = rows$name[i]); TRUE }, error = function(e) { message("  CL ", key, " candidate ", i, " failed: ", conditionMessage(e)); FALSE })

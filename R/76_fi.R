@@ -36,7 +36,7 @@ FI_PATTERNS <- list(
 
 fi_dir  <- function() COUNTRY_MODULES$FI$dir_raw
 fi_file <- function(name) { f <- newest_first(list.files(fi_dir(), paste0("_fi_", name, "$"), full.names = TRUE)); if (length(f) == 0) NA_character_ else f[1] }
-fi_fresh <- function(f, days) !is.na(f) && difftime(Sys.time(), file.mtime(f), units = "days") < days
+fi_fresh <- function(f, days) !is.na(f) && file_age_days(f) < days
 
 fi_read_json <- function(f) { txt <- readr::read_file(f); jsonlite::fromJSON(sub("^﻿", "", txt), simplifyVector = FALSE) }
 

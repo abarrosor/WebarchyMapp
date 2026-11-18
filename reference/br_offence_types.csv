@@ -17,8 +17,8 @@ Furto de celular,theft,Furto de celular,Mobile-phone theft,total,no
 Tráfico de drogas,drug_trafficking,Tráfico de drogas,Drug trafficking,total,no
 Morte por intervenção de agente do Estado,unmapped,Morte por intervenção de agente do Estado,Death caused by a state agent,,yes
 Mortes a esclarecer (sem indício de crime),unmapped,Mortes a esclarecer (sem indício de crime),Deaths under investigation (no sign of crime),,yes
-Morte no trânsito ou em decorrência dele (exceto homicídio doloso),unmapped,Morte no trânsito,Road-traffic deaths,,yes
-Mortes no trânsito,unmapped,Mortes no trânsito,Road-traffic deaths,,yes
+Morte no trânsito ou em decorrência dele (exceto homicídio doloso),unmapped,Morte no trânsito,Road traffic deaths,,yes
+Mortes no trânsito,unmapped,Mortes no trânsito,Road traffic deaths,,yes
 Suicídio,unmapped,Suicídio,Suicide,,yes
 Morte de Agente do Estado,unmapped,Morte de agente do Estado,Death of a state agent,,yes
 Suicídio de Agente do Estado,unmapped,Suicídio de agente do Estado,Suicide of a state agent,,yes

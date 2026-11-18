@@ -53,13 +53,13 @@ br_download <- function(days = 60) {
   tmpl <- br_source("vde_year"); tmpl_name <- br_source("vde_year", "name")
   for (y in first:this_year) {
     name <- sub("{year}", y, tmpl_name, fixed = TRUE); prev <- br_file(name)
-    if (!is.na(prev) && (y < this_year - 1 || difftime(Sys.time(), file.mtime(prev), units = "days") < days)) { message("= BR ", name, " already downloaded"); next }
+    if (!is.na(prev) && (y < this_year - 1 || file_age_days(prev) < days)) { message("= BR ", name, " already downloaded"); next }
     tryCatch(download_versioned(sub("{year}", y, tmpl, fixed = TRUE), m$dir_raw, name = name),
              error = function(e) message("  BR ", y, ": not downloaded (", conditionMessage(e), ")"))
   }
   for (key in c("ibge_municipios", "sidra_ufs", "sidra_brasil")) {
     name <- br_source(key, "name"); prev <- br_file(name)
-    if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < 365) next
+    if (!is.na(prev) && file_age_days(prev) < 365) next
     tryCatch(download_versioned(br_source(key), m$dir_raw, name = name), error = function(e) message("  BR ", key, ": not downloaded (", conditionMessage(e), ")"))
   }
   # SIDRA refuses the 5,570 municípios x many years in one call (HTTP 400): one call per year
@@ -67,7 +67,7 @@ br_download <- function(days = 60) {
   tmpl <- br_source("sidra_municipios"); tmpl_name <- br_source("sidra_municipios", "name")
   for (y in first:this_year) {
     name <- sub("{year}", y, tmpl_name, fixed = TRUE); prev <- br_file(name)
-    if (!is.na(prev) && (y < this_year || difftime(Sys.time(), file.mtime(prev), units = "days") < 365)) next
+    if (!is.na(prev) && (y < this_year || file_age_days(prev) < 365)) next
     tryCatch(download_versioned(sub("{year}", y, tmpl, fixed = TRUE), m$dir_raw, name = name),
              error = function(e) message("  BR sidra_municipios ", y, ": not downloaded (", conditionMessage(e), ")"))
   }

@@ -23,7 +23,7 @@ PL_STATE <- new.env()
 
 pl_dir <- function() COUNTRY_MODULES$PL$dir_raw
 pl_file <- function(name) { f <- newest_first(list.files(pl_dir(), paste0("_", gsub("([.()+])", "\\\\\\1", name), "$"), full.names = TRUE)); if (length(f)) f[1] else NA_character_ }
-pl_recent <- function(name, days) { f <- pl_file(name); !is.na(f) && difftime(Sys.time(), file.mtime(f), units = "days") < days }
+pl_recent <- function(name, days) { f <- pl_file(name); !is.na(f) && file_age_days(f) < days }
 
 # One paced API call saved as a versioned JSON file (returns its path)
 pl_get <- function(path, name) {
@@ -70,6 +70,12 @@ pl_variables <- function() {
   if (length(rows) == 0) return(data.frame(id = integer(), subject = character(), label = character(), period = character(), unit = character()))
   do.call(rbind, rows)
 }
+# Each subject publishes two measures for every category and period: the count ("przestępstwa stwierdzone") and the
+# detection rate of offenders ("wskaźnik wykrywalności sprawców", a percentage). Only the count is a figure of this
+# project: the percentage is neither downloaded nor loaded. Until 2026-11-16 it was loaded under the code
+# WYKRYWALNOSC (never shown) and its ups and downs from one period to the next were the 11,133 "cumulative
+# decreases" of the checks; the counts themselves never decrease (checked on the founder's files, P-057).
+pl_is_rate <- function(vars) grepl("wska[zź]nik|wykrywaln", vars$label, ignore.case = TRUE) | (!is.na(vars$unit) & trimws(vars$unit) == "%")
 pl_quarter <- function(period) {
   p <- tolower(period)
   ifelse(grepl("p[oó][lł]rocz", p), 2L, ifelse(grepl("1\\s*[-–]\\s*3|trzy|3 kwarta|i-iii", p), 3L, ifelse(grepl("^1 kwarta|^i kwarta|pierwszy kwarta", p), 1L, 4L)))
@@ -91,7 +97,9 @@ pl_download <- function(days = 60) {
   for (s in PL_SUBJECTS) pl_get_pages(paste0("/variables?subject-id=", s), paste0("pl_variables_", s), days)
   vars <- pl_variables()
   if (nrow(vars) == 0) stop("No variables found for subjects ", toString(PL_SUBJECTS), " - check ", PL_API, "/subjects/P3588")
-  message(sprintf("  %d variables (category x period) in %s", nrow(vars), toString(unique(vars$subject))))
+  rate <- pl_is_rate(vars)
+  message(sprintf("  %d variables (category x period) in %s%s", sum(!rate), toString(unique(vars$subject)), if (any(rate)) sprintf("; the %d detection-rate variables (percentages, not counts) are left aside", sum(rate)) else ""))
+  vars <- vars[!rate, ]
   # 3. Data by variable, all years, powiaty (unit-level 5): ~4 pages per variable
   for (i in seq_len(nrow(vars))) pl_get_pages(sprintf("/data/by-variable/%s?unit-level=5", vars$id[i]), sprintf("pl_data_%s", vars$id[i]), days)
   # 4. Population at levels 0 (Poland), 2 and 5
@@ -129,7 +137,7 @@ pl_units <- function(level) {            # saved /units pages -> id, name, paren
 
 pl_inspect <- function() {
   vars <- pl_variables(); types <- read_reference("pl_offence_types.csv")
-  if (nrow(vars)) { vars$source_code <- pl_source_code(vars$label, types); vars$quarter <- pl_quarter(vars$period); print(vars) }
+  if (nrow(vars)) { vars$source_code <- pl_source_code(vars$label, types); vars$quarter <- pl_quarter(vars$period); vars$loaded <- !pl_is_rate(vars); print(vars) }
   else message("No variable list downloaded yet (", pl_dir(), ")")
   for (lv in c(2, 5)) { u <- pl_units(lv); message("units level ", lv, ": ", if (is.null(u)) 0 else nrow(u)); if (!is.null(u)) print(utils::head(u, 5)) }
   f <- pl_pages("pl_pop_l0"); if (length(f)) { j <- pl_json(f[1]); message("population variable: ", j$variableId %||% "?", " ", j$measureUnitName %||% "", " - ", j$results[[1]]$name %||% "") }
@@ -139,6 +147,7 @@ pl_ingest <- function(con) {
   types <- read_reference("pl_offence_types.csv")
   vars <- pl_variables()
   if (nrow(vars) == 0) stop("No BDL variable list in ", pl_dir(), " (run the download first)")
+  vars <- vars[!pl_is_rate(vars), ]                                             # counts only: the detection rate is a percentage
   vars$source_code <- pl_source_code(vars$label, types); vars$quarter <- pl_quarter(vars$period)
   unknown <- unique(vars$label[is.na(vars$source_code)])
   if (length(unknown)) message("  categories without a row in reference/pl_offence_types.csv (left out): ", paste(unknown, collapse = " | "))
@@ -262,6 +271,7 @@ pl_territory <- function(con) {
 
 register_country(list(
   code = "PL", iso3 = "POL", name_en = "Poland", name_local = "Polska", lang = "pl",
+  rules = "2",                                                  # 2 (16 Nov 2026): the detection-rate percentages are no longer loaded (pl_is_rate)
   levels = c("region", "province"),
   level_labels = list(region = c("Voivodeships", "Województwa", "Voivodeship", "Województwo"), province = c("Counties", "Powiaty", "County", "Powiat")),
   source = list(name = "Bank Danych Lokalnych - przestępstwa stwierdzone przez Policję (GUS)", publisher = "Główny Urząd Statystyczny (GUS)",

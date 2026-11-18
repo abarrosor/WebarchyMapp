@@ -1,8 +1,8 @@
 source_code,offence_type_id,name_local,name_en,included_in,sensitive,match_pattern
-Total number of crimes,total,Regisztrált bűncselekmények összesen,Total registered crimes,,no,"^total number of crimes|^(regisztrált )?bűncselekmények? (száma )?összesen|^összesen"
-battery,assault,Testi sértés,Battery (bodily harm),total,no,"^battery|^testi sértés"
-drug-related crimes,drug_offences,Kábítószerrel kapcsolatos bűncselekmények,Drug-related crimes,total,no,"^drug|^kábítószer"
+Total number of crimes,total,Regisztrált bűncselekmények összesen,Total registered offences,,no,"^total number of crimes|^(regisztrált )?bűncselekmények? (száma )?összesen|^összesen"
+battery,assault,Testi sértés,Bodily harm,total,no,"^battery|^testi sértés"
+drug-related crimes,drug_offences,Kábítószerrel kapcsolatos bűncselekmények,Drug-related offences,total,no,"^drug|^kábítószer"
 driving under the influence of alcohol or narcotic drugs,unmapped,Ittas vagy bódult állapotban elkövetett járművezetés,"Driving under the influence of alcohol or drugs (traffic, not shown)",total,no,"^driving under|^ittas|járművezetés"
 assault on a public official or person entrusted with public functions,assault_on_official,Hivatalos személy elleni erőszak,Assault on a public official,total,no,"^assault on a public|^hivatalos személy"
 public nuisance,public_order,Garázdaság,Public nuisance (garázdaság),total,no,"^public nuisance|^garázdaság"
-larceny,theft,Lopás,Larceny (theft),total,no,"^larceny|^theft|^lopás"
+larceny,theft,Lopás,Theft,total,no,"^larceny|^theft|^lopás"

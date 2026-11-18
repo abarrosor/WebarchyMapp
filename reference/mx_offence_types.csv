@@ -2,8 +2,8 @@ source_code,offence_type_id,name_local,name_en,included_in,sensitive
 TOTAL_TIPOS,total,Total de delitos del fuero común (suma de tipos),"Total fuero común offences (sum of types, as published by SESNSP)",,no
 Homicidio doloso,homicide,Homicidio doloso,Intentional homicide,total,yes
 Homicidio culposo,unmapped,Homicidio culposo,"Negligent homicide (mostly traffic deaths)",total,yes
-Feminicidio,homicide,Feminicidio,Feminicide,total,yes
-Lesiones dolosas,assault,Lesiones dolosas,Intentional injuries (assault),total,no
+Feminicidio,homicide,Feminicidio,Femicide,total,yes
+Lesiones dolosas,assault,Lesiones dolosas,Intentional injuries,total,no
 Lesiones culposas,unmapped,Lesiones culposas,"Negligent injuries (mostly traffic accidents)",total,no
 Aborto,other,Aborto,Abortion offences,total,yes
 Otros delitos que atentan contra la vida y la integridad corporal,other,Otros delitos contra la vida y la integridad corporal,Other offences against life and physical integrity,total,no
@@ -21,7 +21,7 @@ Otros delitos que atentan contra la libertad y la seguridad sexual,sexual_offenc
 Robo a casa habitación,burglary,Robo a casa habitación,Residential burglary,total,no
 Robo de vehículo automotor,vehicle_theft,Robo de vehículo automotor,Vehicle theft,total,no
 Robo de autopartes,theft_from_vehicle,Robo de autopartes,Theft of vehicle parts,total,no
-Robo a transportista,cargo_theft,Robo a transportista,Theft from freight carriers,total,no
+Robo a transportista,cargo_theft,Robo a transportista,Robbery of freight carriers,total,no
 Robo a transeúnte en vía pública,street_robbery,Robo a transeúnte en vía pública,Robbery of pedestrians in the street,total,no
 Robo a transeúnte en espacio abierto al público,street_robbery,Robo a transeúnte en espacio abierto al público,Robbery of pedestrians in open public spaces,total,no
 Robo en transporte público individual,transport_robbery,Robo en transporte público individual,Robbery in taxis,total,no

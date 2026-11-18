@@ -93,7 +93,7 @@ nl_inspect <- function() {
 
 nl_download <- function(days = 30) {
   dir <- nl_dir()
-  recent <- function(pattern, d) { f <- nl_newest(pattern); !is.na(f) && difftime(Sys.time(), file.mtime(f), units = "days") < d }
+  recent <- function(pattern, d) { f <- nl_newest(pattern); !is.na(f) && file_age_days(f) < d }
   # 1. Crime table: metadata, then one request per year (final years already on disk are not asked again)
   if (recent(paste0("_", NL_CRIME$table, "_[0-9]{4}_p01\\.json$"), days)) message("= NL crime table downloaded less than ", days, " days ago") else {
     for (meta in c("TableInfos", "Perioden", "SoortMisdrijf", "RegioS"))

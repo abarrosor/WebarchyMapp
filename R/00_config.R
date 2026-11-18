@@ -103,10 +103,20 @@ CONFIG <- list(
 #   data/raw/city_madrid/{calls, activity, districts, neighbourhoods, census}
 #   data/raw/city_barcelona/{incidents, boundaries, census}
 #   data/raw/shared/{gisco, geoboundaries, natural_earth, eurostat}
+# The port of the app on this computer: its address is http://127.0.0.1:<port>, the same every day (open_app() in
+# R/60_pipeline.R takes a free port only when this one is in use, and says so). Any port above 1023 that browsers do
+# not refuse will do; change it here if another program of yours uses this one.
+CONFIG$app_port <- 7175L
 CONFIG$shared <- list(gisco = "data/raw/shared/gisco", geoboundaries = "data/raw/shared/geoboundaries", natural_earth = "data/raw/shared/natural_earth", eurostat = "data/raw/shared/eurostat")
 
 # GDAL refuses GeoJSON features above 200 MB by default ("GeoJSON object too complex/large"): no limit
 Sys.setenv(OGR_GEOJSON_MAX_OBJ_SIZE = "0")
+
+# No progress bars from readr. In the RStudio console every readr::write_csv(), even of three rows, prints and wipes
+# a line of its own ("wrote 8.00B in 0s..." between carriage returns), and the console then glues the next message
+# to the end of the line before it (seen on 16 November 2026 in options 17 and 18). The files of this project are
+# read and written in a moment; the long steps say what they do in their own words.
+options(readr.show_progress = FALSE)
 
 # Shared open sources used by the country modules (R/70_countries.R and R/7x_*.R)
 CONFIG$gisco <- list(base = "https://gisco-services.ec.europa.eu/distribution/v2", nuts_year = 2024, lau_year = 2023)
@@ -122,5 +132,13 @@ prepare_folders <- function() {
   dirs <- c(CONFIG$dir_raw, CONFIG$dir_reports,
             unlist(lapply(CONFIG$sources, function(s) c(s$dir_raw, s$dir_abp))))
   for (d in dirs) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+  # Files the project ships because no portal serves them (data_seed/, versioned with the code: the Barcelona
+  # victimisation survey transcribed from its report...) are copied into data/raw/ once, never over a file
+  if (dir.exists("data_seed")) {
+    for (f in list.files("data_seed", recursive = TRUE, full.names = TRUE)) {
+      dest <- file.path(CONFIG$dir_raw, sub("^data_seed/", "", f))
+      if (!file.exists(dest)) { dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE); if (file.copy(f, dest)) message("+ ", dest, " (from data_seed/)") }
+    }
+  }
   invisible(dirs)
 }

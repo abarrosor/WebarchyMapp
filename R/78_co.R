@@ -78,7 +78,7 @@ co_download <- function(days = 30, ref_days = 365) {
   # Crime: one family at a time, 50,000 aggregated rows per page (a few pages per family)
   for (fam in names(CO_DATASETS)) {
     ds <- CO_DATASETS[[fam]]; first <- co_file(co_page_name(fam, 1))
-    if (!is.na(first) && difftime(Sys.time(), file.mtime(first), units = "days") < days) { message("= CO ", fam, " downloaded less than ", days, " days ago"); next }
+    if (!is.na(first) && file_age_days(first) < days) { message("= CO ", fam, " downloaded less than ", days, " days ago"); next }
     message("CO ", fam, " (", ds$id, "): monthly sums per municipio from the SODA API")
     for (p in 1:200) {
       f <- download_versioned(co_soda_url(ds, offset = (p - 1L) * CO_PAGE), dir, name = co_page_name(fam, p))
@@ -89,12 +89,12 @@ co_download <- function(days = 30, ref_days = 365) {
   }
   # DIVIPOLA names and centroids (DANE)
   f <- co_file("co_divipola.csv")
-  if (is.na(f) || difftime(Sys.time(), file.mtime(f), units = "days") > ref_days)
+  if (is.na(f) || file_age_days(f) > ref_days)
     download_versioned(utils::URLencode(sprintf("%s/%s.csv?$limit=5000&$order=cod_mpio", CO_BASE, CO_DIVIPOLA)), dir, name = "co_divipola.csv")
   # Population projections (DANE xlsx)
   for (u in CO_POPULATION) {
     f <- co_file(basename(u))
-    if (is.na(f) || difftime(Sys.time(), file.mtime(f), units = "days") > ref_days) download_versioned(u, dir)
+    if (is.na(f) || file_age_days(f) > ref_days) download_versioned(u, dir)
   }
 }
 

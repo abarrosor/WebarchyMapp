@@ -15,7 +15,10 @@ log_file <- file.path(CONFIG$dir_reports, paste0("update_", format(Sys.time(), "
 log_con <- file(log_file, open = "wt", encoding = "UTF-8")
 sink(log_con); sink(log_con, type = "message")
 cat("Scheduled update -", format(Sys.time(), "%Y-%m-%d %H:%M"), "\n")
-result <- tryCatch({ update_all(); "ok" },
+options(webarchy.scheduled_log = log_file)      # the status printed at the end must not read this log as the last finished one
+# The RESULT line says how the run ended and how many lines its summary holds (the run journal, R/05_journal.R):
+# "ok", "ok, 41 line(s) in the summary, 2 new", "error: ...". Option 11 of the menu shows it.
+result <- tryCatch({ update_all(); journal_result() },
                    error = function(e) { message("ERROR: ", conditionMessage(e)); paste("error:", conditionMessage(e)) })
 cat("\nRESULT:", result, "\n")
 sink(type = "message"); sink(); close(log_con)

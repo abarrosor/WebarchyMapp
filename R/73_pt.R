@@ -40,7 +40,7 @@ pt_file <- function(pattern) {
   f <- newest_first(list.files(COUNTRY_MODULES$PT$dir_raw, pattern, full.names = TRUE))
   if (length(f) == 0) NA_character_ else f[1]
 }
-pt_age_days <- function(f) if (is.na(f)) Inf else as.numeric(difftime(Sys.time(), file.mtime(f), units = "days"))
+pt_age_days <- function(f) if (is.na(f)) Inf else as.numeric(file_age_days(f))
 
 # NUTS II / NUTS III / município table (INE codes, DICO, names)
 pt_territories <- function() read_reference("pt_territories.csv")

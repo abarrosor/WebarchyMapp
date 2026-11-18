@@ -225,5 +225,8 @@ madrid_census_ingest <- function(con) {
     message(sprintf("+ %s: population at %s = %s residents in %d neighbourhoods", basename(path),
                     format(ref_date, "%Y-%m-%d"), fmt_int(sum(pop$population)), nrow(pop)))
   }
+  # The historical registers on disk, one per year (R/12_madrid_register_history.R, menu option 18): read again after a
+  # rebuild; a failure there never stops today's register
+  if (exists("madrid_history_ingest", mode = "function")) tryCatch(madrid_history_ingest(con), error = function(e) message("  [!!] historical register not loaded: ", conditionMessage(e)))
   invisible(TRUE)
 }

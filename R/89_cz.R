@@ -29,7 +29,7 @@ cz_download <- function(days = 60) {
   for (ed in names(CZ_PRODUCTS)) {
     name <- sprintf("cz_kriminalita_%s.xlsx", ed)
     prev <- newest_first(list.files(cz_dir(), paste0("_", name, "$"), full.names = TRUE))
-    if (length(prev) && difftime(Sys.time(), file.mtime(prev[1]), units = "days") < days) { message("= CZ ", ed, " workbook downloaded less than ", days, " days ago"); next }
+    if (length(prev) && file_age_days(prev[1]) < days) { message("= CZ ", ed, " workbook downloaded less than ", days, " days ago"); next }
     download_versioned(CZ_PRODUCTS[[ed]], cz_dir(), name = name)
   }
 }
@@ -127,6 +127,7 @@ cz_territory <- function(con) {
 register_country(list(
   code = "CZ", iso3 = "CZE", name_en = "Czechia", name_local = "Česko", lang = "cs",
   levels = c("region"),
+  watch = function() er_file(paste0(EUROSTAT_REGIONS$population, "_T.json")),   # its population is read from the shared Eurostat table
   level_labels = list(region = c("Regions", "Kraje", "Region", "Kraj")),
   source = list(name = "Kriminalita - data za rok (ČSÚ, from Police Presidium ESSK)", publisher = "Český statistický úřad (ČSÚ)",
                 url = "https://csu.gov.cz/kriminalita", licence = "CC BY 4.0 (ČSÚ terms of use)",

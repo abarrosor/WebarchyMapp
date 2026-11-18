@@ -17,7 +17,12 @@
 # Population: INEC projections (no open URL could be verified: the file is read from
 # data/raw/country_cr/ if the user downloads it). Boundaries: geoBoundaries ADM1/2/3.
 #
-# Written against the published files (not run against them): `cr_inspect()` prints the
+# The file quotes nothing, and a few nationalities are written with a comma ("CONGO, REPUBLICA
+# DEMOCRATICA DEL", "VIRGENES BRITANICAS, ISLAS"): those rows have one field too many and are
+# rebuilt from their ends (cr_repair).
+#
+# Checked on 16 November 2026 against the twelve files of 2015-2026 on the founder's computer
+# (578,049 records, 24 of them with a comma inside the nationality). `cr_inspect()` prints the
 # first rows of every downloaded file so that CR_COLUMNS can be adjusted.
 
 CR_DISTRICTS <- TRUE
@@ -39,23 +44,68 @@ cr_download <- function(days = 30) {
   m <- COUNTRY_MODULES$CR; this <- as.integer(format(Sys.Date(), "%Y"))
   for (y in cr_years()) {
     prev <- cr_file(y); limit <- if (y >= this - 1) days else 365
-    if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < limit) { message("= CR ", y, " downloaded less than ", limit, " days ago"); next }
+    if (!is.na(prev) && file_age_days(prev) < limit) { message("= CR ", y, " downloaded less than ", limit, " days ago"); next }
     tryCatch(download_versioned(sprintf(CR_URL, y), m$dir_raw, name = sprintf("cr_policiales_%d.csv", y)),
              error = function(e) message("  CR ", y, ": ", conditionMessage(e)))
   }
 }
 
-# Read one yearly file: no header, explicit names, trimmed fields, encoding detected
+# Read one yearly file: no header, explicit names, trimmed fields, encoding detected. The number of fields is the
+# usual one of the first lines, not that of line 1: the reader takes its columns from line 1, and if that line is
+# one of the rows with a field too many, the surplus column is glued back to the last one before the repair.
 cr_read <- function(f) {
   probe <- readLines(f, n = 5000, warn = FALSE)
   enc <- if (all(validUTF8(probe))) "UTF-8" else "latin1"
-  d <- readr::read_csv(f, col_names = FALSE, col_types = readr::cols(.default = "c"), locale = readr::locale(encoding = enc),
-                       trim_ws = TRUE, na = character(), progress = FALSE, show_col_types = FALSE)
-  names(d) <- if (ncol(d) == 11) CR_COLUMNS else if (ncol(d) == 10) setdiff(CR_COLUMNS, "genero") else
-    stop("Unexpected number of fields (", ncol(d), ") in ", basename(f), ": first line = ", probe[1], "\nRun cr_inspect() and adjust CR_COLUMNS in R/81_cr.R")
+  commas <- vapply(gregexpr(",", probe, fixed = TRUE, useBytes = TRUE), function(m) sum(m > 0), 0L)      # counted on the bytes: the file may not be UTF-8
+  k <- as.integer(names(which.max(table(commas + 1L))))
+  cols <- if (isTRUE(k == 11)) CR_COLUMNS else if (isTRUE(k == 10)) setdiff(CR_COLUMNS, "genero") else
+    stop("Unexpected number of fields (", k, ") in ", basename(f), ": first line = ", probe[1], "\nRun cr_inspect() and adjust CR_COLUMNS in R/81_cr.R")
+  d <- withCallingHandlers(
+    readr::read_csv(f, col_names = FALSE, col_types = readr::cols(.default = "c"), locale = readr::locale(encoding = enc),
+                    trim_ws = TRUE, na = character(), progress = FALSE, show_col_types = FALSE),
+    warning = function(w) if (grepl("parsing issue", conditionMessage(w))) invokeRestart("muffleWarning"))   # the rows that do not fit are counted and named just below
+  p <- as.data.frame(readr::problems(d)); fields <- function(x) suppressWarnings(as.integer(sub(" .*$", "", x)))
+  by_count <- grepl("^[0-9]+ columns$", p$expected)                              # "11 columns" expected, "12 columns" found
+  short <- p$row[by_count & fields(p$actual) < k]; other <- sum(!by_count)
+  d <- as.data.frame(d, stringsAsFactors = FALSE)
+  if (ncol(d) < k) stop("Line 1 of ", basename(f), " has fewer fields (", ncol(d), ") than the rest (", k, "): ", probe[1])
+  if (ncol(d) > k) {                                                             # line 1 has a field too many
+    for (j in (k + 1):ncol(d)) { s <- d[[j]]; has <- !is.na(s) & nzchar(s); d[[k]][has] <- paste(d[[k]][has], s[has], sep = ",") }
+    d <- d[, seq_len(k), drop = FALSE]
+  }
+  names(d) <- cols
   for (cn in names(d)) d[[cn]] <- trimws(iconv(d[[cn]], "UTF-8", "UTF-8", sub = "?"))
+  d <- cr_repair(d, basename(f), short = short)
+  if (other > 0) message("  [!!] ", basename(f), ": ", other, " other reading problem(s) reported by readr (run readr::problems() on the file)")
   d$fecha <- as.Date(substr(d$fecha, 1, 10), format = "%Y-%m-%d")
   if (mean(is.na(d$fecha)) > 0.05) stop("Field 3 of ", basename(f), " does not look like a YYYY-MM-DD date: ", probe[1])
+  d
+}
+
+# Rows with a field too many or too few. The reader glues the surplus fields into the last column (it then holds a
+# comma); the rows with fields missing come from the reader's own list of problems (`short`, row numbers).
+#  - One field too many: so far always a nationality with a comma. The row is rebuilt from its ends: the fields
+#    before the nationality from the left; provincia, cantón and distrito from the right; whatever lies between is
+#    the nationality. It is accepted only if field 3 is a date and the provincia is then one of the seven.
+#  - Anything else: the place is emptied, so that the record counts in the national total only instead of landing
+#    in the wrong cantón, and the row is reported.
+# Before this rule the provincia was read as the cantón: a record of Jacó (Garabito) counted in the cantón of
+# Puntarenas, in a distrito called "GARABITO,JACO" that does not exist.
+cr_repair <- function(d, file = "", short = integer(), provinces = unique(cr_key(cr_cantones()$province_name))) {
+  k <- ncol(d); nat <- match("nacionalidad", names(d)); place <- c("provincia", "canton", "distrito")
+  long <- which(!is.na(d$distrito) & grepl(",", d$distrito, fixed = TRUE))
+  short <- unique(short[!is.na(short) & short >= 1 & short <= nrow(d)]); if (length(short)) d[short, place] <- NA_character_
+  repaired <- 0L; lost <- integer()
+  for (i in long) {
+    last <- strsplit(paste0(d$distrito[i], ",x"), ",", fixed = TRUE)[[1]]            # ",x": a trailing empty field is kept
+    x <- trimws(c(unlist(d[i, seq_len(k - 1)], use.names = FALSE), last[-length(last)])); n <- length(x)
+    ok <- n > k && grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}", x[3]) && cr_key(x[n - 2]) %in% provinces
+    if (ok) { d[i, ] <- as.list(c(x[seq_len(nat - 1)], paste(x[nat:(n - 3)], collapse = ", "), x[(n - 2):n])); repaired <- repaired + 1L }
+    else { d[i, place] <- NA_character_; lost <- c(lost, i) }
+  }
+  if (repaired > 0) message(sprintf("  %s: %d record(s) with a comma inside the nationality, read from the ends of the row", file, repaired))
+  if (length(lost)) message(sprintf("  [!!] %s: %d row(s) with more fields than expected could not be rebuilt (rows %s): counted in the national total only", file, length(lost), toString(utils::head(lost, 10))))
+  if (length(short)) message(sprintf("  [!!] %s: %d row(s) with fewer fields than expected (rows %s): counted in the national total only", file, length(short), toString(utils::head(short, 10))))
   d
 }
 

@@ -1,8 +1,12 @@
 # Shared start-up for WEBARCHYMAPP.R and every script -------------------------------------
 # 1. Moves to the project folder (works even if the .Rproj was not opened).
 # 2. Sources every R/*.R file.
+# 3. Asks R for its own messages in English ("Warning message:" instead of the
+#    language of the computer), so that every log reads in one language.
 # Nothing here downloads or deletes anything. (The one-off migration from the
 # Spanish version ran in November 2026 and was removed from this file.)
+
+Sys.setenv(LANGUAGE = "en")
 
 local({
   if (!file.exists("WebarchyMapp.Rproj")) {

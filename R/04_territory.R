@@ -29,6 +29,30 @@ upper_levels <- function(municipality_id, city_name) {
     stringsAsFactors = FALSE)
 }
 
+# The UTM zone (EPSG code) under a layer, for planar operations in metres
+utm_epsg <- function(g) {
+  bb <- sf::st_bbox(suppressWarnings(sf::st_transform(g, 4326)))
+  lon <- mean(bb[c("xmin", "xmax")]); lat <- mean(bb[c("ymin", "ymax")])
+  as.integer((if (lat >= 0) 32600 else 32700) + floor((lon + 180) / 6) + 1)
+}
+
+# Polygons from a portal made valid the planar way (GEOS, in the layer's UTM zone), their area in m² computed
+# there (column area_m2), and returned in WGS84. The spherical engine of sf (s2) refuses to repair a ring that
+# crosses itself ("Loop 0 is not valid: Edge 2589 crosses edge 2594", the Stadtkreise of Zürich) while GEOS
+# repairs it; a repair that leaves lines or points behind keeps its polygon parts only
+clean_polygons <- function(g) {
+  g <- sf::st_zm(g, drop = TRUE, what = "ZM")
+  if (is.na(sf::st_crs(g))) sf::st_crs(g) <- 4326
+  p <- sf::st_transform(g, utm_epsg(g))
+  geom <- sf::st_geometry(sf::st_make_valid(p))
+  geom <- sf::st_sfc(lapply(geom, function(x) {
+    if (inherits(x, "GEOMETRYCOLLECTION")) { parts <- sf::st_collection_extract(sf::st_sfc(x), "POLYGON"); x <- if (length(parts)) sf::st_union(parts)[[1]] else sf::st_polygon() }
+    x }), crs = sf::st_crs(p))
+  sf::st_geometry(p) <- geom
+  p$area_m2 <- as.numeric(sf::st_area(p))
+  sf::st_transform(p, 4326)
+}
+
 # Read the shapefile inside a zip (unzipped to a temporary folder)
 read_shp_zip <- function(zip) {
   tmp <- file.path(tempdir(), tools::file_path_sans_ext(basename(zip)))
@@ -163,20 +187,34 @@ bcn_territory_save <- function(con) {
 }
 
 # --- Barcelona register (population by neighbourhood) ------------------------------------
-# Open Data BCN dataset pad_mdbas_sexe: residents by census section and sex at
-# 1 January. Only the most recent yearly file is downloaded; all are kept.
+# Open Data BCN dataset pad_mdbas_sexe: residents by census section and sex at 1 January, one file per year.
+# The files from the first year of the incidents on are downloaded (a few hundred KB each) and all are kept: the
+# rate of a period stands on the residents of its own years (mart_population_years). A year that cannot be
+# downloaded is reported and left out; the newest file is the one that must be there.
+bcn_census_years <- function(names, from = NULL) {
+  y <- suppressWarnings(as.integer(sub("^([0-9]{4})_.*$", "\\1", names)))
+  if (is.null(from) || is.na(from) || !any(y >= from, na.rm = TRUE)) return(!is.na(y) & y == max(y, na.rm = TRUE))   # no first year known: the newest only
+  !is.na(y) & y >= from
+}
 bcn_census_download <- function() {
   src <- CONFIG$sources$bcn_census
   res <- ckan_resources(src$ckan_id, base = CONFIG$ckan_barcelona)
   res <- res[res$format == "csv" & grepl("^[0-9]{4}_", res$name), ]
   if (nrow(res) == 0) stop("No Barcelona register CSV in Open Data BCN")
-  res <- res[order(res$name, decreasing = TRUE), ][1, ]
+  res <- res[order(res$name, decreasing = TRUE), ]
+  res <- res[bcn_census_years(res$name, CONFIG$sources$bcn_incidents$from), ]
   dir.create(src$dir_raw, recursive = TRUE, showWarnings = FALSE)
-  dest <- file.path(src$dir_raw, ckan_file_name(res))
-  if (file.exists(dest)) { message("= ", basename(dest), " already downloaded"); return(invisible(dest)) }
-  download_safely(res$url, dest)
-  message("+ ", basename(dest))
-  invisible(dest)
+  res$file <- file.path(src$dir_raw, ckan_file_name(res))
+  got <- character()
+  for (i in seq_len(nrow(res))) {
+    dest <- res$file[i]
+    if (file.exists(dest)) { message("= ", basename(dest), " already downloaded"); got <- c(got, dest); next }
+    ok <- tryCatch({ download_safely(res$url[i], dest); TRUE }, error = function(e) {
+      if (i == 1) stop(e)                                    # the newest register: without it there is no "latest" figure
+      message("x ", basename(dest), " not downloaded (", conditionMessage(e), "): the rates of that year will stand on the nearest register"); FALSE })
+    if (ok) { message("+ ", basename(dest)); got <- c(got, dest); Sys.sleep(1) }
+  }
+  invisible(got)
 }
 
 bcn_census_ingest <- function(con) {
@@ -187,8 +225,10 @@ bcn_census_ingest <- function(con) {
                                        ID_BARCELONA, "-%'"))$territory_id
   if (length(known) == 0) stop("Load the Barcelona neighbourhoods first")
   done <- DBI::dbGetQuery(con, "SELECT DISTINCT file FROM ref_population")$file
-  for (path in files) {
-    if (basename(path) %in% done) { message("= ", basename(path), " (already loaded)"); next }
+  # One file per year. A file that cannot be read (another structure in an old year) is reported and left out: the
+  # rates of that year then stand on the nearest register. The newest file is the one that must load.
+  files <- files[order(basename(files), decreasing = TRUE)]
+  load_one <- function(path) {
     df <- bcn_read_csv(path)
     missing <- setdiff(c("data_referencia", "codi_districte", "codi_barri", "valor"), names(df))
     if (length(missing) > 0) stop(basename(path), ": missing columns ", toString(missing))
@@ -199,6 +239,7 @@ bcn_census_ingest <- function(con) {
     unknown <- setdiff(names(pop), known)
     if (length(unknown) > 0) warning("Barcelona register neighbourhoods that do not exist: ", toString(unknown))
     pop <- pop[names(pop) %in% known]
+    if (length(pop) == 0) stop(basename(path), ": none of its neighbourhoods is in the territory")
     ids_sql <- paste(DBI::dbQuoteString(con, names(pop)), collapse = ", ")
     DBI::dbWithTransaction(con, {
       DBI::dbExecute(con, paste0("DELETE FROM ref_population WHERE ref_date = DATE '", ref_date, "' AND territory_id IN (", ids_sql, ")"))
@@ -207,6 +248,12 @@ bcn_census_ingest <- function(con) {
     })
     message(sprintf("+ %s: Barcelona population at %s = %s residents in %d neighbourhoods", basename(path),
                     format(ref_date, "%Y-%m-%d"), fmt_int(sum(pop)), length(pop)))
+  }
+  for (i in seq_along(files)) {
+    path <- files[i]
+    if (basename(path) %in% done) { message("= ", basename(path), " (already loaded)"); next }
+    if (i == 1) load_one(path)
+    else tryCatch(load_one(path), error = function(e) message("x ", conditionMessage(e), " (this year is left out: its rates stand on the nearest register)"))
   }
   invisible(TRUE)
 }

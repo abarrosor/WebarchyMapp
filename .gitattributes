@@ -1,0 +1,9 @@
+# One kind of line ending in the repository, whatever the computer: the code is written on Windows and tested on Linux,
+# and a table read by the app must be the same bytes on both.
+* text=auto eol=lf
+*.R text eol=lf
+*.md text eol=lf
+*.csv text eol=lf
+*.txt text eol=lf
+# RStudio writes its project file with Windows line endings and rewrites it that way
+*.Rproj text eol=crlf

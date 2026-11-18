@@ -1,7 +1,7 @@
 source_code,offence_type_id,name_local,name_en,included_in,sensitive
 TOTAL_DELITOS,total,"Total de delitos registrados por el OIJ (suma, no es un total oficial)","All OIJ offence categories (sum, not an official total)",,no
 ASALTO,robbery_violence,Asalto (robo con violencia o intimidación sobre personas),Robbery with violence or intimidation (asalto),total,no
-ROBO,burglary,"Robo (con fuerza sobre las cosas: viviendas, edificaciones y otros)","Theft with force on property (robo: homes, premises and other)",total,no
+ROBO,burglary,"Robo (con fuerza sobre las cosas: viviendas, edificaciones y otros)","Burglary (robo: with force on property; homes, premises and other)",total,no
 HURTO,theft,Hurto,Theft without force or violence (hurto),total,no
 ROBO DE VEHICULO,vehicle_theft,Robo de vehículo,Vehicle theft,total,no
 TACHA DE VEHICULO,theft_from_vehicle,Tacha de vehículo (robo de partes o de objetos dentro del vehículo),Theft from a vehicle (parts or contents),total,no

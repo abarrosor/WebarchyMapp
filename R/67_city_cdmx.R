@@ -43,7 +43,7 @@ cdmx_resource <- function(dataset_key, manual_key, pattern) {
 
 cdmx_download <- function(days = 20) {
   prev <- cdmx_newest("carpetas", "\\.(csv|zip|csv\\.gz)$")
-  if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < days) message("= CDMX carpetas file downloaded less than ", days, " days ago") else {
+  if (!is.na(prev) && file_age_days(prev) < days) message("= CDMX carpetas file downloaded less than ", days, " days ago") else {
     r <- cdmx_resource("carpetas_dataset", "carpetas_manual", "csv|zip")
     message("  CDMX carpetas: ", r$name, " (a large file; this can take several minutes)")
     download_versioned(r$url, cdmx_dir("carpetas"), name = r$name)
@@ -144,19 +144,23 @@ cdmx_ingest <- function(con) {
 }
 
 # --- Population: the alcaldías from the Mexico country module (CONAPO), as district rows ------------------------------
+# Every year the country module holds up to this one (one register per year, for the rates of each year)
 cdmx_population <- function(con) {
   pop <- DBI::dbGetQuery(con, "SELECT territory_id, year, population FROM ref_country_population WHERE country = 'MX' AND level = 'municipality' AND territory_id LIKE 'MX-09-%'")
   if (nrow(pop) == 0) stop("no Mexico population loaded yet (option 14 with MX): counts only, no rates")
-  y <- max(pop$year[pop$year <= as.integer(format(Sys.Date(), "%Y"))]); pop <- pop[pop$year == y, ]
-  pop$district_id <- cdmx_district_id(sub("^MX-09-", "", pop$territory_id))
+  pop <- pop[pop$year <= as.integer(format(Sys.Date(), "%Y")), ]
+  if (nrow(pop) == 0) stop("the Mexico population has no year up to this one: counts only, no rates")
+  y <- max(pop$year); pop$district_id <- cdmx_district_id(sub("^MX-09-", "", pop$territory_id))
   known <- DBI::dbGetQuery(con, paste0("SELECT territory_id FROM dim_territory WHERE level = 'district' AND parent_id = ", DBI::dbQuoteString(con, ID_CDMX)))$territory_id
-  pop <- pop[pop$district_id %in% known, ]
+  pop <- pop[pop$district_id %in% known, ]; pop <- pop[!duplicated(pop[, c("district_id", "year")]), ]
   if (nrow(pop) == 0) stop("no alcaldía of Mexico City in dim_territory yet (the territory step failed): nothing to load")
   DBI::dbWithTransaction(con, {
     DBI::dbExecute(con, paste0("DELETE FROM ref_population WHERE territory_id LIKE ", DBI::dbQuoteString(con, paste0(ID_CDMX, "-%"))))
-    DBI::dbAppendTable(con, "ref_population", data.frame(territory_id = pop$district_id, ref_date = as.Date(sprintf("%d-07-01", y)), population = as.integer(round(pop$population)), file = "ref_country_population (MX, CONAPO)"))
+    DBI::dbAppendTable(con, "ref_population", data.frame(territory_id = pop$district_id, ref_date = as.Date(sprintf("%d-07-01", pop$year)), population = as.integer(round(pop$population)), file = "ref_country_population (MX, CONAPO)"))
   })
-  message(sprintf("  population: %d alcaldías, CONAPO %d (%s residents); colonias have no official population", nrow(pop), y, fmt_int(sum(pop$population))))
+  yrs <- sort(unique(pop$year))
+  message(sprintf("  population: %d alcaldías, CONAPO %s (%s residents in %d); colonias have no official population", length(unique(pop$district_id)),
+                  if (length(yrs) > 1) paste0(min(yrs), "-", y) else y, fmt_int(sum(pop$population[pop$year == y])), y))
   invisible(TRUE)
 }
 

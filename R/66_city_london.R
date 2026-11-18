@@ -25,7 +25,7 @@ london_newest <- function(sub, pattern) { f <- newest_first(list.files(file.path
 london_download <- function(days = 20) {
   dir <- london_dir("crime")
   prev <- london_newest("crime", "\\.csv$")
-  if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < days) { message("= London crime files downloaded less than ", days, " days ago"); return(invisible(FALSE)) }
+  if (!is.na(prev) && file_age_days(prev) < days) { message("= London crime files downloaded less than ", days, " days ago"); return(invisible(FALSE)) }
   manual <- london_source("ward_csv_manual")
   if (!is.na(manual)) { download_versioned(manual, dir, name = "mps_ward_level_crime_manual.csv"); return(invisible(TRUE)) }
   res <- london_resources()
@@ -90,7 +90,7 @@ london_borough_code <- function(name) {
 london_boundaries_download <- function(ward_codes) {
   dir <- london_dir("boundaries"); svc <- london_source("wards_service"); if (is.na(svc)) stop("no wards_service URL in reference/london_sources.csv")
   prev <- london_newest("boundaries", "_wards_[0-9]+\\.geojson$")
-  if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < 365) return(invisible(FALSE))
+  if (!is.na(prev) && file_age_days(prev) < 365) return(invisible(FALSE))
   # the field of the ward code (WD24CD, WD25CD...) from the service name's vintage
   yy <- regmatches(svc, regexpr("(?<=_)[0-9]{4}(?=_)", svc, perl = TRUE)); fld <- if (length(yy)) paste0("WD", substr(yy, 3, 4), "CD") else "WD24CD"
   chunks <- split(ward_codes, ceiling(seq_along(ward_codes) / 80)); k <- 0L
@@ -205,7 +205,7 @@ london_population <- function(con) {
     DBI::dbExecute(con, paste0("DELETE FROM ref_population WHERE territory_id LIKE ", DBI::dbQuoteString(con, paste0(ID_LONDON, "-%"))))
     DBI::dbAppendTable(con, "ref_population", data.frame(territory_id = pop$territory_id, ref_date = ref, population = as.integer(round(pop$population)), file = basename(f)))
   })
-  message(sprintf("  population: %d wards from %s (%s); %d codes of the file are not wards of the data", nrow(pop), basename(f), attr(pop, "column") %||% "", lost))
+  message(sprintf("  population: %d wards from %s (%s); %s ward codes of the file are outside London or of another ward vintage", nrow(pop), basename(f), attr(pop, "column") %||% "", fmt_int(lost)))
   invisible(TRUE)
 }
 

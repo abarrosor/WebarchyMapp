@@ -7,6 +7,27 @@
 
 USER_AGENT <- "webarchymapp-personal-use (R httr2)"
 
+# Age of a downloaded file in days, used by every module to decide whether to ask the portal again
+# ("downloaded less than N days ago"). With options(webarchy.refresh = TRUE) every file counts as old,
+# so that a file that came down broken or truncated is asked for again (menu option 14 offers it);
+# versioned copies are only kept when the content differs, so asking again costs nothing on disk.
+file_age_days <- function(f) {
+  if (isTRUE(getOption("webarchy.refresh", FALSE))) return(Inf)
+  if (length(f) == 0 || is.na(f[1]) || !file.exists(f[1])) return(Inf)
+  as.numeric(difftime(Sys.time(), file.mtime(f[1]), units = "days"))
+}
+
+# Perform a request; when the connection itself fails (the server never answers, as opposed to answering an
+# error), try once more over IPv4 only: a portal whose IPv6 address does not answer fails in curl, while a
+# browser falls back to IPv4 without saying so (seen with datos.cdmx.gob.mx)
+perform <- function(req, path = NULL) {
+  tryCatch(httr2::req_perform(req, path = path), error = function(e) {
+    if (!grepl("could not connect|failed to connect|couldn't connect|connection timed out", conditionMessage(e), ignore.case = TRUE)) stop(e)
+    message("  no connection to the server; trying once more over IPv4 only")
+    httr2::req_perform(httr2::req_options(req, ipresolve = 1L), path = path)
+  })
+}
+
 # Download `url` to `dest`. Fails if `dest` already exists.
 download_safely <- function(url, dest, timeout = 300) {
   tmp <- paste0(dest, ".part")
@@ -15,8 +36,13 @@ download_safely <- function(url, dest, timeout = 300) {
     httr2::req_user_agent(USER_AGENT) |>
     httr2::req_retry(max_tries = 3) |>
     httr2::req_timeout(timeout) |>
-    httr2::req_perform(path = tmp)
+    perform(path = tmp)
   if (!file.exists(tmp) || file.size(tmp) == 0) stop("Empty download: ", url)
+  # A portal that answers an HTML page (a login, an error, a maintenance notice) instead of the file: not kept
+  if (!grepl("\\.html?$", dest, ignore.case = TRUE)) {
+    head <- tryCatch({ b <- readBin(tmp, what = "raw", n = 300L); rawToChar(b[b != as.raw(0L)]) }, error = function(e) "")   # binary files (xlsx, zip) hold nul bytes
+    if (grepl("^\\s*(<!doctype html|<html)", head, ignore.case = TRUE, useBytes = TRUE)) stop("The server answered an HTML page instead of the file (changed URL, login or maintenance page): ", url)
+  }
   if (file.exists(dest)) stop(dest, " already exists and is never overwritten")
   if (!file.rename(tmp, dest)) stop("Could not save ", dest)
   invisible(dest)
@@ -57,7 +83,7 @@ get_text <- function(url, timeout = 60) {
       httr2::req_retry(max_tries = 2) |>
       httr2::req_timeout(timeout) |>
       httr2::req_error(is_error = function(r) FALSE) |>
-      httr2::req_perform(),
+      perform(),
     error = function(e) NULL)
   if (is.null(resp) || httr2::resp_status(resp) >= 400) return(NULL)
   tryCatch(httr2::resp_body_string(resp), error = function(e) rawToChar(httr2::resp_body_raw(resp)))
@@ -72,7 +98,7 @@ ckan_resources <- function(dataset_id, base = CONFIG$ckan_madrid) {
     httr2::req_user_agent(USER_AGENT) |>
     httr2::req_retry(max_tries = 3) |>
     httr2::req_timeout(60) |>
-    httr2::req_perform()
+    perform()
   body <- httr2::resp_body_json(resp, simplifyVector = FALSE)
   if (!isTRUE(body$success)) stop("CKAN API returned success = FALSE for ", dataset_id)
   res <- body$result$resources

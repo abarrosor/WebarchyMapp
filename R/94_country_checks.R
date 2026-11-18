@@ -11,7 +11,10 @@ check_countries <- function(only = NULL, save = TRUE) {
     cities <- city_checks(con, only)
     out <- country_checks(con, only, print = FALSE)
     if (nrow(cities)) out <- if (nrow(out)) rbind(cities, out) else cities
-    print_checks(out)
+    old <- freshness_checks(con, only)
+    if (nrow(old)) out <- if (nrow(out)) rbind(out, old) else old
+    prev <- checks_previous()
+    print_checks(out, prev)
     if (save && nrow(out)) {
       f <- file.path(CONFIG$dir_reports, paste0("country_checks_", format(Sys.Date(), "%Y%m%d"), ".csv"))
       utils::write.csv(out, f, row.names = FALSE, fileEncoding = "UTF-8"); message("Saved: ", f)
@@ -80,9 +83,11 @@ country_checks <- function(con, only = NULL, print = TRUE) {
       }
     } else if (nrow(pop)) {
       z <- sum(pop$population <= 0, na.rm = TRUE); if (z) add(cc, "population_not_positive", "info", z, "zero population (uninhabited or discontinued units): no rate for them")
-      cy <- range(crime$year); py <- range(pop$year)
-      if (py[2] < cy[2] - 1) add(cc, "population_years_behind", "warning", cy[2] - py[2], sprintf("population to %d, crime to %d (the app uses the latest population year)", py[2], cy[2]))
-      if (py[1] > cy[1]) add(cc, "population_starts_later", "info", py[1] - cy[1], sprintf("population from %d, crime from %d (early years use the first population year)", py[1], cy[1]))
+      # A rate stands on the population of the year of its figures (of the year a financial year begins in). The years of
+      # figures without a population year of their own take the nearest one and are marked † in the app: how many there are
+      cy <- range(crime$year) - if (isTRUE(m$financial_year)) 1L else 0L; py <- range(pop$year)
+      if (py[2] < cy[2] - 1) add(cc, "population_years_behind", "warning", cy[2] - py[2], sprintf("population to %d, figures to %d (the later years stand on the population of %d, marked in the app)", py[2], cy[2], py[2]))
+      if (py[1] > cy[1]) add(cc, "population_starts_later", "info", py[1] - cy[1], sprintf("population from %d, figures from %d (the earlier years stand on the population of %d, marked in the app)", py[1], cy[1], py[1]))
       for (lv in setdiff(unique(crime$level), "country")) {
         ids <- unique(crime$territory_id[crime$level == lv]); nop <- setdiff(ids, unique(pop$territory_id)); if (length(nop)) add(cc, paste0("no_population_", lv), if (length(nop) > 0.5 * length(ids)) "warning" else "info", length(nop), paste(utils::head(nop, 4), collapse = ", "))
       }
@@ -116,11 +121,52 @@ country_checks <- function(con, only = NULL, print = TRUE) {
   invisible(out)
 }
 
-print_checks <- function(out) {
+# Sources whose last period is older than their rhythm allows (freshness(), R/05_journal.R): the update "works" and
+# nothing new arrives (the address changed, the source stopped, or the file must be fetched by hand)
+freshness_checks <- function(con, only = NULL, today = Sys.Date()) {
+  rows <- list()
+  add <- function(cc, n, detail) rows[[length(rows) + 1]] <<- data.frame(country = cc, check = "last_period_old", severity = "warning", n = as.integer(n), detail = detail, stringsAsFactors = FALSE)
+  fc <- country_freshness(con, today); fc <- fc[fc$old, ]
+  for (i in seq_len(nrow(fc))) if (is.null(only) || fc$country[i] %in% only) {
+    fy <- isTRUE(COUNTRY_MODULES[[fc$country[i]]]$financial_year)
+    add(if (fc$source[i] == "main") fc$country[i] else paste0(fc$country[i], "/", fc$source[i]), floor(fc$months[i]),
+        sprintf("last period %s Q%d: %s", if (fy) sprintf("%d/%02d", fc$to_year[i] - 1L, fc$to_year[i] %% 100L) else as.character(fc$to_year[i]), fc$to_quarter[i], fc$text[i]))
+  }
+  ft <- city_freshness(con, today); ft <- ft[ft$old, ]
+  for (i in seq_len(nrow(ft))) if (is.null(only) || ft$code[i] %in% only || ft$city[i] %in% only)
+    add(ft$code[i], floor(ft$months[i]), sprintf("%slast period %s: %s", if (nzchar(ft$what[i])) paste0("panel ", ft$what[i], ", ") else "", format(ft$last[i], "%m/%Y"), ft$text[i]))
+  if (length(rows)) do.call(rbind, rows) else data.frame()
+}
+
+# The last report saved (list(file, data)), to tell what is new from what was already there
+checks_previous <- function() {
+  f <- list.files(CONFIG$dir_reports, "^country_checks_[0-9]{8}\\.csv$", full.names = TRUE)
+  if (length(f) == 0) return(NULL)
+  f <- f[order(basename(f), decreasing = TRUE)][1]
+  d <- tryCatch(utils::read.csv(f, stringsAsFactors = FALSE, fileEncoding = "UTF-8"), error = function(e) NULL)
+  if (is.null(d) || !all(c("country", "check", "severity", "n") %in% names(d))) return(NULL)
+  list(file = f, data = d)
+}
+
+# `previous` (checks_previous()): what is new since that report is said first and marked with * in the list; a line
+# whose count changed says the old count; what is no longer there is listed too
+print_checks <- function(out, previous = NULL) {
   if (nrow(out) == 0) { message("Checks: nothing to report."); return(invisible(out)) }
   out <- out[order(match(out$severity, c("error", "warning", "info")), out$country, out$check), ]
-  message("Checks (", sum(out$severity == "error"), " errors, ", sum(out$severity == "warning"), " warnings, ", sum(out$severity == "info"), " notes)")
-  for (i in seq_len(nrow(out))) message(sprintf("  [%s] %-9s %-38s %6s  %s", c(error = "!!", warning = "! ", info = "i ")[out$severity[i]], out$country[i], out$check[i], fmt_int(out$n[i]), substr(out$detail[i], 1, 110)))
+  key <- paste(out$country, out$check); new <- rep(FALSE, nrow(out)); was <- rep(NA_integer_, nrow(out))
+  if (!is.null(previous)) {
+    pk <- paste(previous$data$country, previous$data$check)
+    new <- !key %in% pk; was <- suppressWarnings(as.integer(previous$data$n[match(key, pk)]))
+    gone <- previous$data[!pk %in% key, , drop = FALSE]
+    changed <- !new & !is.na(was) & was != out$n
+    message(sprintf("Since the last report (%s): %d new line(s), %d with another count, %d no longer there", basename(previous$file), sum(new), sum(changed), nrow(gone)))
+    if (nrow(gone)) message("  no longer there: ", paste(utils::head(paste(gone$country, gone$check), 12), collapse = "; "), if (nrow(gone) > 12) sprintf(" and %d more", nrow(gone) - 12) else "")
+  }
+  message("Checks (", sum(out$severity == "error"), " errors, ", sum(out$severity == "warning"), " warnings, ", sum(out$severity == "info"), " notes)", if (!is.null(previous)) "; * = new since the last report" else "")
+  for (i in seq_len(nrow(out))) {
+    count <- if (!new[i] && !is.na(was[i]) && was[i] != out$n[i]) sprintf("%s (was %s)", fmt_int(out$n[i]), fmt_int(was[i])) else fmt_int(out$n[i])
+    message(sprintf(" %s[%s] %-9s %-38s %6s  %s", if (new[i]) "*" else " ", c(error = "!!", warning = "! ", info = "i ")[out$severity[i]], out$country[i], out$check[i], count, substr(out$detail[i], 1, 110)))
+  }
   invisible(out)
 }
 
@@ -163,6 +209,20 @@ city_checks <- function(con, only = NULL) {
     else if (by_district_only) add(cc, "population_by_district_only", "info", length(nbs), "the register exists by district only (no neighbourhood rates, no shading by rate)")
     else if (length(nop)) add(cc, "neighbourhoods_without_population", if (length(nop) > 0.2 * length(nbs)) "warning" else "info", length(nop), paste(utils::head(nop, 4), collapse = ", "))
     if (nrow(pop) && max(pop$d) < Sys.Date() - 730) add(cc, "population_old", "info", as.integer(Sys.Date() - max(pop$d)), sprintf("latest register %s", format(max(pop$d))))
+    # the years of the figures against the years of the registers: a rate stands on the residents of its own year, and a
+    # year without a register on the nearest one (marked † in the app)
+    if (nrow(pop)) {
+      py <- sort(q("SELECT DISTINCT year(ref_date)::INTEGER AS y FROM ref_population WHERE territory_id LIKE %s", DBI::dbQuoteString(con, paste0(m$id, "-%")))$y)
+      ey <- sort(unique(as.integer(format(ev$month, "%Y")))); miss <- setdiff(ey, py)
+      span <- function(y) if (length(y) > 1 && all(diff(y) == 1)) paste0(min(y), "-", max(y)) else paste(y, collapse = ", ")
+      if (length(miss)) add(cc, "years_without_register", "info", length(miss), sprintf("figures of %s stand on the nearest register (registers of %s); marked in the app", span(miss), span(py)))
+    }
+    # types the source lacks for part of the series (a file cut by its publisher): said in the app, never shown as zero
+    if ("stg_city_gaps" %in% DBI::dbListTables(con)) {
+      gp <- q("SELECT count(DISTINCT event_type) AS n, min(first_month) AS d0, max(last_month) AS d1, min(reason) AS reason FROM stg_city_gaps WHERE city = %s", DBI::dbQuoteString(con, m$key))
+      if (!is.na(gp$n) && gp$n > 0) add(cc, "types_missing_from_source", "warning", as.integer(gp$n),
+                                        sprintf("%s to %s (%s): those types are missing in that stretch, not zero; marked in the app", format(as.Date(gp$d0), "%m/%Y"), format(as.Date(gp$d1), "%m/%Y"), gsub("_", " ", gp$reason)))
+    }
     # polygons
     if (file.exists(m$gpkg)) {
       g <- tryCatch(sf::st_read(m$gpkg, layer = "territory", quiet = TRUE), error = function(e) NULL)

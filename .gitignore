@@ -1,5 +1,44 @@
+# What never goes into the repository (decisions P-034 and P-069): the code is published, the data are not.
+# R/96_git_prepare.R (menu option 19) checks the same rules a second time before every commit.
+
+# Everything downloaded, the database and everything built from them
 data/
 reports/
+
+# One table transcribed by hand from a published report (the Barcelona survey): data of a source, kept out
+data_seed/
+
+# The Spanish version that the English one replaced
 _old_spanish/
+
+# R and RStudio: the state of a session or of a computer, never of the project
 .Rproj.user/
 .Rhistory
+.RData
+.Ruserdata
+.Renviron
+.Rprofile
+.env
+
+# Data by its kind, wherever it is: a database, a map layer, an R object, a workbook, an archive, a document
+*.duckdb
+*.duckdb.wal
+*.sqlite
+*.gpkg
+*.rds
+*.rda
+*.RData
+*.xlsx
+*.xls
+*.parquet
+*.zip
+*.7z
+*.gz
+*.pdf
+
+# The operating system and the editors
+Thumbs.db
+desktop.ini
+.DS_Store
+*.swp
+*~

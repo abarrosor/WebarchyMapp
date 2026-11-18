@@ -39,7 +39,7 @@ source_code,offence_type_id,name_local,name_en,included_in,sensitive
 311.00.T9,other,Total 9. Titel: Öffentlicher Verkehr,Offences against public transport (title 9),total,no
 311.00.T10,counterfeiting,"Total 10. Titel: Fälschung Geld, amtliche Wertzeichen, amtliche Zeichen, Mass und Gewicht","Counterfeiting of money, stamps and official marks (title 10)",total,no
 311.00.T11,forgery,Total 11. Titel: Urkundenfälschung,Forgery of documents (title 11),total,no
-311.00.T12,public_order,Total 12. Titel: Öffentlicher Frieden,Offences against public order (title 12),total,no
+311.00.T12,public_order,Total 12. Titel: Öffentlicher Frieden,Offences against public peace (title 12),total,no
 311.00.T12bis,other,Total 12. Titel bis: Völkermord und Verbrechen gegen die Menschlichkeit,Genocide and crimes against humanity (title 12bis),total,no
 311.00.T13,other,Total 13. Titel: Staat und Landesverteidigung,Offences against the state and national defence (title 13),total,no
 311.00.T14,other,Total 14. Titel: Volkswille,Offences against the will of the people (title 14),total,no

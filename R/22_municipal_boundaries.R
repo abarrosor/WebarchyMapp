@@ -18,7 +18,7 @@ municipal_boundaries_download <- function(days = 365) {
     name <- basename(u)
     previous <- newest_first(list.files(src$dir_raw, paste0(name, "$"), full.names = TRUE))
     # Boundaries change very little: checked once a year
-    if (length(previous) > 0 && difftime(Sys.time(), file.mtime(previous[1]), units = "days") < days) {
+    if (length(previous) > 0 && file_age_days(previous[1]) < days) {
       message("= Boundaries already downloaded (", basename(previous[1]), ")")
       out <- c(out, previous[1]); next
     }

@@ -1,4 +1,4 @@
-# Updates only the cities (Madrid and Barcelona modules of R/60_cities.R); the countries are option 13.
+# Updates only the cities (every city module of R/60_cities.R); the countries are option 13.
 
 # --- Go to the project folder and load the project code (see scripts/_bootstrap.R) ---
 local({

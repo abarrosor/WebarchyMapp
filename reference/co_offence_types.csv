@@ -11,11 +11,11 @@ ARTÍCULO 114. PERTURBACIÓN FUNCIONAL,assault,Lesiones personales: perturbació
 ARTÍCULO 115. LESIONES CON PERTURBACION PSIQUICA TRANSITORIA,assault,Lesiones personales: perturbación psíquica transitoria,Assault: transitory psychological harm,total,no
 ARTÍCULO 116. PÉRDIDA ANATÓMICA O FUNCIONAL DE UN ÓRGANO O MIEMBRO,assault,Lesiones personales: pérdida anatómica o funcional,Assault: loss of an organ or limb,total,no
 ARTÍCULO 119. LESIONES PERSONALES ( CIRCUNSTANCIAS DE AGRAVACIÓN),assault,Lesiones personales agravadas,Aggravated assault,total,no
-ARTÍCULO 136. LESIONES EN PERSONA PROTEGIDA,assault,Lesiones en persona protegida,Injury of a protected person,total,no
-ARTÍCULO 120. LESIONES CULPOSAS ( EN ACCIDENTE DE TRANSITO ),unmapped,Lesiones culposas en accidente de tránsito (excluido),Negligent injury in traffic accidents (excluded),,no
-ARTICULO 120 LESIONES CULPOSAS,unmapped,Lesiones culposas (excluido),Negligent injury (excluded),,no
-ARTÍCULO 125. LESIONES AL FETO,unmapped,Lesiones al feto (excluido),Injury to the foetus (excluded),,yes
-ARTÍCULO 126. LESIONE CULPOSAS AL FETO,unmapped,Lesiones culposas al feto (excluido),Negligent injury to the foetus (excluded),,yes
+ARTÍCULO 136. LESIONES EN PERSONA PROTEGIDA,assault,Lesiones en persona protegida,Injuries to a protected person,total,no
+ARTÍCULO 120. LESIONES CULPOSAS ( EN ACCIDENTE DE TRANSITO ),unmapped,Lesiones culposas en accidente de tránsito (excluido),Negligent injuries in traffic accidents (excluded),,no
+ARTICULO 120 LESIONES CULPOSAS,unmapped,Lesiones culposas (excluido),Negligent injuries (excluded),,no
+ARTÍCULO 125. LESIONES AL FETO,unmapped,Lesiones al feto (excluido),Injuries to the foetus (excluded),,yes
+ARTÍCULO 126. LESIONE CULPOSAS AL FETO,unmapped,Lesiones culposas al feto (excluido),Negligent injuries to the foetus (excluded),,yes
 DELITOS SEXUALES,sexual_offences,Delitos sexuales (todos los artículos 205-219),Sexual offences (all articles 205-219),total,yes
 VIOLENCIA INTRAFAMILIAR,domestic_violence,Violencia intrafamiliar,Domestic violence,total,yes
 AMENAZAS,threats,Amenazas,Threats,total,no

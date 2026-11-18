@@ -34,7 +34,7 @@ ie_read <- function(f) readr::read_csv(f, col_types = readr::cols(.default = "c"
 ie_download <- function(days = 60) {
   for (what in names(IE_RESOURCES)) {
     prev <- ie_file(what)
-    if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < days) { message("= IE ", what, " downloaded less than ", days, " days ago"); next }
+    if (!is.na(prev) && file_age_days(prev) < days) { message("= IE ", what, " downloaded less than ", days, " days ago"); next }
     download_versioned(IE_RESOURCES[[what]], ie_dir(), name = paste0("ie_", what, ".csv"))
   }
 }

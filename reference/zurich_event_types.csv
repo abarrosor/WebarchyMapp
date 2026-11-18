@@ -1,0 +1,32 @@
+source_code,block,sensitive,name_local,name_en
+Total StGB,aggregate,no,Total StGB,All offences of the Criminal Code
+Total Strafgesetzbuch,aggregate,no,Total Strafgesetzbuch,All offences of the Criminal Code
+Total gegen Leib und Leben,public_safety,no,Gegen Leib und Leben,Against life and limb (homicide and assault)
+Total gegen das Vermögen,public_safety,no,Gegen das Vermögen,Against property (theft and burglary; robbery; fraud; damage)
+Total gegen die Ehre und den Geheim- oder Privatbereich,coexistence,no,Gegen die Ehre und den Geheim- oder Privatbereich,Against honour and privacy
+Total gegen die Freiheit,public_safety,no,Gegen die Freiheit,Against liberty (threats; coercion; unlawful entry)
+Total gegen die sexuelle Integrität,public_safety,yes,Gegen die sexuelle Integrität,Against sexual integrity
+Total gegen die Familie,public_safety,yes,Gegen die Familie,Against the family
+Total gemeingefährliche Verbrechen und Vergehen,public_safety,no,Gemeingefährliche Verbrechen und Vergehen,Offences constituting a public danger (arson and others)
+Total gegen die öffentliche Gesundheit,public_safety,no,Gegen die öffentliche Gesundheit,Against public health
+Total gegen den öffentlichen Verkehr,public_safety,no,Gegen den öffentlichen Verkehr,Against public transport
+"Total Fälschung von Geld, amtlichen Wertzeichen, amtlichen Zeichen, Mass und Gewicht",public_safety,no,"Fälschung von Geld, amtlichen Wertzeichen, Mass und Gewicht","Counterfeiting of money, stamps and official marks"
+Total Urkundenfälschung,public_safety,no,Urkundenfälschung,Forgery of documents
+Total gegen den öffentlichen Frieden,coexistence,no,Gegen den öffentlichen Frieden,Against public peace
+Total gegen den Staat und die Landesverteidigung,public_safety,no,Gegen den Staat und die Landesverteidigung,Against the state and national defence
+Total gegen die öffentliche Gewalt,public_safety,no,Gegen die öffentliche Gewalt,Against official powers
+Total Störung der Beziehungen zum Ausland,public_safety,no,Störung der Beziehungen zum Ausland,Disturbing relations with foreign states
+Total gegen die Rechtspflege,public_safety,no,Gegen die Rechtspflege,Against the administration of justice
+Total gegen die Amts- und Berufspflicht,public_safety,no,Gegen die Amts- und Berufspflicht,Against official and professional duty
+Total Bestechung,public_safety,no,Bestechung,Bribery
+Total Übertretungen bundesrechtlicher Bestimmungen,coexistence,no,Übertretungen bundesrechtlicher Bestimmungen,Contraventions of federal provisions
+Total gegen sexuelle Integrität,public_safety,yes,Gegen die sexuelle Integrität,Against sexual integrity
+Total übrige Titel StGB,public_safety,no,Übrige Titel StGB,Other titles of the Criminal Code
+BetmG: Total leichte Fälle,public_safety,no,Betäubungsmittelgesetz: leichte Fälle,Narcotics Act: minor cases
+BetmG: Total schwere Fälle,public_safety,no,Betäubungsmittelgesetz: schwere Fälle,Narcotics Act: serious cases (trafficking)
+BetmG: Total Übertretungen,public_safety,no,Betäubungsmittelgesetz: Übertretungen,Narcotics Act: contraventions (consumption)
+AIG: Total rechtswidrige Ein- / Ausreise / Aufenthalt,public_safety,yes,Ausländer- und Integrationsgesetz: rechtswidrige Ein-/Ausreise/Aufenthalt,Foreign Nationals Act: unlawful entry or stay
+AIG: Total Förderung der rechtswidrigen Ein- / Ausreise / Aufenthalt,public_safety,yes,Ausländer- und Integrationsgesetz: Förderung der rechtswidrigen Einreise,Foreign Nationals Act: facilitating unlawful entry or stay
+AIG: Total Täuschung der Behörden,public_safety,yes,Ausländer- und Integrationsgesetz: Täuschung der Behörden,Foreign Nationals Act: deceiving the authorities
+AIG: Total illegale Erwerbstätigkeit oder Beschäftigung,public_safety,yes,Ausländer- und Integrationsgesetz: illegale Erwerbstätigkeit,Foreign Nationals Act: illegal employment
+AIG: Total weitere Widerhandlungen gegen AIG,public_safety,yes,Ausländer- und Integrationsgesetz: weitere Widerhandlungen,Foreign Nationals Act: other offences

@@ -70,20 +70,23 @@ lima_ingest <- function(con) {
   invisible(ev)
 }
 
-# Population of each distrito: the INEI projections the Peru module loads (latest year), as the city register
+# Population of each distrito: the INEI projections the Peru module loads, as the city register. Every year up to
+# this one is kept (one register per year): the rate of a period stands on the residents of its own years
+# (mart_population_years); the latest one is "the register" of the city (mart_population).
 lima_population <- function(con) {
   pop <- DBI::dbGetQuery(con, "SELECT territory_id, year, population FROM ref_country_population WHERE country = 'PE' AND level = 'municipality'")
   if (nrow(pop) == 0) stop("no Peru population loaded yet (option 14 with PE)")
   pop$ubigeo <- sub("^.*-", "", pop$territory_id); pop <- pop[substr(pop$ubigeo, 1, 4) %in% names(LIMA_PROVINCES), ]
-  y <- max(pop$year[pop$year <= as.integer(format(Sys.Date(), "%Y"))]); pop <- pop[pop$year == y, ]
-  ids <- lima_neighbourhood_id(pop$ubigeo)
+  pop <- pop[pop$year <= as.integer(format(Sys.Date(), "%Y")), ]
+  if (nrow(pop) == 0) stop("the Peru population has no year up to this one")
+  y <- max(pop$year); ids <- lima_neighbourhood_id(pop$ubigeo)
   known <- DBI::dbGetQuery(con, paste0("SELECT territory_id FROM dim_territory WHERE level = 'neighbourhood' AND territory_id LIKE ", DBI::dbQuoteString(con, paste0(ID_LIMA, "-%"))))$territory_id
-  keep <- ids %in% known; ref_date <- as.Date(sprintf("%d-01-01", y))
+  keep <- ids %in% known & !duplicated(paste(ids, pop$year)); ref_date <- as.Date(sprintf("%d-01-01", pop$year))
   DBI::dbWithTransaction(con, {
     DBI::dbExecute(con, paste0("DELETE FROM ref_population WHERE territory_id LIKE ", DBI::dbQuoteString(con, paste0(ID_LIMA, "-%"))))
-    DBI::dbAppendTable(con, "ref_population", data.frame(territory_id = ids[keep], ref_date = ref_date, population = as.integer(round(pop$population[keep])), file = "ref_country_population (PE, INEI projections)"))
+    DBI::dbAppendTable(con, "ref_population", data.frame(territory_id = ids[keep], ref_date = ref_date[keep], population = as.integer(round(pop$population[keep])), file = "ref_country_population (PE, INEI projections)"))
   })
-  message(sprintf("  population: %d distritos, INEI projection %d (%s residents)", sum(keep), y, fmt_int(sum(pop$population[keep]))))
+  message(sprintf("  population: %d distritos, INEI projections %d-%d (%s residents in %d)", length(unique(ids[keep])), min(pop$year[keep]), y, fmt_int(sum(pop$population[keep & pop$year == y])), y))
   invisible(TRUE)
 }
 

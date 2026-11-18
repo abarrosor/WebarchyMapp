@@ -1,0 +1,10 @@
+source_code,block,sensitive,name_local,name_en
+ASSAULT,public_safety,no,Assault,Assault
+AUTOTHEFT,public_safety,no,Auto theft,Auto theft
+BIKETHEFT,public_safety,no,Bicycle theft,Bicycle theft
+BREAKENTER,public_safety,no,Break and enter,Break and enter
+HOMICIDE,public_safety,yes,Homicide,Homicide
+ROBBERY,public_safety,no,Robbery,Robbery
+SHOOTING,public_safety,no,Shootings and firearm discharges,Shootings and firearm discharges
+THEFTFROMMV,public_safety,no,Theft from motor vehicle,Theft from motor vehicle
+THEFTOVER,public_safety,no,"Theft over $5,000","Theft over $5,000"

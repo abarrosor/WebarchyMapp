@@ -50,7 +50,7 @@ fr_download <- function(days = 60) {
   m <- COUNTRY_MODULES$FR
   for (lv in names(FR_RESOURCES)) {
     prev <- fr_file(lv)
-    if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < days) { message("= FR ", lv, " base downloaded less than ", days, " days ago"); next }
+    if (!is.na(prev) && file_age_days(prev) < days) { message("= FR ", lv, " base downloaded less than ", days, " days ago"); next }
     name <- paste0("fr_", lv, if (lv == "communal") ".csv.gz" else ".csv")
     download_versioned(FR_RESOURCES[[lv]], m$dir_raw, name = name)
   }

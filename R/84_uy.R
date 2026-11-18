@@ -46,7 +46,7 @@ uy_download <- function() {
   m <- COUNTRY_MODULES$UY
   for (k in names(UY_RESOURCES)) {
     prev <- uy_file(k)
-    if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < UY_DAYS[[k]]) { message("= UY ", k, " downloaded less than ", UY_DAYS[[k]], " days ago"); next }
+    if (!is.na(prev) && file_age_days(prev) < UY_DAYS[[k]]) { message("= UY ", k, " downloaded less than ", UY_DAYS[[k]], " days ago"); next }
     tryCatch(download_versioned(UY_RESOURCES[[k]], m$dir_raw, name = UY_NAMES[[k]]), error = function(e) message("  UY ", k, ": ", conditionMessage(e)))
   }
 }

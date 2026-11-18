@@ -21,7 +21,7 @@ Mensenhandel,public_safety,yes,Mensenhandel,Human trafficking
 Drugs/drankoverlast,coexistence,no,Drugs/drankoverlast,Drug and alcohol nuisance
 Vernieling cq. zaakbeschadiging,coexistence,no,Vernieling cq. zaakbeschadiging,Vandalism and criminal damage
 Burengerucht (relatieproblemen),coexistence,no,Burengerucht (relatieproblemen),Neighbour disturbance
-Huisvredebreuk,public_safety,no,Huisvredebreuk,Trespass
+Huisvredebreuk,public_safety,no,Huisvredebreuk,Trespass in a dwelling
 Diefstal/inbraak bedrijven enz.,public_safety,no,Diefstal/inbraak bedrijven enz.,Burglary of businesses
 Winkeldiefstal,public_safety,no,Winkeldiefstal,Shoplifting
 Inrichting Wet Milieubeheer,administrative,no,Inrichting Wet Milieubeheer,Environmental Management Act (premises)
@@ -44,7 +44,7 @@ Maatschappelijke integriteit (overig),administrative,no,Maatschappelijke integri
 Cybercrime,public_safety,no,Cybercrime,Cybercrime
 Horizontale fraude,public_safety,no,Horizontale fraude,Fraud against citizens and businesses
 Verticale fraude,public_safety,no,Verticale fraude,Fraud against the public sector
-Fraude (overig),public_safety,no,Fraude (overig),Fraud (other)
+Fraude (overig),public_safety,no,Fraude (overig),Other fraud
 Bodem,environment,no,Bodem,Soil (environmental law)
 Water,environment,no,Water,Water (environmental law)
 Afval,environment,no,Afval,Waste (environmental law)

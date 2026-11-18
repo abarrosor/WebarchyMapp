@@ -43,7 +43,7 @@ ar_download <- function(days = 60) {
     rows <- src[src$key == key, ]; if (nrow(rows) == 0) next
     prev <- ar_file(rows$name[1])
     max_age <- if (grepl("^ign", key)) 365 else days
-    if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < max_age) { message("= AR ", rows$name[1], " downloaded less than ", max_age, " days ago"); next }
+    if (!is.na(prev) && file_age_days(prev) < max_age) { message("= AR ", rows$name[1], " downloaded less than ", max_age, " days ago"); next }
     ok <- FALSE
     for (i in seq_len(nrow(rows))) {
       ok <- tryCatch({ download_versioned(rows$url[i], m$dir_raw, name = rows$name[i]); TRUE }, error = function(e) { message("  AR ", key, " candidate ", i, " failed: ", conditionMessage(e)); FALSE })
@@ -248,7 +248,7 @@ register_country(list(
   population_source = "SNIC files ('poblacion' column) or INDEC population projections by departamento",
   boundaries_attribution = "Instituto Geográfico Nacional (IGN) de la República Argentina, capas SIG (WFS)",
   not_published = c("Not reported to SNIC by the jurisdiction for this year", "No informado al SNIC por la jurisdicción en este año"),
-  notes_en = "Departments/partidos are the smallest SNIC unit (no municipalities). Coverage depends on each province reporting to SNIC; some provinces have gaps in some years. Road-traffic deaths and injuries (culposos) are excluded from the total.",
+  notes_en = "Departments/partidos are the smallest SNIC unit (no municipalities). Coverage depends on each province reporting to SNIC; some provinces have gaps in some years. Road traffic deaths and injuries (culposos) are excluded from the total.",
   method = list(where = "Departamento / partido where the alleged offence was registered by the reporting police force", date = "Calendar year of registration", revisions = "Yearly publication; provinces may correct earlier years in later editions"),
   default_region = "AR-02",
   download = ar_download, ingest = ar_ingest, territory = ar_territory, population = ar_population

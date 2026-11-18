@@ -25,7 +25,7 @@ hu_file <- function(what) { f <- newest_first(list.files(hu_dir(), paste0("_hu_"
 hu_download <- function(days = 60) {
   for (what in names(HU_FILES)) {
     prev <- hu_file(what)
-    if (!is.na(prev) && difftime(Sys.time(), file.mtime(prev), units = "days") < days) { message("= HU ", what, " downloaded less than ", days, " days ago"); next }
+    if (!is.na(prev) && file_age_days(prev) < days) { message("= HU ", what, " downloaded less than ", days, " days ago"); next }
     download_versioned(HU_FILES[[what]], hu_dir(), name = paste0("hu_", what, ".csv"))
   }
 }
@@ -51,7 +51,7 @@ hu_standardise <- function(m, counties) {
   years <- suppressWarnings(as.integer(trimws(m[hdr, ]))); ycol <- which(!is.na(years))
   block <- NA_character_; rows <- list()
   for (i in seq(hdr + 1, nrow(m))) {
-    lab_raw <- m[i, 1]; lab <- hu_clean(lab_raw); if (!nzchar(lab)) next
+    lab_raw <- unname(m[i, 1]); lab <- hu_clean(lab_raw); if (!nzchar(lab)) next   # unname: the cell carries its column name (X1), and a named block made data.frame() warn once per row
     vals <- hu_number(m[i, ycol])
     if (all(is.na(vals)) && !grepl(HU_SKIP, lab)) { block <- lab; next }       # a label row introduces a block
     if (grepl("^total[a-g]? ?country|^country total|^hungary|^magyarorsz|^ország összesen", lab)) code <- "HU"

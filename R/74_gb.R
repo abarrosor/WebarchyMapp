@@ -101,7 +101,7 @@ gb_file <- function(cc, pattern) {
   f <- newest_first(list.files(COUNTRY_MODULES[[cc]]$dir_raw, pattern, full.names = TRUE))
   if (length(f) == 0) NA_character_ else f[1]
 }
-gb_recent <- function(f, days) !is.na(f) && difftime(Sys.time(), file.mtime(f), units = "days") < days
+gb_recent <- function(f, days) !is.na(f) && file_age_days(f) < days
 gb_fetch <- function(cc, url, name, days = 60) {   # download unless a copy younger than `days` exists
   prev <- gb_file(cc, paste0("_", gsub("([.()+])", "\\\\\\1", name), "$"))
   if (gb_recent(prev, days)) { message("= ", name, " downloaded less than ", days, " days ago"); return(invisible(prev)) }

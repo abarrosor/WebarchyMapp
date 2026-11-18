@@ -20,7 +20,7 @@ CRI1330,forgery_documents,133 Valsheid in geschriften,Forgery of documents,forge
 CRI2000,damage_public_order,"2 Vernielingen, misdrijven tegen openbare orde en gezag","Criminal damage, public order and public authority offences",total,no
 CRI2100,criminal_damage,21 Vernieling en beschadiging,Criminal damage,damage_public_order,no
 CRI2200,public_order,22 Openbare orde misdrijf,Public order offences,damage_public_order,no
-CRI2300,arson,23 Brandstichting / ontploffing,Arson and explosion,damage_public_order,no
+CRI2300,arson,23 Brandstichting / ontploffing,Arson and explosions,damage_public_order,no
 CRI2400,offences_against_authority,24 Openbaar gezag misdrijf,Offences against public authority,damage_public_order,no
 CRI2110,damage_vehicle,211 Vernieling aan auto,Damage to vehicles,criminal_damage,no
 CRI2120,damage_public_building,212 Vernieling aan openbaar gebouw,Damage to public buildings,criminal_damage,no

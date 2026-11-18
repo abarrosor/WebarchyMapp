@@ -47,6 +47,12 @@ city_init <- function(con) {
   DBI::dbExecute(con, "
     CREATE TABLE IF NOT EXISTS ref_city_event_types (
       city VARCHAR, event_type VARCHAR, block VARCHAR, name_local VARCHAR, name_en VARCHAR, sensitive BOOLEAN)")
+  # Gaps: types that a source does not hold for a stretch of months although it holds them before or after (a file
+  # cut by its publisher, a type withdrawn for a time). The app says so wherever those months are shown, so that
+  # missing is never read as zero (P-056). A module writes them with publish_city_gaps(); most have none.
+  DBI::dbExecute(con, "
+    CREATE TABLE IF NOT EXISTS stg_city_gaps (
+      city VARCHAR, event_type VARCHAR, first_month DATE, last_month DATE, reason VARCHAR, file VARCHAR)")
   # Surveys (victimisation, perception of security): yearly indicators by city or district, a measure of
   # what the records miss, never mixed with the events (P-033)
   DBI::dbExecute(con, "
@@ -157,6 +163,17 @@ publish_city_events <- function(con, key, view, type_col, count_col, types, type
   invisible(ev)
 }
 
+# The types a city's source lacks for some months (columns event_type, first_month, last_month, reason, file; the
+# reason is the end of a translation key, gap_<reason>). Every call replaces the city's rows: an empty table
+# clears them, which is what a module does when its source is whole again.
+publish_city_gaps <- function(con, key, gaps) {
+  g <- if (is.null(gaps) || nrow(gaps) == 0) data.frame() else data.frame(city = key, event_type = as.character(gaps$event_type), first_month = as.Date(gaps$first_month), last_month = as.Date(gaps$last_month),
+                                                                           reason = as.character(gaps$reason), file = as.character(gaps$file %||% NA_character_), stringsAsFactors = FALSE)
+  replace_city_rows(con, "stg_city_gaps", key, g)
+  if (nrow(g) > 0) message(sprintf("  %s: %d types missing from the source in part of the series (%s to %s): marked in the app", key, length(unique(g$event_type)), format(min(g$first_month), "%m/%Y"), format(max(g$last_month), "%m/%Y")))
+  invisible(nrow(g))
+}
+
 # --- Marts ---------------------------------------------------------------------------------------------
 city_marts <- function(con, threshold = MARTS$threshold) {
   blocks_sql <- paste(DBI::dbQuoteString(con, MARTS$blocks), collapse = ", ")
@@ -168,6 +185,12 @@ city_marts <- function(con, threshold = MARTS$threshold) {
   DBI::dbExecute(con, paste0("
     CREATE OR REPLACE TABLE mart_city_event_types AS
     SELECT city, event_type, block, name_local, name_en FROM ref_city_event_types WHERE NOT sensitive AND block IN (", blocks_sql, ") ORDER BY ALL"))
+  # The gaps of the types the app shows (the same filter as the events: no sensitive types, the published categories)
+  DBI::dbExecute(con, paste0("
+    CREATE OR REPLACE TABLE mart_city_gaps AS
+    SELECT g.city, t.block, g.event_type, g.first_month, g.last_month, g.reason
+    FROM stg_city_gaps g JOIN ref_city_event_types t ON t.city = g.city AND t.event_type = g.event_type
+    WHERE NOT t.sensitive AND t.block IN (", blocks_sql, ") ORDER BY ALL"))
   rows <- lapply(CITY_MODULES, function(m) {
     q <- function(sql) DBI::dbGetQuery(con, sprintf(sql, DBI::dbQuoteString(con, m$key)))
     per <- q("SELECT min(month) AS first_month, max(month) AS last_month FROM stg_city_events WHERE city = %s")
@@ -232,9 +255,9 @@ city_steps <- function(con, download = TRUE, only = NULL, after_countries = NULL
   mods <- CITY_MODULES; if (!is.null(only)) mods <- mods[vapply(mods, function(m) m$code %in% only || m$key %in% only, logical(1))]
   if (!is.null(after_countries)) mods <- mods[vapply(mods, function(m) isTRUE(m$after_countries) == after_countries, logical(1))]
   if (length(mods) == 0) { if (is.null(after_countries)) message("No city modules chosen."); return(invisible(FALSE)) }
-  fetch <- function(label, expr) if (download) tryCatch(expr, error = function(e) message("Download not available (", label, "): ", conditionMessage(e), "\nContinuing with the files already in data/raw."))
+  fetch <- function(label, expr) try_download(label, expr, download, "\nContinuing with the files already in data/raw.")
   for (m in mods) {
-    step(sprintf("%s (%s): %s", m$name_en, m$code, m$source$name))
+    step(sprintf("%s (%s): %s", m$name_en, m$code, m$source$name), place = m$code, label = sprintf("%s (%s)", m$name_en, m$code))
     fetch(m$code, m$download())
     attempt(paste(m$code, "territory not loaded"), m$territory(con))
     attempt(paste(m$code, "data not loaded"), m$ingest(con))
@@ -252,12 +275,36 @@ city_steps <- function(con, download = TRUE, only = NULL, after_countries = NULL
 }
 
 update_cities <- function(download = TRUE, only = NULL) {
-  with_db(function(con) {
+  with_journal(if (is.null(only)) "cities" else paste("chosen:", paste(only, collapse = " ")), download = download, with_db(function(con) {
     city_steps(con, download, only)
     step("Tables for the app")
     build_marts(con)
     city_status(con); country_status(con)
-  })
+  }))
+}
+
+# The last month (or year) loaded of every city and of its panels, with its age against the rhythm of the source
+# (freshness(), R/05_journal.R). One row per city and per panel: city, code, name, what ("" or the panel id), last, months, limit, old, text
+city_freshness <- function(con, today = Sys.Date()) {
+  out <- data.frame(city = character(), code = character(), name = character(), what = character(), last = as.Date(character()), months = numeric(), limit = numeric(), old = logical(), text = character(), stringsAsFactors = FALSE)
+  if (!"stg_city_events" %in% DBI::dbListTables(con)) return(out)
+  ev <- DBI::dbGetQuery(con, "SELECT city, max(month) AS m1 FROM stg_city_events GROUP BY 1")
+  pn <- if ("stg_city_panel_values" %in% DBI::dbListTables(con)) DBI::dbGetQuery(con, "SELECT city, panel_id, max(month) AS m1 FROM stg_city_panel_values GROUP BY 1, 2") else NULL
+  one <- function(m, what, last, yearly, limit) {
+    end <- if (yearly) as.Date(paste0(format(last, "%Y"), "-12-31")) else month_end(last)
+    f <- freshness(end, yearly, limit, today)
+    data.frame(city = m$key, code = m$code, name = m$name_en, what = what, last = as.Date(last), months = f$months, limit = f$limit, old = f$old, text = f$text, stringsAsFactors = FALSE)
+  }
+  for (m in CITY_MODULES) {
+    yearly <- identical(m$time_unit, "year")
+    r <- ev[ev$city == m$key, ]
+    if (nrow(r)) out <- rbind(out, one(m, "", r$m1[1], yearly, m$freshness_months))
+    for (p in m$panel_defs %||% list()) {
+      rp <- pn[pn$city == m$key & pn$panel_id == p$id, ]
+      if (!is.null(rp) && nrow(rp)) out <- rbind(out, one(m, p$id, rp$m1[1], identical(p$time_unit, "year"), p$freshness_months))
+    }
+  }
+  out
 }
 
 city_status <- function(con) {
@@ -265,16 +312,27 @@ city_status <- function(con) {
   x <- DBI::dbGetQuery(con, "
     SELECT e.city, count(DISTINCT e.month) AS months, min(e.month) AS m0, max(e.month) AS m1, count(DISTINCT e.neighbourhood_id) AS nb
     FROM stg_city_events e GROUP BY 1")
+  fr <- city_freshness(con)
+  journal_mute({
   message("Cities")
   for (m in CITY_MODULES) {
+    title <- sprintf("%s (%s)", m$name_en, m$code)
+    journal_done(m$code, "status", title)
     r <- x[x$city == m$key, ]
-    if (nrow(r) == 0) { message("[!!] ", m$name_en, ": no data loaded yet"); next }
+    if (nrow(r) == 0) { message("[!!] ", m$name_en, ": no data loaded yet"); journal_add("attention", "no data loaded yet", place = m$code, phase = "status"); next }
     pop <- DBI::dbGetQuery(con, paste0("SELECT count(*) AS n FROM ref_population WHERE territory_id LIKE ", DBI::dbQuoteString(con, paste0(m$id, "-%"))))$n
     pn <- if ("stg_city_panel_values" %in% DBI::dbListTables(con)) DBI::dbGetQuery(con, paste0("SELECT panel_id, max(month) AS m1 FROM stg_city_panel_values WHERE city = ", DBI::dbQuoteString(con, m$key), " GROUP BY 1 ORDER BY 1")) else NULL
     yearly <- identical(m$time_unit, "year")
-    message(sprintf("[ok] %-18s %d %s (%s to %s), %d neighbourhoods%s%s%s", m$name_en, r$months, if (yearly) "years" else "months", format(r$m0, if (yearly) "%Y" else "%m/%Y"), format(r$m1, if (yearly) "%Y" else "%m/%Y"), r$nb,
+    f <- fr[fr$city == m$key & fr$old, ]
+    message(sprintf("%-5s %s %d %s (%s to %s), %d neighbourhoods%s%s%s", if (nrow(f)) "[old]" else "[ok]", format(m$name_en, width = 18), r$months, if (yearly) "years" else "months", format(r$m0, if (yearly) "%Y" else "%m/%Y"), format(r$m1, if (yearly) "%Y" else "%m/%Y"), r$nb,
                     if (pop > 0) "" else " (no register: no rates)", if (file.exists(m$gpkg)) "" else " (no boundaries)",
                     if (!is.null(pn) && nrow(pn)) paste0("; panels: ", paste(sprintf("%s to %s", pn$panel_id, format(pn$m1, "%m/%Y")), collapse = ", ")) else ""))
+    for (i in seq_len(nrow(f))) {
+      what <- if (nzchar(f$what[i])) paste0("panel ", f$what[i], ": ") else ""
+      message("      ", what, f$text[i])
+      journal_add("stale", paste0(what, sub("ended .* ago", paste("ended in", format(month_end(f$last[i]), "%m/%Y")), f$text[i])), place = m$code, phase = "status")
+    }
   }
+  })
   invisible(x)
 }
