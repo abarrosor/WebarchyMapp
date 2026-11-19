@@ -515,4 +515,6 @@ test_that("the app opens at the same address every day, and on a free port only 
   # No port set (NULL): shiny picks one, as before
   calls <- list(); expect_equal(run_app_at(NULL, go, run = free), "running"); expect_null(calls[[1]]$port)
   expect_true(grepl("run_app_at(port,", paste(deparse(open_app), collapse = " "), fixed = TRUE)); expect_identical(formals(open_app)$port, quote(CONFIG$app_port))
+  # Opened from the menu, the app is told to stop by itself once its pages are closed (app/app.R, stop_if_closed)
+  expect_true(grepl("webarchy.stop_when_closed = 15", paste(deparse(open_app), collapse = " "), fixed = TRUE))
 })

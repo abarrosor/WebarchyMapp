@@ -119,3 +119,15 @@ test_that("de_standardise reads a Kreise table as the workbooks of 2024 write it
   d[["erfasste Faelle"]] <- c("648", "276", "635,421", "5")
   expect_equal(de_standardise(d, "land")$key, c("000000", "010000", "------", "892500"))
 })
+
+test_that("hu_standardise takes the row Total of level country as the national row of Hungary", {
+  m <- rbind(c("Name of the territorial unit", "Level of the territorial unit", "2019", "2020", "2021", "2022", "2023"),
+             c("Total number of crimes", "", "", "", "", "", ""),
+             c("Budapest", "capital, region", "104 253", "2", "3", "4", "5"),
+             c("Central Hungary", "large region", "140 909", "2", "3", "4", "5"),
+             c("Total", "country", "394 034", "8", "7", "6", "5"))
+  out <- hu_standardise(m, data.frame(code = "01", match_pattern = "^budapest", stringsAsFactors = FALSE))
+  expect_equal(unique(out$code), c("01", "HU"))
+  expect_equal(out$n[out$code == "HU" & out$year == 2019], 394034)
+  expect_equal(unique(out$block), "total number of crimes")
+})

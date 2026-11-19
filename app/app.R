@@ -63,13 +63,36 @@ get_view <- function(view) {                                     # the full envi
 invisible(get_view(VIEWS_AVAILABLE[1]))                           # the first view is ready before the first browser asks for it
 fallback_view <- function(view) { if (identical(view, "about")) return(view); if (!is.null(get_view(view))) return(view); if (!is.null(get_view(VIEWS_AVAILABLE[1]))) VIEWS_AVAILABLE[1] else "about" }
 
+# CLOSING THE BROWSER STOPS THE APP, when it was opened from the menu (open_app() sets the option webarchy.stop_when_closed
+# to a number of seconds; without it, as in the tests or on a server, nothing here ever stops the app). A change of
+# country, city or language loads a new page: the old page ends and the new one connects a moment later, and a large
+# country takes seconds to prepare. So the app stops only when no page is connected AND none has been served for that
+# number of seconds; while one of the two is not so, it looks again later.
+OPEN_PAGES <- new.env()
+OPEN_PAGES$n <- 0L; OPEN_PAGES$served <- Sys.time(); OPEN_PAGES$looking <- FALSE   # looking: one look is pending, never several
+stop_if_closed <- function(wait) {
+  if (OPEN_PAGES$n > 0L) { OPEN_PAGES$looking <- FALSE; return(invisible()) }
+  if (as.numeric(difftime(Sys.time(), OPEN_PAGES$served, units = "secs")) < wait) return(invisible(later::later(function() stop_if_closed(wait), wait)))
+  OPEN_PAGES$looking <- FALSE
+  message("The app was closed in the browser: stopped.")
+  shiny::stopApp()
+}
+
 ui <- function(req) {
   lang <- lang_from_url(req$QUERY_STRING); view <- fallback_view(view_from_url(req$QUERY_STRING, VIEWS_AVAILABLE))
-  if (view == "about") ui_about(lang, CITY_LIGHT)
+  page <- if (view == "about") ui_about(lang, CITY_LIGHT)
   else if (view %in% names(COUNTRY_LIGHT)) get_view(view)$ui_country(lang)
   else get_view(view)$ui_city(lang)
+  OPEN_PAGES$served <- Sys.time()
+  page
 }
 server <- function(input, output, session) {
+  OPEN_PAGES$n <- OPEN_PAGES$n + 1L
+  session$onSessionEnded(function() {
+    OPEN_PAGES$n <- OPEN_PAGES$n - 1L
+    wait <- getOption("webarchy.stop_when_closed")
+    if (is.numeric(wait) && length(wait) == 1 && !is.na(wait) && !OPEN_PAGES$looking) { OPEN_PAGES$looking <- TRUE; later::later(function() stop_if_closed(wait), wait) }
+  })
   qs <- isolate(session$clientData$url_search)
   lang <- lang_from_url(qs); view <- fallback_view(view_from_url(qs, VIEWS_AVAILABLE))
   if (view %in% names(COUNTRY_LIGHT)) get_view(view)$server_country(input, output, session, lang)

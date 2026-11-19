@@ -54,7 +54,11 @@ hu_standardise <- function(m, counties) {
     lab_raw <- unname(m[i, 1]); lab <- hu_clean(lab_raw); if (!nzchar(lab)) next   # unname: the cell carries its column name (X1), and a named block made data.frame() warn once per row
     vals <- hu_number(m[i, ycol])
     if (all(is.na(vals)) && !grepl(HU_SKIP, lab)) { block <- lab; next }       # a label row introduces a block
-    if (grepl("^total[a-g]? ?country|^country total|^hungary|^magyarorsz|^ország összesen", lab)) code <- "HU"
+    # The national row: named as such, or a plain "Total" whose second cell says its level is the country (the table of
+    # 2026 writes "Total;country": until P-079 that row was not recognised and Hungary had no national figures)
+    lvl <- if (ncol(m) >= 2) hu_clean(unname(m[i, 2])) else ""
+    if (grepl("^total[a-g]? ?country|^country total|^hungary|^magyarorsz|^ország összesen", lab) ||
+        (grepl("^(total[a-g]?|összesen)$", lab) && grepl("country|ország", lvl))) code <- "HU"
     else { hit <- which(vapply(counties$match_pattern, function(p) grepl(p, lab, perl = TRUE), logical(1))); code <- if (length(hit)) counties$code[hit[1]] else NA }   # region rows never start with a county name
     if (is.na(code)) next
     rows[[length(rows) + 1]] <- data.frame(block = block, code = code, year = unname(years[ycol]), n = unname(vals), stringsAsFactors = FALSE)

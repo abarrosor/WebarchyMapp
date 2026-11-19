@@ -29,7 +29,7 @@ Every figure is shown with its source, what it measures and its limitations. Dif
 3. Open `WEBARCHYMAPP.R` and press **Source** (Ctrl + Shift + S). A menu appears in the console.
 4. Choose **5** to install the R packages (once).
 5. Choose **1** to download and load everything. The first run takes hours (47 countries and 17 cities; Canada alone parses 50 GB, Mexico City's file is hundreds of MB) and a portal may be down that day: the run continues with the next source and says what failed. To go in parts: option **13** (countries), **8** (cities) or **14** with a list of codes. Downloads are not re-done on later runs; a country whose files did not change is not reloaded.
-6. Choose **2** to open the app (English) or **3** to pick another language.
+6. Choose **2** to open the app (English) or **3** to pick another language. While the app is open the console of R is busy. To finish, close its tab in the browser: the app stops by itself some 15 to 30 seconds later and the console is free again (*The app was closed in the browser: stopped.*). The red **Stop** button of the console stops it at once. There is no need to restart R.
 
 ## 3. The menu (`WEBARCHYMAPP.R`)
 

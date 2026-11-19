@@ -90,6 +90,8 @@ run_app_at <- function(port, go, run = shiny::runApp) {
 }
 open_app <- function(lang = "en", port = CONFIG$app_port) {
   check_packages()
+  # Opened from the menu, the app stops by itself some seconds after its last page is closed in the browser (app/app.R)
+  old <- options(webarchy.stop_when_closed = 15); on.exit(options(old), add = TRUE)
   run_app_at(port, function(url) utils::browseURL(paste0(url, "?lang=", lang)))
 }
 
