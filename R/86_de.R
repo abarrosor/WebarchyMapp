@@ -22,7 +22,7 @@ DE_EUROSTAT <- "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/d
 DE_COLUMNS <- list(
   key    = c("^Schl[üu]e?ssel$", "^Straftatenschl", "^Schl"),
   label  = c("^Straftat$", "^Straftat", "^Bezeichnung"),
-  ags    = c("^Gemeindeschl", "^Kreisschl", "^AGS$", "^Schl[üu]e?ssel Kreis", "^Regionalschl"),
+  ags    = c("^Gemeinde-?schl", "^Kreisschl", "^AGS$", "^Schl[üu]e?ssel Kreis", "^Regionalschl"),
   name   = c("^Stadt-/Landkreis", "^Kreis$", "^Kreis ", "^Stadt", "^Bundesland$", "^Land$", "^Gebiet"),
   value  = c("^Anzahl erfasste F[äa]e?lle$", "^erfasste F[äa]e?lle$", "^F[äa]e?lle$", "^erfasste F[äa]e?lle", "^Anzahl F[äa]e?lle"),   # "Faelle" (ASCII) in the 2018 CSV
   pop    = c("^Einwohner", "^Bev[öo]lkerung", "^EWZ$")
@@ -72,7 +72,11 @@ de_read <- function(f) {
     for (sh in sheets) {
       raw <- readxl::read_excel(f, sheet = sh, col_names = FALSE, col_types = "text", .name_repair = "minimal")
       h <- which(apply(raw, 1, function(r) any(grepl("^Schl", r)) && any(grepl("Straftat", r))))[1]
-      if (!is.na(h)) { d <- raw[-seq_len(h), ]; names(d) <- trimws(as.character(unlist(raw[h, ]))); return(as.data.frame(d[, nzchar(names(d)) & !is.na(names(d))])) }
+      if (!is.na(h)) {   # (a title may sit on two lines of its cell; a column under a merged title has none)
+        nm <- trimws(gsub("\\s+", " ", as.character(unlist(raw[h, ])))); nm[is.na(nm)] <- ""
+        d <- as.data.frame(raw[-seq_len(h), ], stringsAsFactors = FALSE); names(d) <- nm
+        return(d[, nzchar(nm), drop = FALSE])
+      }
     }
     stop("No header row with 'Schlüssel' and 'Straftat' in ", basename(f), " (sheets: ", toString(sheets), ")")
   }
@@ -120,7 +124,13 @@ de_standardise <- function(d, level) {
   out$name <- if (!is.na(col$name)) trimws(d[[col$name]]) else NA_character_
   out$pop <- if (!is.na(col$pop)) de_count(d[[col$pop]]) else NA_real_
   out$key <- gsub("\\s", "", out$key)
-  out[!is.na(out$key) & nzchar(out$key), ]
+  # (the workbooks of 2024 on number their columns in a row under the titles, 1, 2, 3...: that row is not an offence)
+  # It is told by its two first cells, "1" and "2", and by nothing else: the CSV write real keys short ("0" is 000000).
+  out <- out[!is.na(out$key) & nzchar(out$key) & !(out$key == "1" & out$label %in% "2"), ]
+  # A key has six characters; the CSV drop its leading zeros ("0" is 000000, "10000" is 010000), the workbooks do not
+  short <- grepl("^[0-9]{1,5}$", out$key)
+  out$key[short] <- sprintf("%06d", as.integer(out$key[short]))
+  out
 }
 
 # Identifiers: DE-<Land AGS 2>-<Kreis AGS 5>

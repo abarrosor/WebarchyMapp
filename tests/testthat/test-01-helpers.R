@@ -105,3 +105,17 @@ test_that("de_count reads the whole numbers of the German tables and never takes
   d[["erfasste Faelle"]] <- "1,282,441"
   expect_equal(de_standardise(d, "land")$value, 1282441)
 })
+
+test_that("de_standardise reads a Kreise table as the workbooks of 2024 write it and leaves out the row that numbers the columns", {
+  d <- data.frame(a = c("1", "------", "100000"), b = c("2", "Straftaten insgesamt", "Mord"), c = c("3", "01001", "01001"), d = c("4", "Flensburg", "Flensburg"),
+                  e = c("6", "8692", "3"), stringsAsFactors = FALSE)
+  names(d) <- c("Schl\u00fcssel", "Straftat", "Gemeinde-schl\u00fcssel", "Stadt-/Landkreis", "Anzahl erfasste F\u00e4lle")
+  out <- de_standardise(d, "kreis")
+  expect_equal(out$key, c("------", "100000"))
+  expect_equal(out$code, c("01001", "01001"))
+  expect_equal(out$value, c(8692, 3))
+  # a key written without its leading zeros in the CSV ("0" for 000000, "10000" for 010000) is kept and completed
+  d <- data.frame(Schluessel = c("0", "10000", "------", "892500"), Straftat = c("Straftaten gegen das Leben", "Mord", "Straftaten insgesamt", "x"), Bundesland = "Bayern", stringsAsFactors = FALSE)
+  d[["erfasste Faelle"]] <- c("648", "276", "635,421", "5")
+  expect_equal(de_standardise(d, "land")$key, c("000000", "010000", "------", "892500"))
+})
