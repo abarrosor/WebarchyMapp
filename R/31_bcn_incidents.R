@@ -9,21 +9,18 @@
 # categories are NOT equivalent: figures are never compared between cities. Crimes
 # in Barcelona (thefts, robberies...) are recorded by the Mossos d'Esquadra (F4).
 #
-# THE FILES OF 2024 AND 2025 ARE CUT BY THE PUBLISHER (found on 16 November 2026, decision
-# P-056). Each holds exactly 30,000 lines (29,999 rows), is sorted by incident code,
-# district, neighbourhood and month, and ends in the middle of code 510 (fights): 2024
-# after district 09, 2025 after district 03. The catalogue of the portal gives the same
-# byte sizes as the downloaded copies and its own DataStore holds 29,999 rows for 2025,
-# the last one being the last line of the file: the cut is in what is published, not in
-# the download. So in those years the 27 codes after 510 (offences against property,
-# assaults, drugs, domestic violence, police patrols...: 41 % of the incidents of 2023)
-# are missing, and the fights reach only some districts. Until this was seen the module
-# said that those codes "are no longer published since 2024" and showed the fights of
-# 2025 as zero in districts 04 to 10: both were wrong. Rule (bcn_incidents_cut): a file
-# whose line count is a round thousand and whose rows come grouped by code is cut; its
-# last code is not shown for that year (the rows stay in stg_bcn_incidents) and the app
-# is told which types that year lacks (stg_city_gaps), so that missing is never read as
-# zero. If the portal publishes the files complete, the rule stops applying by itself.
+# THE FILES OF 2024 AND 2025 WERE CUT BY THE PUBLISHER, AND ARE COMPLETE SINCE 19 NOVEMBER 2026 (decisions P-056 and
+# P-076). As found on 16 November 2026, each held exactly 30,000 lines (29,999 rows), sorted by incident code,
+# district, neighbourhood and month, and ended in the middle of code 510 (fights): 2024 after district 09, 2025
+# after district 03. The 27 codes after 510 (offences against property, assaults, drugs, domestic violence,
+# police patrols...: 41 % of the incidents of 2023) were missing, and until the cut was seen the module said that
+# those codes "are no longer published since 2024" and showed the fights of 2025 as zero in districts 04 to 10:
+# both were wrong. Open Data BCN was told, answered that its extraction tool limited the files to 30,000 lines,
+# and published them again complete (40,005 and 40,717 lines).
+# The rule stays, for the next time (bcn_incidents_cut): a file whose line count is a round thousand and whose
+# rows come grouped by code is cut; its last code is not shown for that year (the rows stay in stg_bcn_incidents)
+# and the app is told which types that year lacks (stg_city_gaps), so that missing is never read as zero. With
+# complete files the rule does not apply.
 #
 # Published once a year (the previous year, around February) and sometimes an old
 # year is re-published corrected: downloaded again if the portal reports a

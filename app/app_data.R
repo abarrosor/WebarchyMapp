@@ -48,7 +48,9 @@ CITY_PANELS <- q("SELECT * FROM mart_city_panels")                       # extra
 CITY_PANEL_VALUES <- q("SELECT * FROM mart_city_panel_values")
 CITY_PANEL_IND <- q("SELECT * FROM mart_city_panel_indicators")
 CMETA   <- q("SELECT * FROM mart_country_meta")                          # one row per country and source ('main' + second sources)
-CSOURCES_WITH_DATA <- q("SELECT country, source, count(*) AS n FROM mart_country_crime GROUP BY 1, 2")   # which countries and sources hold figures
+# Which countries and sources hold figures, and how many rows of the national total (the periods of a country page are
+# those of its national total: without one the page has no period to offer)
+CSOURCES_WITH_DATA <- q("SELECT country, source, count(*) AS n, count(*) FILTER (WHERE territory_id = country AND offence_type_id = 'total' AND quarter IS NOT NULL) AS n_total FROM mart_country_crime GROUP BY 1, 2")
 CINFO   <- q("SELECT * FROM mart_country_territory_info")                # a line of context about some territories (municipalities of a police area...)
 db_disconnect(con)
 country_crime <- function(cc) fetch(paste0("SELECT * FROM mart_country_crime WHERE country = ", sql_str(cc)))

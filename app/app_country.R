@@ -709,7 +709,12 @@ country_light <- function(cc) {
   # Second sources with figures (a regional police...): each one covers a territory (a region id or the country)
   with_data <- if (has_rows(CSOURCES_WITH_DATA)) CSOURCES_WITH_DATA$source[CSOURCES_WITH_DATA$country == cc] else character()
   e$ALT_SOURCES <- src_meta[src_meta$source != "main" & src_meta$source %in% with_data, ]
-  e$HAS_DATA <- "main" %in% with_data
+  # A country is offered when its main source holds figures AND a national total: until November 2026 a country whose
+  # total had been read as empty (Germany, P-074) was offered and its page failed. It is left out and said in the console.
+  main_rows <- if (has_rows(CSOURCES_WITH_DATA)) CSOURCES_WITH_DATA[CSOURCES_WITH_DATA$country == cc & CSOURCES_WITH_DATA$source == "main", ] else NULL
+  no_total <- has_rows(main_rows) && "n_total" %in% names(main_rows) && !any(main_rows$n_total > 0, na.rm = TRUE)
+  if (no_total) message(cc, ": figures loaded but no national total, so the country is not offered in the app. Reload it (menu option 14) and read its messages.")
+  e$HAS_DATA <- "main" %in% with_data && !no_total
   e$SP_LEVELS <- intersect(c("region", "province", "municipality"), strsplit(meta$levels %||% "", ";")[[1]])
   # Country name: local name in the local language, a translated name (country_<cc> key) elsewhere, English as the fallback
   e$CNAME <- function(lang) {
