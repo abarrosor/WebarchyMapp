@@ -84,6 +84,7 @@ code,description,block,sensitive,name_es,name_en
 650,VIGILÀNCIA POLICIAL,police_activity,no,Vigilancia policial,Police patrols
 660,VIOLÈNCIA DOMÈSTICA,public_safety,yes,Violencia doméstica,Domestic violence
 670,AGRESSIONS,public_safety,no,Agresiones,Assaults
+671,AGRESSIONS,public_safety,no,Agresiones (código 671),Assaults (code 671)
 680,"ALTRES ACTUACIONS DE S, C,",police_activity,no,Otras actuaciones de seguridad ciudadana,Other public-safety actions
 700,ACTIVITAT AMB PRESOS,service_support,yes,Actividad con presos,Prisoner escorts
 710,CUSTÒDIES,service_support,yes,Custodias,Custody
@@ -93,6 +94,7 @@ code,description,block,sensitive,name_es,name_en
 820,CAÇA / PESCA / FLORA / FAUNA,administrative,no,"Caza, pesca, flora y fauna","Hunting, fishing, flora and fauna"
 830,ALTRES ACTUACIONS EN MEDI AMBIENT,administrative,no,Otras actuaciones de medio ambiente,Other environmental actions
 900,AVARIA TÈCNICA,services,no,Avería técnica,Technical fault
+901,AVARIES TELEFONIA,services,no,Averías de telefonía,Telephone faults
 920,FOC EXTERIOR,emergencies,no,Fuego exterior,Outdoor fire
 940,FUITES - PRODUCTES QUÍMICS,emergencies,no,Fugas de productos químicos,Chemical leaks
 950,SALVAMENTS,emergencies,no,Salvamentos,Rescues
